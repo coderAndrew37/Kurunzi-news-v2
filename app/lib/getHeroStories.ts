@@ -23,8 +23,7 @@ interface HeroQueryArticle {
     name: string;
     image?: SanityImageSource;
   };
-  image?: SanityImageSource; // keep for safety
-  mainImage?: SanityImageSource; // ✅ add this for aliased field
+  mainImage?: SanityImageSource; // ✅ proper schema field
   content?: PortableTextBlock[];
 }
 
@@ -46,7 +45,7 @@ export const urlFor = (src: SanityImageSource) =>
 export async function getHeroStories(): Promise<Story[]> {
   const data = await sanityClient.fetch<HeroQueryResponse>(`
   *[_type == "hero"][0]{
-    items[] | order(article->publishedAt desc)[0..3] {  // ✅ limit + sort at the item level
+    items[] | order(article->publishedAt desc)[0..3] {
       article->{
         _id,
         title,
@@ -66,11 +65,11 @@ export async function getHeroStories(): Promise<Story[]> {
           name,
           image
         },
-        "mainImage": image,   // ✅ alias article image
+        mainImage,   // ✅ use schema field directly
         content
       },
       overrideTitle,
-      customImage              // ✅ hero-level custom image stays here
+      customImage
     }
   }
 `);
@@ -86,7 +85,6 @@ export async function getHeroStories(): Promise<Story[]> {
         : item.article.mainImage
           ? urlFor(item.article.mainImage)
           : null,
-
       category: item.article.category ?? null,
       publishedAt: item.article.publishedAt ?? null,
       createdAt: item.article._createdAt,
@@ -102,3 +100,6 @@ export async function getHeroStories(): Promise<Story[]> {
     })) ?? []
   );
 }
+// This function fetches hero stories from Sanity, processes the data to ensure
+// all fields are correctly typed, and returns an array of Story objects ready
+// for use in the application.

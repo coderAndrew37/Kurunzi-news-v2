@@ -15,7 +15,7 @@ export default function MiddleStoryCard({ story }: MiddleStoryCardProps) {
       <Link href={`/article/${story.slug}`}>
         <div className="relative w-full h-48 mb-4 rounded-xl overflow-hidden">
           <Image
-            src={story.img || "/placeholder.png"}
+            src={story.img || "/placeholder.jpeg"}
             alt={story.title}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-300"

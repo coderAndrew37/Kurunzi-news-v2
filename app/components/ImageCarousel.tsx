@@ -28,7 +28,7 @@ export default function ImageCarousel({ stories }: ImageCarouselProps) {
           src={
             typeof currentStory.img === "string"
               ? currentStory.img
-              : "/placeholder.png"
+              : "/placeholder.jpeg"
           }
           alt={currentStory.title}
           fill

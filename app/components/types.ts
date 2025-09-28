@@ -6,16 +6,16 @@ export interface Story {
   slug: string;
   title: string;
   subtitle?: string | null;
-  img: string | null; // maps from Sanity "image"
+  img: string | null; // ✅ always resolved URL string via urlFor
   category?: {
     title: string;
     slug: string;
   } | null;
-  publishedAt?: string | null; // editorial publish date
-  createdAt?: string; // system creation date (_createdAt)
-  updatedAt?: string; // system last updated date (_updatedAt)
+  publishedAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
   author?: Author | null;
-  content?: PortableTextBlock[] | null; // ✅ allow null
+  content?: PortableTextBlock[] | null;
   tags?: string[];
   readTime?: number | null;
   excerpt?: string | null;
@@ -23,6 +23,27 @@ export interface Story {
   isVideo?: boolean;
   duration?: string | null;
   relatedArticles?: RelatedArticle[];
+}
+
+export interface RawSanityArticle {
+  _id: string;
+  slug: string;
+  title: string;
+  subtitle?: string | null;
+  mainImage?: SanityImageSource | null; // ✅ full Sanity image object
+  categories?: {
+    title?: string;
+    slug?: { current: string };
+  }[];
+  publishedAt?: string | null;
+  author?: Author | null;
+  body?: PortableTextBlock[];
+  tags?: string[];
+  readTime?: number;
+  excerpt?: string | null;
+  isFeatured?: boolean;
+  isVideo?: boolean;
+  duration?: string | null;
 }
 
 export interface Subcategory {
@@ -74,8 +95,8 @@ export interface Author {
   name: string;
   role?: string;
   slug?: string;
-  image?: SanityImageSource;
-  bio?: string; // simplified from blockContent → we'll resolve to plain text/portable text
+  image?: SanityImageSource; // ✅ full image object
+  bio?: string;
   social?: {
     twitter?: string;
     facebook?: string;
@@ -103,7 +124,6 @@ export interface HeroItem {
 }
 
 export interface RelatedArticle {
-  // ✅ Always present
   id: string;
   slug: string;
   title: string;

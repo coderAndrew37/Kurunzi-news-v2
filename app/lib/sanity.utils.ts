@@ -1,37 +1,12 @@
 // app/lib/sanity.utils.ts
-import { Author, Story } from "@/app/components/types";
+import { RawSanityArticle, Story } from "@/app/components/types";
 import type {
-  PortableTextBlock,
-  PortableTextSpan,
-  PortableTextMarkDefinition,
   ArbitraryTypedObject,
+  PortableTextBlock,
+  PortableTextMarkDefinition,
+  PortableTextSpan,
 } from "@portabletext/types";
-
-export interface RawSanityArticle {
-  _id: string;
-  slug: string;
-  title: string;
-  subtitle?: string | null;
-  mainImage?: { asset?: { url?: string } };
-  categories?: {
-    title?: string;
-    slug?: { current: string };
-  }[];
-  publishedAt?: string | null;
-  author?: Author | null;
-  body?: PortableTextBlock<
-    PortableTextMarkDefinition,
-    ArbitraryTypedObject | PortableTextSpan,
-    string,
-    string
-  >[];
-  tags?: string[];
-  readTime?: number;
-  excerpt?: string | null;
-  isFeatured?: boolean;
-  isVideo?: boolean;
-  duration?: string | null;
-}
+import { urlFor } from "./getHeroStories";
 
 // Convert Portable Text blocks → plain string
 export function blockContentToPlainText(
@@ -84,7 +59,7 @@ export function transformSanityArticleToStory(raw: RawSanityArticle): Story {
     slug: raw.slug,
     title: raw.title,
     subtitle: raw.subtitle ?? null,
-    img: raw.mainImage?.asset?.url ?? "/placeholder-hero.jpg",
+    img: raw.mainImage ? urlFor(raw.mainImage) : "/placeholder-hero.jpeg", // ✅
     category:
       raw.categories && raw.categories.length
         ? {
