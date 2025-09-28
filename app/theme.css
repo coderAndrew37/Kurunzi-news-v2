@@ -1,0 +1,6 @@
+/* theme.css */
+@theme {
+  --color-primary: #1a2b4c; /* Deep navy */
+  --color-neutral: #fafaf7; /* Off-white */
+  --color-accent: #e67e22; /* Vibrant orange */
+}
