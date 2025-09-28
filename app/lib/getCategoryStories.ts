@@ -10,7 +10,7 @@ export const categoryStoriesQuery = groq`
     title,
     subtitle,
     "slug": slug.current,
-    "img": mainImage,
+    "mainImage": mainImage, 
     "categories": categories[]->{
       title,
       "slug": slug.current
@@ -54,7 +54,7 @@ export const categoriesWithStoriesQuery = groq`
         title,
         subtitle,
         "slug": slug.current,
-        "img": image,
+        "mainImage": mainImage, 
         category->{
           _id,
           title,
@@ -109,7 +109,7 @@ export const subcategoryStoriesQuery = groq`
     title,
     subtitle,
     "slug": slug.current,
-    "img": mainImage,
+    "mainImage": mainImage, 
     publishedAt,
     excerpt,
     readTime,
@@ -152,7 +152,7 @@ export const topicStoriesQuery = groq`
     title,
     subtitle,
     "slug": slug.current,
-    "img": image,
+    "mainImage": mainImage, 
     "category": category->{
       title,
       "slug": slug.current
