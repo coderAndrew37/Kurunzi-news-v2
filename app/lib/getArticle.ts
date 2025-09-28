@@ -16,7 +16,6 @@ export const articleQuery = `*[_type == "article" && slug.current == $slug][0]{
     name,
     image
   },
-  // categories is an array, so we deref and return the first one (or all if needed)
   "categories": categories[]->{
     _id,
     title,
@@ -32,7 +31,7 @@ export const articleQuery = `*[_type == "article" && slug.current == $slug][0]{
     title,
     "slug": slug.current
   },
-  "img": mainImage, 
+  mainImage,   // ✅ FIXED
   body
 }`;
 
@@ -47,10 +46,10 @@ export const latestArticlesQuery = `*[_type == "article" && slug.current != $cur
     "categories": categories[]->{
       title
     },
-   "img": mainImage
+    mainImage   // ✅ FIXED
 }`;
 
-// GROQ query for trending articles (using isFeatured as proxy for trending)
+// GROQ query for trending articles
 export const trendingArticlesQuery = `*[_type == "article" && slug.current != $currentSlug && isFeatured == true] 
   | order(publishedAt desc)[0...4] {
     _id,
@@ -60,5 +59,5 @@ export const trendingArticlesQuery = `*[_type == "article" && slug.current != $c
     "categories": categories[]->{
       title
     },
-    "img": mainImage
+    mainImage   // ✅ FIXED
 }`;
