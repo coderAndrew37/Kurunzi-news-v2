@@ -1,15 +1,39 @@
 import Link from "next/link";
 import Image from "next/image";
-import { sanityClient } from "@/app/lib/sanity.client";
 import { groq } from "next-sanity";
 import { urlFor } from "@/app/lib/sanity.image";
 import { Author } from "@/app/components/types";
 import { PortableText } from "@portabletext/react";
+import { serverClient } from "@/app/lib/sanity.server"; // ✅ server-only client
+import { Metadata } from "next";
 
 export const revalidate = 60; // ✅ ISR: revalidate every 60s
 
+// 🔑 SEO metadata
+export const metadata: Metadata = {
+  title: "Our Authors | Kurunzi News",
+  description:
+    "Meet the Kurunzi News authors bringing you independent Kenyan news, politics, sports and more.",
+  openGraph: {
+    title: "Our Authors | Kurunzi News",
+    description:
+      "Discover the team of journalists and contributors behind Kurunzi News.",
+    url: "https://kurunzinews.com/authors",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Our Authors | Kurunzi News",
+    description:
+      "Meet the Kurunzi News authors bringing you independent Kenyan news, politics, sports and more.",
+  },
+  alternates: {
+    canonical: "https://kurunzinews.com/authors",
+  },
+};
+
 export default async function AuthorsPage() {
-  const authors: Author[] = await sanityClient.fetch(
+  const authors: Author[] = await serverClient.fetch(
     groq`*[_type == "author"]{
       _id,
       name,

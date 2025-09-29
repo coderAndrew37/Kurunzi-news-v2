@@ -1,7 +1,7 @@
 import { RelatedArticle } from "../components/types";
 import { SanityArticle } from "../types/sanityArticle";
-import { sanityClient } from "./sanity.client";
 import { urlFor } from "./sanity.image";
+import { serverClient } from "./sanity.server";
 
 export async function getRelatedArticles(
   currentSlug: string,
@@ -14,7 +14,7 @@ export async function getRelatedArticles(
     : `*[_type == "breakingNews" && slug.current != $currentSlug && isActive == true] 
        | order(publishedAt desc)[0...$limit]`;
 
-  const articles = await sanityClient.fetch<SanityArticle[]>(query, {
+  const articles = await serverClient.fetch<SanityArticle[]>(query, {
     currentSlug,
     category,
     limit,

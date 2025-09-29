@@ -1,7 +1,7 @@
-import { sanityClient } from "./sanity.client";
+import { serverClient } from "./sanity.server";
 
 export async function getPopularTags(): Promise<string[]> {
-  const tags: string[] = await sanityClient.fetch(
+  const tags: string[] = await serverClient.fetch(
     `*[_type == "article" && defined(tags)][].tags[]`
   );
 

@@ -5,30 +5,29 @@ import {
   subcategoryStoriesQuery,
   topicStoriesQuery,
 } from "./getCategoryStories";
-import { sanityClient } from "./sanity.client";
-
+import { serverClient } from "./sanity.server";
 // Common data fetching
 export async function getCategoryData(slug: string) {
-  return await sanityClient.fetch(categoryWithSubcategoriesQuery, { slug });
+  return await serverClient.fetch(categoryWithSubcategoriesQuery, { slug });
 }
 
 export async function getCategoryArticles(category: string) {
-  return await sanityClient.fetch(categoryStoriesQuery, { category });
+  return await serverClient.fetch(categoryStoriesQuery, { category });
 }
 
 export async function getSubcategoryArticles(subcategory: string) {
-  return await sanityClient.fetch(subcategoryStoriesQuery, { subcategory });
+  return await serverClient.fetch(subcategoryStoriesQuery, { subcategory });
 }
 
 export async function getTopicArticles(topic: string) {
-  return await sanityClient.fetch(topicStoriesQuery, { topic });
+  return await serverClient.fetch(topicStoriesQuery, { topic });
 }
 
 // ✅ ISR: Generate static params
 // Category
 export async function generateCategoryStaticParams() {
   const query = groq`*[_type == "category"]{ "slug": slug.current }`;
-  const categories: { slug: string }[] = await sanityClient.fetch(query);
+  const categories: { slug: string }[] = await serverClient.fetch(query);
 
   return categories.map((c) => ({
     category: c.slug,
@@ -42,7 +41,7 @@ export async function generateSubcategoryStaticParams() {
     "subcategory": slug.current 
   }`;
   const subcategories: { category: string; subcategory: string }[] =
-    await sanityClient.fetch(query);
+    await serverClient.fetch(query);
 
   return subcategories.map((s) => ({
     category: s.category,
@@ -58,7 +57,7 @@ export async function generateTopicStaticParams() {
     "topic": slug.current
   }`;
   const topics: { category: string; subcategory: string; topic: string }[] =
-    await sanityClient.fetch(query);
+    await serverClient.fetch(query);
 
   return topics.map((t) => ({
     category: t.category,

@@ -1,6 +1,5 @@
 import { groq } from "next-sanity";
-import { sanityClient } from "./sanity.client";
-
+import { serverClient } from "./sanity.server";
 export const getAuthorBySlugQuery = groq`
   *[_type == "author" && slug.current == $slug][0]{
     _id,
@@ -29,15 +28,15 @@ export const getAuthorArticlesQuery = groq`
 `;
 
 export async function getAuthor(slug: string) {
-  return sanityClient.fetch(getAuthorBySlugQuery, { slug });
+  return serverClient.fetch(getAuthorBySlugQuery, { slug });
 }
 
 export async function getAuthorArticles(slug: string) {
-  return sanityClient.fetch(getAuthorArticlesQuery, { slug });
+  return serverClient.fetch(getAuthorArticlesQuery, { slug });
 }
 
 export async function getAllAuthorSlugs(): Promise<string[]> {
-  return await sanityClient.fetch(
+  return await serverClient.fetch(
     groq`*[_type == "author" && defined(slug.current)][].slug.current`
   );
 }

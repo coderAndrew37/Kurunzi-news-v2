@@ -1,6 +1,5 @@
 import { groq } from "next-sanity";
-import { sanityClient } from "./sanity.client";
-
+import { serverClient } from "./sanity.server";
 export async function getSearchSuggestions(query: string) {
   if (!query) return [];
 
@@ -41,5 +40,5 @@ export async function getSearchSuggestions(query: string) {
     }
   `;
 
-  return await sanityClient.fetch(searchQuery, { q: `${query}*` });
+  return await serverClient.fetch(searchQuery, { q: `${query}*` });
 }

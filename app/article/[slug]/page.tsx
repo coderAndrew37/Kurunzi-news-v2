@@ -1,4 +1,4 @@
-import { sanityClient } from "@/app/lib/sanity.client";
+import { serverClient } from "@/app/lib/sanity.server"; // ⬅️ use the server-only client
 import ArticlePageClient from "./ArticlePageClient";
 import { Story } from "@/app/components/types";
 import { transformSanityArticleToStory } from "@/app/lib/sanity.utils";
@@ -19,10 +19,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = params;
 
-  const rawArticle = await sanityClient.fetch(articleQuery, { slug });
+  const rawArticle = await serverClient.fetch(articleQuery, { slug }); // ⬅️ server client
   if (!rawArticle) {
     return {
-      title: "Article Not Found | Your Site Name",
+      title: "Article Not Found | Kurunzi News",
       description: "The article you're looking for doesn't exist.",
     };
   }
@@ -65,10 +65,10 @@ export default async function ArticlePage({
 }: {
   params: { slug: string };
 }) {
-  const { slug } = await params;
+  const { slug } = params;
 
   // Fetch article by slug
-  const rawArticle = await sanityClient.fetch(articleQuery, { slug });
+  const rawArticle = await serverClient.fetch(articleQuery, { slug }); // ⬅️ server client
 
   if (!rawArticle) {
     return (
@@ -93,7 +93,7 @@ export default async function ArticlePage({
   const article: Story = transformSanityArticleToStory(rawArticle);
 
   // Fetch latest articles
-  const rawLatestArticles = await sanityClient.fetch(latestArticlesQuery, {
+  const rawLatestArticles = await serverClient.fetch(latestArticlesQuery, {
     currentSlug: slug,
   });
   const latestArticles: Story[] = rawLatestArticles.map(
@@ -101,7 +101,7 @@ export default async function ArticlePage({
   );
 
   // Fetch trending articles
-  const rawTrendingArticles = await sanityClient.fetch(trendingArticlesQuery, {
+  const rawTrendingArticles = await serverClient.fetch(trendingArticlesQuery, {
     currentSlug: slug,
   });
   const trendingArticles: Story[] = rawTrendingArticles.map(

@@ -1,5 +1,4 @@
-import { sanityClient } from "./sanity.client";
-
+import { serverClient } from "./sanity.server";
 export interface News {
   _id: string;
   headline: string;
@@ -21,7 +20,7 @@ export interface BreakingNewsItem {
 
 export async function getBreakingNews(): Promise<BreakingNewsItem[]> {
   try {
-    const news = await sanityClient.fetch(`
+    const news = await serverClient.fetch(`
       *[_type == "breakingNews" && isActive == true && (expiresAt == null || expiresAt > now())] | order(priority desc, publishedAt desc) {
         headline,
         "slug": slug.current,
@@ -71,7 +70,7 @@ export async function getBreakingNewsBySlug(slug: string) {
     }
   `;
 
-  const news = await sanityClient.fetch(query, { slug });
+  const news = await serverClient.fetch(query, { slug });
   return news;
 }
 
@@ -86,6 +85,6 @@ export async function getLatestBreakingNews() {
     }
   `;
 
-  const news = await sanityClient.fetch(query);
+  const news = await serverClient.fetch(query);
   return news;
 }

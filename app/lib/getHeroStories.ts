@@ -1,8 +1,8 @@
 import { PortableTextBlock } from "@portabletext/types";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import { Story } from "../components/types";
-import { sanityClient } from "./sanity.client";
 import imageUrlBuilder from "@sanity/image-url";
+import { serverClient } from "./sanity.server";
 
 interface HeroQueryArticle {
   _id: string;
@@ -37,13 +37,13 @@ interface HeroQueryResponse {
   items: HeroQueryItem[];
 }
 
-const builder = imageUrlBuilder(sanityClient);
+const builder = imageUrlBuilder(serverClient);
 
 export const urlFor = (src: SanityImageSource) =>
   builder.image(src).width(1200).height(800).url();
 
 export async function getHeroStories(): Promise<Story[]> {
-  const data = await sanityClient.fetch<HeroQueryResponse>(`
+  const data = await serverClient.fetch<HeroQueryResponse>(`
   *[_type == "hero"][0]{
     items[] | order(article->publishedAt desc)[0..3] {
       article->{
