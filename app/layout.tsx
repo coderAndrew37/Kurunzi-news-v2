@@ -11,6 +11,7 @@ import { NavItem } from "./types/navigation";
 import BreakingNewsTicker from "./components/BreakingNewsTicker";
 import Header from "./navbar/NavBar";
 import EnhancedPageTransition from "./components/EnhancedPageTransition";
+import { Suspense } from "react"; // ✅ import Suspense
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -60,7 +61,9 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {/* Page Transition Component */}
-        <EnhancedPageTransition />
+        <Suspense fallback={null}>
+          <EnhancedPageTransition />
+        </Suspense>
 
         <TopAdBanner />
         <Header menuItems={menuItems} popularTags={popularTags} />
