@@ -8,6 +8,57 @@ import {
   latestArticlesQuery,
   trendingArticlesQuery,
 } from "@/app/lib/getArticle";
+import { Metadata } from "next";
+
+export const revalidate = 300; // Revalidate every 5 minutes
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}): Promise<Metadata> {
+  const { slug } = params;
+
+  const rawArticle = await sanityClient.fetch(articleQuery, { slug });
+  if (!rawArticle) {
+    return {
+      title: "Article Not Found | Your Site Name",
+      description: "The article you're looking for doesn't exist.",
+    };
+  }
+
+  const article: Story = transformSanityArticleToStory(rawArticle);
+
+  return {
+    title: `${article.title} | Kurunzi News`,
+    description: article.excerpt ?? article.subtitle ?? "",
+    openGraph: {
+      title: article.title,
+      description: article.excerpt ?? "",
+      url: `https://kurunzinews.com/article/${article.slug}`,
+      type: "article",
+      images: article.img
+        ? [
+            {
+              url: article.img,
+              width: 1200,
+              height: 630,
+              alt: article.title,
+            },
+          ]
+        : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: article.title,
+      description: article.excerpt ?? "",
+      images: article.img ? [article.img] : [],
+    },
+    alternates: {
+      canonical: `https://kurunzinews.com/article/${article.slug}`,
+    },
+  };
+}
 
 export default async function ArticlePage({
   params,
