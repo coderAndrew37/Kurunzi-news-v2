@@ -1,5 +1,4 @@
 import { Story } from "@/app/components/types";
-import { urlFor } from "@/app/lib/sanity.image";
 import { Clock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -55,15 +54,12 @@ export default function ArticleCard({
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
           <div className="relative aspect-[16/9] overflow-hidden">
             <Image
-              src={
-                article.img
-                  ? urlFor(article.img).url()
-                  : "/placeholder-image.jpg"
-              }
+              src={article.img ?? "/placeholder-image.jpg"}
               alt={article.title}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              className="object-cover group-hover:scale-110 transition-transform duration-300"
             />
+
             {categoryLabel && (
               <div className="absolute top-3 left-3">
                 <span className="bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded">
@@ -100,13 +96,12 @@ export default function ArticleCard({
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
         <div className="relative aspect-[16/9] overflow-hidden">
           <Image
-            src={
-              article.img ? urlFor(article.img).url() : "/placeholder-image.jpg"
-            }
+            src={article.img ?? "/placeholder-image.jpg"}
             alt={article.title}
             fill
             className="object-cover group-hover:scale-110 transition-transform duration-300"
           />
+
           {categoryLabel && (
             <div className="absolute top-3 left-3">
               <span className="bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded">

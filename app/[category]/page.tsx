@@ -11,6 +11,7 @@ import CategoryLayout from "./_components/CategoryLayout";
 import EmptyState from "./_components/EmptyState";
 import SubcategoriesGrid from "./_components/SUbCategoriesGrid";
 import { Story } from "../components/types";
+import { transformSanityArticleToStory } from "../lib/sanity.utils";
 
 // ISR: Generate static params at build time
 export async function generateStaticParams() {
@@ -30,7 +31,7 @@ export default async function CategoryPage({ params }: PageProps) {
   const { category: categorySlug } = await params;
 
   // Fetch data in parallel
-  const [currentCategory, articles, trendingArticles, latestArticles] =
+  const [currentCategory, rawArticles, trendingArticles, latestArticles] =
     await Promise.all([
       getCategoryData(categorySlug),
       getCategoryArticles(categorySlug),
@@ -39,6 +40,8 @@ export default async function CategoryPage({ params }: PageProps) {
     ]);
 
   if (!currentCategory) notFound();
+
+  const articles: Story[] = rawArticles.map(transformSanityArticleToStory);
 
   return (
     <CategoryLayout
