@@ -8,6 +8,7 @@ import {
 import { getLatestBreakingNews } from "@/app/lib/getBreakingNews";
 import CategoryLayout from "../_components/CategoryLayout";
 import { Story } from "@/app/components/types";
+import { transformSanityArticleToStory } from "@/app/lib/sanity.utils";
 
 // ISR: Generate static params at build time
 export async function generateStaticParams() {
@@ -36,21 +37,23 @@ export default async function SubcategoryPage({ params }: PageProps) {
 
   if (!articles) notFound();
 
+  const stories: Story[] = articles.map(transformSanityArticleToStory);
+
   return (
     <CategoryLayout
       title={subcategory}
       description={`Latest stories in ${subcategory} under ${category}`}
       breadcrumbs={[
         { href: "/", label: "Home" },
-        { href: `/category/${category}`, label: category },
+        { href: `/${category}`, label: category },
         { href: `/${category}/${subcategory}`, label: subcategory },
       ]}
-      articles={articles}
+      articles={stories}
       trendingArticles={trendingArticles}
       latestArticles={latestArticles}
     >
       {/* Custom articles grid */}
-      {articles.length > 0 ? (
+      {stories.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {articles.map((article: Story, index: number) => (
             <ArticleCard
