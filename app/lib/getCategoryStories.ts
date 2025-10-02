@@ -145,15 +145,24 @@ export const subcategoryStoriesQuery = groq`
 export const topicStoriesQuery = groq`
   *[
     _type == "article" &&
-    category->slug.current == $category &&
-    subcategory->slug.current == $subcategory &&
-    topic->slug.current == $topic
+    $topic == topic->slug.current
   ] | order(publishedAt desc)[0...20] {
     "id": _id,
     title,
     subtitle,
     "slug": slug.current,
     "mainImage": mainImage, 
+    publishedAt,
+    excerpt,
+    readTime,
+    isVideo,
+    duration,
+    isFeatured,
+    tags,
+    author->{
+      name,
+      image
+    },
     "category": category->{
       title,
       "slug": slug.current
@@ -166,19 +175,6 @@ export const topicStoriesQuery = groq`
       title,
       "slug": slug.current
     },
-    publishedAt,
-    "createdAt": _createdAt,
-    "updatedAt": _updatedAt,
-    excerpt,
-    readTime,
-    isVideo,
-    duration,
-    isFeatured,
-    tags,
-    author->{
-      name,
-      image
-    },
-    content
+    body
   }
 `;
