@@ -1,4 +1,3 @@
-// app/lib/sanity.utils.ts
 import { RawSanityArticle, Story } from "@/app/components/types";
 import type {
   ArbitraryTypedObject,

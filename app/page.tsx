@@ -69,6 +69,7 @@ export default async function Home() {
             key={cat._id}
             sectionTitle={cat.title}
             stories={catStories}
+            sectionSlug={cat.slug}
           />
         );
       })}

@@ -4,15 +4,18 @@ import ImageCarousel from "./ImageCarousel";
 import MiddleStoryCard from "./MiddleStoryCard";
 import TopStoriesList from "./TopStoriesList";
 import GridStoryCard from "./GridStoryCard";
+import Link from "next/link";
 
 interface SectionWithLeadProps {
   sectionTitle: string;
   stories: Story[];
+  sectionSlug: string;
 }
 
 export default function SectionWithLead({
   sectionTitle,
   stories,
+  sectionSlug,
 }: SectionWithLeadProps) {
   const showAd = true;
   const adPosition = 2;
@@ -26,7 +29,9 @@ export default function SectionWithLead({
     <div className="w-full max-w-7xl mx-auto px-4 py-8 bg-neutral-50">
       {/* Section header */}
       <div className="flex justify-between items-center mb-6 pb-3 border-b border-neutral-300">
-        <h2 className="text-2xl font-bold text-neutral-800">{sectionTitle}</h2>
+        <h2 className="text-2xl font-bold text-neutral-800 hover:text-blue-600">
+          <Link href={`/${sectionSlug}`}>{sectionTitle}</Link>
+        </h2>
         <div className="flex space-x-4">
           <button className="text-sm font-medium text-neutral-600 hover:text-blue-600">
             Follow

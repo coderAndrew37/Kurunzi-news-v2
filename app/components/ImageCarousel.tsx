@@ -21,6 +21,15 @@ export default function ImageCarousel({ stories }: ImageCarouselProps) {
   const currentStory = stories[currentIndex];
   const slug = currentStory.slug;
 
+  // Ensure we have category data
+  const category =
+    typeof currentStory.category === "string"
+      ? {
+          title: currentStory.category,
+          slug: String(currentStory.category).toLowerCase(),
+        }
+      : currentStory.category;
+
   return (
     <div className="relative h-full rounded-xl overflow-hidden">
       <div className="relative w-full h-full">
@@ -50,23 +59,32 @@ export default function ImageCarousel({ stories }: ImageCarouselProps) {
         )}
 
         <div className="absolute bottom-6 left-6 right-6">
-          {currentStory.category && (
-            <span className="text-blue-300 text-sm font-medium mb-2 block">
-              {typeof currentStory.category === "string"
-                ? currentStory.category
-                : currentStory.category?.title}
-            </span>
+          {category?.slug && (
+            <Link
+              href={`/${category.slug}`}
+              className="text-blue-300 text-sm font-medium mb-2 block hover:underline"
+            >
+              {category.title}
+            </Link>
           )}
+
           <h2 className="text-2xl font-bold text-white mb-2 line-clamp-2">
             {currentStory.title}
           </h2>
+
           {currentStory.excerpt && (
             <p className="text-gray-200 text-sm line-clamp-2">
               {currentStory.excerpt}
             </p>
           )}
+
           {slug ? (
-            <Link href={`/article/${slug}`}>Read story →</Link>
+            <Link
+              href={`/article/${slug}`}
+              className="text-sm text-blue-300 hover:underline"
+            >
+              Read story →
+            </Link>
           ) : (
             <span className="text-gray-400">No link</span>
           )}
