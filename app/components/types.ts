@@ -11,6 +11,14 @@ export interface Story {
     title: string;
     slug: string;
   } | null;
+  subcategory?: {
+    title: string;
+    slug: string;
+  } | null;
+  topic?: {
+    title: string;
+    slug: string;
+  } | null;
   publishedAt?: string | null;
   createdAt?: string;
   updatedAt?: string;
