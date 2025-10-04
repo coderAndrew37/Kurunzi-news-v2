@@ -53,12 +53,23 @@ export function estimateReadTimeFromBlocks(
 
 // Transform raw Sanity article → our Story type
 export function transformSanityArticleToStory(raw: RawSanityArticle): Story {
+  const imageUrl = raw.mainImage
+    ? urlFor(raw.mainImage)
+    : "/placeholder-hero.jpeg";
+
   return {
     id: raw._id,
     slug: raw.slug,
     title: raw.title,
     subtitle: raw.subtitle ?? null,
-    img: raw.mainImage ? urlFor(raw.mainImage) : "/placeholder-hero.jpeg", // ✅
+    img: imageUrl, // still used by existing components
+    featuredImage: raw.mainImage
+      ? {
+          url: imageUrl,
+          alt: raw.mainImage.alt ?? null,
+          caption: raw.mainImage.caption ?? null,
+        }
+      : null,
     category:
       raw.categories && raw.categories.length
         ? {

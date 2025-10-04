@@ -6,7 +6,12 @@ export interface Story {
   slug: string;
   title: string;
   subtitle?: string | null;
-  img: string | null; // ✅ always resolved URL string via urlFor
+  img: string | null; // still used for backward compatibility
+  featuredImage?: {
+    url: string;
+    alt?: string | null;
+    caption?: string | null;
+  } | null;
   category?: {
     title: string;
     slug: string;
@@ -33,12 +38,19 @@ export interface Story {
   relatedArticles?: RelatedArticle[];
 }
 
+/** Custom Sanity image type with metadata fields */
+export type SanityMainImage = SanityImageSource & {
+  alt?: string | null;
+  caption?: string | null;
+};
+
 export interface RawSanityArticle {
   _id: string;
   slug: string;
   title: string;
   subtitle?: string | null;
-  mainImage?: SanityImageSource | null; // ✅ full Sanity image object
+  mainImage?: SanityMainImage | null;
+  img?: string; // legacy field
   categories?: {
     title?: string;
     slug?: { current: string };
