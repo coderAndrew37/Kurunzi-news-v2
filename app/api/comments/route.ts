@@ -25,19 +25,19 @@ export async function GET(req: Request) {
   ] | order(createdAt desc) {
     _id,
     name,
-    coalesce(name, "Guest") as displayName,
+    "displayName": coalesce(name, "Guest"),
     text,
     likes,
     createdAt,
     avatar,
     "replies": *[
       _type == "comment" &&
-      parent._ref == ^._id &&
+      references(^._id) &&
       approved == true
     ] | order(createdAt asc) {
       _id,
       name,
-      coalesce(name, "Guest") as displayName,
+      "displayName": coalesce(name, "Guest"),
       text,
       likes,
       createdAt,

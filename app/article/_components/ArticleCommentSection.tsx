@@ -144,8 +144,8 @@ export default function CommentsSection({
                 className="flex space-x-3"
               >
                 <Image
-                  src={comment.avatar || "/avatar-placeholder.png"}
-                  alt={comment.name || "Anonymous"}
+                  src={comment.avatar || "/avatar-placeholder.jpeg"}
+                  alt={comment.name || "Guest"}
                   width={40}
                   height={40}
                   className="rounded-full"
@@ -174,8 +174,8 @@ export default function CommentsSection({
                           className="flex space-x-3 border-l-2 border-neutral-200 pl-3"
                         >
                           <Image
-                            src={reply.avatar || "/avatar-placeholder.png"}
-                            alt={reply.name || "Anonymous"}
+                            src={reply.avatar || "/avatar-placeholder.jpeg"}
+                            alt={reply.name || "Guest"}
                             width={32}
                             height={32}
                             className="rounded-full"
