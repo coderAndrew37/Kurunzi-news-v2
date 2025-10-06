@@ -161,7 +161,10 @@ export default function ArticlePageClient({
                   {/* Comments Section */}
                   {showComments && (
                     <div className="mt-8">
-                      <CommentsSection />
+                      <CommentsSection
+                        articleId={article.id}
+                        slug={article.slug}
+                      />
                     </div>
                   )}
                 </div>

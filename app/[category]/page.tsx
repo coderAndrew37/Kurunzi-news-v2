@@ -70,7 +70,7 @@ export async function generateMetadata({
 }
 
 export default async function CategoryPage({ params }: PageProps) {
-  const { category: categorySlug } = params;
+  const { category: categorySlug } = await params;
 
   // Fetch data in parallel
   const [currentCategory, rawArticles, trendingArticles, latestArticles] =

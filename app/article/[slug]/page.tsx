@@ -17,7 +17,7 @@ export async function generateMetadata({
 }: {
   params: { slug: string };
 }): Promise<Metadata> {
-  const { slug } = params;
+  const { slug } = await params;
 
   const rawArticle = await serverClient.fetch(articleQuery, { slug }); // ⬅️ server client
   if (!rawArticle) {
