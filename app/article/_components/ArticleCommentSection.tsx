@@ -5,18 +5,12 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, Send } from "lucide-react";
 
-interface Reply {
-  _id: string;
-  name: string;
-  avatar?: string;
-  text: string;
-  createdAt: string;
-}
-
-interface Comment extends Reply {
-  replies?: Reply[];
-  likes: number;
-}
+import { ArticleComment, CommentRequest } from "@/app/components/types";
+import {
+  fetchComments,
+  createOptimisticComment,
+  postComment,
+} from "../lib/comments";
 
 export default function CommentsSection({
   articleId,
@@ -25,57 +19,104 @@ export default function CommentsSection({
   articleId: string;
   slug: string;
 }) {
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [comments, setComments] = useState<ArticleComment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
 
-  // ✅ Load comments from Sanity
+  /** ✅ Load comments on mount */
   useEffect(() => {
-    const fetchComments = async () => {
-      try {
-        const res = await fetch(`/api/comments?slug=${slug}`);
-        const data = await res.json();
-        setComments(Array.isArray(data) ? data : []); // ✅ ensures array
-      } catch (err) {
-        console.error("Failed to load comments", err);
-        setComments([]); // ✅ fallback
-      } finally {
-        setLoading(false);
-      }
+    const loadComments = async () => {
+      setLoading(true);
+      const data = await fetchComments(slug);
+      setComments(data);
+      setLoading(false);
     };
-    fetchComments();
+    loadComments();
   }, [slug]);
 
-  // ✅ Submit new comment
+  /** ✅ Handle new top-level comment */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim()) return;
 
+    const payload: CommentRequest = {
+      articleId,
+      text: newComment.trim(),
+      name: "Guest",
+      avatar: "/avatar-placeholder.jpeg",
+    };
+
+    // ⚡ Optimistic update
+    const optimistic = createOptimisticComment(payload);
+    setComments((prev) => [optimistic, ...prev]);
+    setNewComment("");
     setPosting(true);
-    try {
-      const res = await fetch("/api/comments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          articleId,
-          text: newComment.trim(),
-          name: "Guest", // could later connect to user info if available
-          avatar: `/avatar-placeholder.jpeg`,
-        }),
-      });
 
-      if (!res.ok) throw new Error("Failed to post comment");
-      const saved = await res.json();
-
-      // ✅ Optimistically update UI
-      setComments((prev) => [saved, ...prev]);
-      setNewComment("");
-    } catch (err) {
-      console.error(err);
+    const saved = await postComment(payload);
+    if (saved) {
+      setComments((prev) =>
+        prev.map((c) => (c._id === optimistic._id ? saved : c))
+      );
+    } else {
+      // Roll back if failed
+      setComments((prev) => prev.filter((c) => c._id !== optimistic._id));
       alert("Failed to post comment. Please try again.");
-    } finally {
-      setPosting(false);
+    }
+
+    setPosting(false);
+  };
+
+  /** ✅ Handle reply posting */
+  const handleReply = async (parentId: string, text: string) => {
+    if (!text.trim()) return;
+
+    const payload: CommentRequest = {
+      articleId,
+      parentId,
+      text,
+      name: "Guest",
+      avatar: "/avatar-placeholder.jpeg",
+    };
+
+    const optimistic = createOptimisticComment(payload);
+
+    // Add optimistic reply
+    setComments((prev) =>
+      prev.map((c) =>
+        c._id === parentId
+          ? { ...c, replies: [...(c.replies || []), optimistic] }
+          : c
+      )
+    );
+
+    const saved = await postComment(payload);
+    if (saved) {
+      setComments((prev) =>
+        prev.map((c) =>
+          c._id === parentId
+            ? {
+                ...c,
+                replies: c.replies.map((r) =>
+                  r._id === optimistic._id ? saved : r
+                ),
+              }
+            : c
+        )
+      );
+    } else {
+      // Roll back if failed
+      setComments((prev) =>
+        prev.map((c) =>
+          c._id === parentId
+            ? {
+                ...c,
+                replies: c.replies.filter((r) => r._id !== optimistic._id),
+              }
+            : c
+        )
+      );
+      alert("Failed to post reply. Please try again.");
     }
   };
 
@@ -88,15 +129,13 @@ export default function CommentsSection({
 
       {/* ✅ Comment Form */}
       <form onSubmit={handleSubmit} className="flex space-x-3 mb-6">
-        <div className="flex-shrink-0">
-          <Image
-            src="/avatar-placeholder.jpeg"
-            alt="User avatar"
-            width={40}
-            height={40}
-            className="rounded-full"
-          />
-        </div>
+        <Image
+          src="/avatar-placeholder.jpeg"
+          alt="User avatar"
+          width={40}
+          height={40}
+          className="rounded-full"
+        />
         <div className="flex-1">
           <textarea
             value={newComment}
@@ -145,7 +184,7 @@ export default function CommentsSection({
               >
                 <Image
                   src={comment.avatar || "/avatar-placeholder.jpeg"}
-                  alt={comment.name || "Guest"}
+                  alt={comment.displayName || "Guest"}
                   width={40}
                   height={40}
                   className="rounded-full"
@@ -154,7 +193,7 @@ export default function CommentsSection({
                   <div className="bg-neutral-100 p-4 rounded-lg">
                     <div className="flex justify-between mb-2">
                       <h4 className="font-medium text-neutral-900">
-                        {comment.name || "Anonymous"}
+                        {comment.displayName || "Anonymous"}
                       </h4>
                       <span className="text-xs text-neutral-500">
                         {new Date(comment.createdAt).toLocaleString()}
@@ -165,7 +204,7 @@ export default function CommentsSection({
                     </p>
                   </div>
 
-                  {/* ✅ Nested Replies */}
+                  {/* ✅ Replies */}
                   {comment.replies && comment.replies.length > 0 && (
                     <div className="ml-10 mt-3 space-y-3">
                       {comment.replies.map((reply) => (
@@ -175,7 +214,7 @@ export default function CommentsSection({
                         >
                           <Image
                             src={reply.avatar || "/avatar-placeholder.jpeg"}
-                            alt={reply.name || "Guest"}
+                            alt={reply.displayName || "Guest"}
                             width={32}
                             height={32}
                             className="rounded-full"
@@ -183,7 +222,7 @@ export default function CommentsSection({
                           <div className="flex-1 bg-white p-3 rounded-lg border border-neutral-200">
                             <div className="flex justify-between mb-1">
                               <h5 className="font-medium text-sm text-neutral-900">
-                                {reply.name || "Anonymous"}
+                                {reply.displayName || "Anonymous"}
                               </h5>
                               <span className="text-xs text-neutral-500">
                                 {new Date(reply.createdAt).toLocaleString()}
@@ -197,6 +236,11 @@ export default function CommentsSection({
                       ))}
                     </div>
                   )}
+
+                  {/* ✅ Reply form (simple inline version) */}
+                  <ReplyForm
+                    onSubmit={(text) => handleReply(comment._id, text)}
+                  />
                 </div>
               </motion.div>
             ))}
@@ -204,5 +248,41 @@ export default function CommentsSection({
         </div>
       )}
     </div>
+  );
+}
+
+/** 🧩 Small inline reply form component */
+function ReplyForm({ onSubmit }: { onSubmit: (text: string) => void }) {
+  const [text, setText] = useState("");
+  const [posting, setPosting] = useState(false);
+
+  const handleReply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!text.trim()) return;
+    setPosting(true);
+    await onSubmit(text.trim());
+    setText("");
+    setPosting(false);
+  };
+
+  return (
+    <form onSubmit={handleReply} className="ml-10 mt-3">
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        rows={2}
+        placeholder="Write a reply..."
+        className="w-full p-2 border border-neutral-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      ></textarea>
+      <div className="mt-1 flex justify-end">
+        <button
+          type="submit"
+          disabled={!text.trim() || posting}
+          className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+        >
+          {posting ? "Replying..." : "Reply"}
+        </button>
+      </div>
+    </form>
   );
 }

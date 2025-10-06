@@ -160,3 +160,37 @@ export interface RelatedArticle {
     alt?: string;
   } | null;
 }
+
+/** ✅ Represents a single comment fetched from Sanity (with nested replies) */
+export interface ArticleComment {
+  _id: string;
+  name: string;
+  displayName: string;
+  email?: string | null;
+  avatar: string;
+  text: string;
+  likes: number;
+  createdAt: string;
+  approved: boolean;
+  replies: ArticleComment[]; // recursive structure
+}
+
+/** ✅ Represents the payload when submitting a new comment */
+export interface CommentRequest {
+  articleId: string;
+  parentId?: string;
+  name?: string;
+  email?: string;
+  text: string;
+  avatar?: string;
+}
+
+/** ✅ Represents the API response after posting or fetching comments */
+export type CommentResponse = ArticleComment | ArticleComment[];
+
+/** ✅ Helper type for component props */
+export interface CommentProps {
+  comments: ArticleComment[];
+  articleId: string;
+  onReply?: (parentId: string, text: string) => void;
+}
