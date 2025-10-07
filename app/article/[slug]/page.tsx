@@ -113,7 +113,7 @@ export default async function ArticlePage({
   const relatedArticlesRaw = await getRelatedArticles(
     article.slug,
     article.category?.title ?? article.category?.slug ?? "",
-    3
+    4
   );
 
   // transform RelatedArticle[] → Story[]

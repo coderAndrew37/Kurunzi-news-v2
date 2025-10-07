@@ -9,7 +9,7 @@ import { serverClient } from "./sanity.server";
 export async function getRelatedArticles(
   currentSlug: string,
   category?: string,
-  limit = 3
+  limit = 4
 ): Promise<RelatedArticle[]> {
   const query = `
     *[
@@ -28,14 +28,18 @@ export async function getRelatedArticles(
       excerpt,
       publishedAt,
       readTime,
-      "category": categories[0]->title,
+      "category": categories[0]->{
+        "title": title,
+        "slug": slug.current
+      },
       mainImage
     }
   `;
 
-  // 👇 Must be an ARRAY type (note the [] at the end)
   const articles = await serverClient.fetch<
-    (RawSanityArticle & { category?: string })[]
+    (RawSanityArticle & {
+      category?: { title?: string; slug?: string };
+    })[]
   >(query, {
     currentSlug,
     category,
@@ -46,11 +50,16 @@ export async function getRelatedArticles(
 
   return articles.map((article) => ({
     id: String(article._id),
-    slug: article.slug ?? "", // now `slug` is a string (thanks to GROQ alias)
+    slug: article.slug ?? "",
     title: article.title ?? "Untitled",
     excerpt: article.excerpt ?? "",
     img: article.mainImage ? urlFor(article.mainImage).url() : null,
-    category: article.category ?? "General",
+    category: article.category
+      ? {
+          title: article.category.title ?? "General",
+          slug: article.category.slug ?? "general",
+        }
+      : { title: "General", slug: "general" },
     date: article.publishedAt ?? "",
     readTime: article.readTime ?? 3,
     publishedAt: article.publishedAt ?? "",

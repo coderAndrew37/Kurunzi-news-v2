@@ -233,20 +233,23 @@ export default function ArticlePageClient({
                 )}
               </article>
 
-              {/* Newsletter Signup */}
-              <div className="mt-8">
-                <NewsletterSignup />
-              </div>
-
               {/* Related Articles */}
               {relatedArticles && relatedArticles.length > 0 && (
                 <div className="mt-8">
+                  <h2 className="text-xl font-bold text-amber-600 mb-4 pb-3 border-b border-gray-200">
+                    Also Read
+                  </h2>
                   <RelatedArticles
                     currentSlug={article.slug}
                     relatedArticles={relatedArticles}
                   />
                 </div>
               )}
+
+              {/* Newsletter Signup */}
+              <div className="mt-8">
+                <NewsletterSignup />
+              </div>
             </div>
 
             {/* Sidebar - Right Column */}
