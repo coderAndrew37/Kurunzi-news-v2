@@ -33,7 +33,7 @@ interface PageProps {
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const { category, subcategory, topic } = params;
+  const { category, subcategory, topic } = await params;
 
   return {
     title: `${topic} News | ${subcategory} | ${category} - Kurunzi News`,

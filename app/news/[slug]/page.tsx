@@ -71,6 +71,8 @@ export default async function BreakingNewsPage({
     3
   );
 
+  console.log("relatedArticles:", relatedArticles);
+
   const publishedDate = new Date(news.publishedAt);
   const updatedDate = news.updatedAt ? new Date(news.updatedAt) : null;
 

@@ -3,44 +3,43 @@
 import { Calendar, Clock, Eye } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { urlFor } from "@/app/lib/sanity.image";
-import { RelatedArticle } from "@/app/components/types";
+import { Story } from "@/app/components/types";
 
-export function ArticleCard({ article }: { article: RelatedArticle }) {
-  const publishedDate = new Date(article.publishedAt).toLocaleDateString(
-    "en-KE",
-    {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    }
-  );
+export function ArticleCard({ article }: { article: Story }) {
+  const publishedDate = article.publishedAt
+    ? new Date(article.publishedAt).toLocaleDateString("en-KE", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "—";
+
+  const imageUrl =
+    article.featuredImage?.url ?? article.img ?? "/placeholder.jpg";
 
   return (
     <article className="group bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
       {/* Image */}
-      {article.featuredImage && (
+      {imageUrl && (
         <div className="relative aspect-video overflow-hidden">
           <Image
-            src={
-              urlFor(article.featuredImage).width(400).height(300).url() ?? ""
-            }
+            src={imageUrl}
             alt={
-              article.featuredImage.alt ||
-              article.fullTitle ||
-              "Related article"
+              article.featuredImage?.alt || article.title || "Related article"
             }
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
+
           {/* Category Badge */}
-          {article.category && (
+          {article.category?.title && (
             <div className="absolute top-4 left-4">
               <span className="bg-white/90 text-gray-900 text-xs font-semibold px-3 py-1 rounded-full">
-                {article.category.toUpperCase()}
+                {article.category.title.toUpperCase()}
               </span>
             </div>
           )}
+
           {/* Overlay Gradient */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </div>
@@ -62,13 +61,13 @@ export function ArticleCard({ article }: { article: RelatedArticle }) {
           </div>
           <div className="flex items-center">
             <Eye className="h-4 w-4 mr-1" />
-            {article.views?.toLocaleString()}
+            {article.views?.toLocaleString() ?? 0}
           </div>
         </div>
 
         {/* Title */}
         <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors">
-          <Link href={`/news/${article.slug}`}>{article.fullTitle}</Link>
+          <Link href={`/article/${article.slug}`}>{article.title}</Link>
         </h3>
 
         {/* Excerpt */}
@@ -80,7 +79,7 @@ export function ArticleCard({ article }: { article: RelatedArticle }) {
 
         {/* Read More */}
         <Link
-          href={`/news/${article.slug}`}
+          href={`/article/${article.slug}`}
           className="inline-flex items-center text-blue-600 font-semibold hover:text-blue-700 transition-colors group/readmore"
         >
           Read Full Story

@@ -4,7 +4,7 @@ import NewsletterSignup from "@/app/components/NewsletterSignup";
 import { Story as Article } from "@/app/components/types";
 import { formatTimeAgo } from "@/app/components/utils/formatTimeAgo";
 import RelatedArticles from "@/app/news/_components/RelatedArticles";
-import { Calendar, Clock, Share2, User } from "lucide-react";
+import { Calendar, Clock, Share2, User, RefreshCw, MapPin } from "lucide-react";
 import { useState } from "react";
 import ArticleActions from "../_components/ArticleActions";
 import CommentsSection from "../_components/ArticleCommentSection";
@@ -17,10 +17,12 @@ export default function ArticlePageClient({
   article,
   latestArticles,
   trendingArticles,
+  relatedArticles,
 }: {
   article: Article;
   latestArticles?: Article[];
   trendingArticles?: Article[];
+  relatedArticles?: Article[];
 }) {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -36,6 +38,9 @@ export default function ArticlePageClient({
       : undefined,
     image: article.img ? [article.img] : [],
   };
+
+  const publishedDate = new Date(article.publishedAt ?? "");
+  const updatedDate = article.updatedAt ? new Date(article.updatedAt) : null;
 
   return (
     <>
@@ -57,27 +62,23 @@ export default function ArticlePageClient({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Main Article Content - Left Column */}
             <div className="lg:col-span-8">
-              {/* Breadcrumb */}
-              <Breadcrumbs article={article} />
+              {/* Breadcrumb - More subtle */}
+              <div className="mb-4">
+                <Breadcrumbs article={article} />
+              </div>
 
-              {/* Article Card */}
-              <article className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                {/* Article Header */}
-                <div className="border-b border-gray-100 px-6 py-4">
-                  <div className="flex items-center justify-between mb-3">
-                    {/* Category Badge */}
-                    {article.category && (
-                      <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+              {/* Article Card - Updated to match Citizen style */}
+              <article className="bg-white rounded-lg">
+                {/* Article Header - Compact like Citizen */}
+                <header className="mb-6 border-b border-gray-200 pb-4">
+                  {/* Category Badge - Top position */}
+                  {article.category && (
+                    <div className="mb-3">
+                      <span className="inline-block bg-red-600 text-white px-3 py-1 text-sm font-medium rounded">
                         {article.category.title}
                       </span>
-                    )}
-
-                    {/* Time Ago */}
-                    <div className="text-sm text-gray-500 flex items-center">
-                      <Clock className="h-4 w-4 mr-1" />
-                      {formatTimeAgo(new Date(article.publishedAt ?? ""))}
                     </div>
-                  </div>
+                  )}
 
                   {/* Title */}
                   <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
@@ -86,34 +87,14 @@ export default function ArticlePageClient({
 
                   {/* Subtitle/Excerpt */}
                   {article.subtitle && (
-                    <p className="text-xl text-gray-700 mb-6 leading-relaxed font-medium">
+                    <p className="text-lg text-gray-700 mb-4 leading-relaxed font-medium">
                       {article.subtitle}
                     </p>
                   )}
 
-                  {/* Meta Information */}
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                    <div className="flex items-center space-x-1">
-                      <Calendar className="h-4 w-4" />
-                      <span>
-                        {new Date(article.publishedAt ?? "").toLocaleDateString(
-                          "en-KE",
-                          {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          }
-                        )}
-                      </span>
-                    </div>
-
-                    {article.readTime && (
-                      <div className="flex items-center space-x-1">
-                        <Clock className="h-4 w-4" />
-                        <span>{article.readTime} min read</span>
-                      </div>
-                    )}
-
+                  {/* Meta Information - Compact row */}
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-2">
+                    {/* Author */}
                     {article.author && (
                       <div className="flex items-center space-x-1">
                         <User className="h-4 w-4" />
@@ -122,52 +103,134 @@ export default function ArticlePageClient({
                         </span>
                       </div>
                     )}
+
+                    {/* Published Date */}
+                    <div className="flex items-center space-x-1">
+                      <Calendar className="h-4 w-4" />
+                      <span>
+                        {publishedDate.toLocaleDateString("en-KE", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </span>
+                    </div>
+
+                    {/* Reading Time */}
+                    {article.readTime && (
+                      <div className="flex items-center space-x-1">
+                        <Clock className="h-4 w-4" />
+                        <span>{article.readTime} min read</span>
+                      </div>
+                    )}
+
+                    {/* Updated Date */}
+                    {updatedDate && (
+                      <div className="flex items-center space-x-1 text-blue-600">
+                        <RefreshCw className="h-4 w-4" />
+                        <span>Updated {formatTimeAgo(updatedDate)}</span>
+                      </div>
+                    )}
                   </div>
-                </div>
+
+                  {/* Location */}
+                  {article.location && (
+                    <div className="flex items-center space-x-1 text-sm text-gray-600 mb-2">
+                      <MapPin className="h-4 w-4" />
+                      <span>{article.location}</span>
+                    </div>
+                  )}
+
+                  {/* Time Ago - Secondary */}
+                  <div className="text-sm text-gray-500 flex items-center">
+                    <Clock className="h-4 w-4 mr-1" />
+                    {formatTimeAgo(publishedDate)}
+                  </div>
+                </header>
 
                 {/* Featured Image */}
-                <div className="px-6 py-6">
+                <div className="mb-6">
                   <ArticleImage article={article} />
                 </div>
 
+                {/* Share Buttons - Prominent like Citizen */}
+                <div className="flex items-center justify-between mb-8 p-4 bg-gray-50 rounded-lg border-l-4 border-red-600">
+                  <span className="text-sm font-semibold text-gray-700">
+                    Share this article:
+                  </span>
+                  <div className="flex items-center space-x-2">
+                    <Share2 className="h-4 w-4 text-gray-600" />
+                    <span className="text-sm text-gray-600">Share</span>
+                  </div>
+                </div>
+
                 {/* Article Content */}
-                <div className="px-6 pb-6">
+                <div className="mb-8">
                   <ArticleContent article={article} />
+                </div>
 
-                  {/* Tags */}
+                {/* Tags */}
+                <div className="mb-8 pt-6 border-t border-gray-200">
                   <TagsList tags={article.tags} />
+                </div>
 
-                  {/* Article Actions */}
-                  <div className="mt-8 pt-6 border-t border-gray-200">
-                    <ArticleActions
-                      isBookmarked={isBookmarked}
-                      setIsBookmarked={setIsBookmarked}
-                      showComments={showComments}
-                      setShowComments={setShowComments}
-                    />
+                {/* Sources - If available */}
+                {article.sources && article.sources?.length > 0 && (
+                  <div className="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <h3 className="font-semibold text-blue-900 mb-3">
+                      Sources
+                    </h3>
+                    <ul className="space-y-2 text-sm text-blue-800">
+                      {article.sources &&
+                        article.sources.map((source, index) => (
+                          <li key={index} className="flex items-start">
+                            <span className="text-blue-600 mr-2">•</span>
+                            <a
+                              href={source.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline hover:text-blue-900"
+                            >
+                              {source.title}
+                            </a>
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                )}
 
-                    {/* Share Section */}
-                    <div className="flex items-center justify-between mt-6 p-4 bg-gray-50 rounded-lg">
-                      <span className="text-sm font-medium text-gray-700">
-                        Share this article:
-                      </span>
-                      <div className="flex items-center space-x-2">
+                {/* Article Actions */}
+                <div className="mt-8 pt-6 border-t border-gray-200">
+                  <ArticleActions
+                    isBookmarked={isBookmarked}
+                    setIsBookmarked={setIsBookmarked}
+                    showComments={showComments}
+                    setShowComments={setShowComments}
+                  />
+
+                  {/* Share Again at Bottom */}
+                  <div className="flex items-center justify-center mt-6 p-4 bg-gray-50 rounded-lg">
+                    <div className="text-center">
+                      <p className="text-sm font-medium text-gray-700 mb-2">
+                        Found this article informative? Share it:
+                      </p>
+                      <div className="flex items-center space-x-2 justify-center">
                         <Share2 className="h-4 w-4 text-gray-600" />
                         <span className="text-sm text-gray-600">Share</span>
                       </div>
                     </div>
                   </div>
-
-                  {/* Comments Section */}
-                  {showComments && (
-                    <div className="mt-8">
-                      <CommentsSection
-                        articleId={article.id}
-                        slug={article.slug}
-                      />
-                    </div>
-                  )}
                 </div>
+
+                {/* Comments Section */}
+                {showComments && (
+                  <div className="mt-8">
+                    <CommentsSection
+                      articleId={article.id}
+                      slug={article.slug}
+                    />
+                  </div>
+                )}
               </article>
 
               {/* Newsletter Signup */}
@@ -176,12 +239,14 @@ export default function ArticlePageClient({
               </div>
 
               {/* Related Articles */}
-              <div className="mt-8">
-                <RelatedArticles
-                  currentSlug={article.slug}
-                  relatedArticles={article.relatedArticles ?? []}
-                />
-              </div>
+              {relatedArticles && relatedArticles.length > 0 && (
+                <div className="mt-8">
+                  <RelatedArticles
+                    currentSlug={article.slug}
+                    relatedArticles={relatedArticles}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Sidebar - Right Column */}
@@ -199,9 +264,9 @@ export default function ArticlePageClient({
                       className="block group hover:bg-gray-50 p-3 rounded-lg transition-colors"
                     >
                       <div className="flex items-start space-x-3">
-                        <div className="flex-shrink-0 w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
+                        <div className="flex-shrink-0 w-2 h-2 bg-red-600 rounded-full mt-2"></div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-gray-900 group-hover:text-blue-600 line-clamp-2 leading-snug">
+                          <h3 className="font-medium text-gray-900 group-hover:text-red-600 line-clamp-2 leading-snug">
                             {item.title}
                           </h3>
                           <div className="flex items-center space-x-2 mt-1 text-xs text-gray-500">
@@ -212,7 +277,7 @@ export default function ArticlePageClient({
                             {item.category && (
                               <>
                                 <span>•</span>
-                                <span className="bg-gray-100 px-2 py-0.5 rounded">
+                                <span className="bg-gray-100 px-2 py-0.5 rounded text-xs">
                                   {item.category.title}
                                 </span>
                               </>
@@ -237,10 +302,10 @@ export default function ArticlePageClient({
                       href={`/article/${item.slug}`}
                       className="flex items-center space-x-3 group hover:bg-gray-50 p-3 rounded-lg transition-colors"
                     >
-                      <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full text-sm font-bold flex items-center justify-center">
+                      <span className="flex-shrink-0 w-6 h-6 bg-red-600 text-white rounded-full text-sm font-bold flex items-center justify-center">
                         {index + 1}
                       </span>
-                      <h3 className="font-medium text-gray-900 group-hover:text-blue-600 line-clamp-2 text-sm leading-snug">
+                      <h3 className="font-medium text-gray-900 group-hover:text-red-600 line-clamp-2 text-sm leading-snug">
                         {item.title}
                       </h3>
                     </a>
@@ -250,7 +315,7 @@ export default function ArticlePageClient({
 
               {/* Sidebar Ad */}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                <div className="w-full h-60 bg-gray-200 flex items-center justify-center">
+                <div className="w-full h-60 bg-gray-200 flex items-center justify-center rounded">
                   <span className="text-gray-500">Sidebar Ad</span>
                 </div>
               </div>

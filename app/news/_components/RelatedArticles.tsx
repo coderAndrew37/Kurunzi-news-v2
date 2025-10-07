@@ -1,9 +1,9 @@
-import { RelatedArticle } from "@/app/components/types";
+import { Story } from "@/app/components/types";
 import { ArticleCard } from "./ArticleCard";
 
 interface RelatedArticlesProps {
   currentSlug: string;
-  relatedArticles: RelatedArticle[];
+  relatedArticles: Story[];
   limit?: number;
 }
 
@@ -14,7 +14,6 @@ export default function RelatedArticles({
 }: RelatedArticlesProps) {
   if (!relatedArticles || relatedArticles.length === 0) return null;
 
-  // Exclude current article
   const filtered = relatedArticles
     .filter((a) => a.slug !== currentSlug)
     .slice(0, limit);

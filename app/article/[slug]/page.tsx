@@ -1,5 +1,6 @@
 import { serverClient } from "@/app/lib/sanity.server"; // ⬅️ use the server-only client
 import ArticlePageClient from "./ArticlePageClient";
+import { getRelatedArticles } from "@/app/lib/getRelatedArticles";
 import { Story } from "@/app/components/types";
 import { transformSanityArticleToStory } from "@/app/lib/sanity.utils";
 import Link from "next/link";
@@ -108,11 +109,59 @@ export default async function ArticlePage({
     transformSanityArticleToStory
   );
 
+  // Fetch related articles based on category
+  const relatedArticlesRaw = await getRelatedArticles(
+    article.slug,
+    article.category?.title ?? article.category?.slug ?? "",
+    3
+  );
+
+  // transform RelatedArticle[] → Story[]
+  const relatedArticles: Story[] = relatedArticlesRaw.map((r) => ({
+    id: r.id,
+    slug: r.slug,
+    title: r.title,
+    subtitle: null,
+    img: r.img ?? null,
+    featuredImage: r.featuredImage
+      ? {
+          url: r.featuredImage.url,
+          alt: r.featuredImage.alt ?? null,
+          caption: null,
+        }
+      : null,
+    category: r.category
+      ? typeof r.category === "string"
+        ? { title: r.category, slug: r.category }
+        : { title: r.category.title, slug: r.category.slug }
+      : null,
+    subcategory: null,
+    topic: null,
+    publishedAt: r.publishedAt ?? null,
+    createdAt: undefined,
+    updatedAt: undefined,
+    author: null,
+    content: null,
+    tags: [],
+    readTime: r.readTime ?? null,
+    excerpt: r.excerpt ?? null,
+    isFeatured: false,
+    isVideo: false,
+    duration: null,
+    relatedArticles: [],
+    sources: [],
+    location: null,
+    views: r.views ?? null,
+  }));
+
+  // console.log("Related articles:", relatedArticles);
+
   return (
     <ArticlePageClient
       article={article}
       latestArticles={latestArticles}
       trendingArticles={trendingArticles}
+      relatedArticles={relatedArticles}
     />
   );
 }

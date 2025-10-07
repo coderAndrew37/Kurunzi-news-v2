@@ -36,6 +36,9 @@ export interface Story {
   isVideo?: boolean;
   duration?: string | null;
   relatedArticles?: RelatedArticle[];
+  sources?: { title: string; url: string }[];
+  location?: string | null;
+  views?: number | null;
 }
 
 /** Custom Sanity image type with metadata fields */
@@ -147,17 +150,18 @@ export interface RelatedArticle {
   id: string;
   slug: string;
   title: string;
-  excerpt?: string;
+  excerpt?: string | null;
   img?: string | null;
-  category?: string;
-  date?: string;
-  readTime?: number;
-  views?: number;
-  publishedAt: string;
-  fullTitle: string;
+  category?: {
+    title: string;
+    slug: string;
+  } | null;
+  publishedAt?: string | null;
+  readTime?: number | null;
+  views?: number | null;
   featuredImage?: {
     url: string;
-    alt?: string;
+    alt?: string | null;
   } | null;
 }
 
