@@ -38,6 +38,24 @@ export async function getBreakingNews(): Promise<BreakingNewsItem[]> {
   }
 }
 
+interface SanityTrendingArticle {
+  _id: string;
+  title: string;
+  slug: string;
+  excerpt?: string | null;
+  publishedAt?: string | null;
+  views?: number | null;
+  readTime?: number | null;
+  category?: {
+    title: string;
+    slug: string;
+  } | null;
+  mainImage?: {
+    asset?: { _ref: string };
+    alt?: string | null;
+  } | null;
+}
+
 export async function getTrendingArticles(
   limit = 6
 ): Promise<RelatedArticle[]> {
@@ -59,19 +77,29 @@ export async function getTrendingArticles(
     }
   `;
 
-  const articles = await serverClient.fetch(query, { limit });
+  const articles = await serverClient.fetch<SanityTrendingArticle[]>(query, {
+    limit,
+  });
 
-  return articles.map((a: Story) => ({
-    id: a.id,
-    slug: a.slug,
-    title: a.title,
-    excerpt: a.excerpt,
-    publishedAt: a.publishedAt,
-    views: a.views ?? 0,
-    readTime: a.readTime ?? 3,
-    category: a.category ?? null,
-    img: a.featuredImage
-      ? urlFor(a.featuredImage).width(400).height(300).url()
-      : null,
-  }));
+  return articles.map(
+    (a): RelatedArticle => ({
+      id: a._id,
+      slug: a.slug,
+      title: a.title,
+      excerpt: a.excerpt ?? null,
+      publishedAt: a.publishedAt ?? null,
+      views: a.views ?? 0,
+      readTime: a.readTime ?? 3,
+      category: a.category ?? null,
+      img: a.mainImage
+        ? urlFor(a.mainImage).width(400).height(300).url()
+        : null,
+      featuredImage: a.mainImage
+        ? {
+            url: urlFor(a.mainImage).width(800).height(600).url(),
+            alt: a.mainImage?.alt ?? null,
+          }
+        : null,
+    })
+  );
 }

@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-
 import {
   getCategoryData,
   getCategoryArticles,
@@ -9,9 +8,10 @@ import ArticleCard from "./_components/ArticleCard";
 import CategoryLayout from "./_components/CategoryLayout";
 import EmptyState from "./_components/EmptyState";
 import SubcategoriesGrid from "./_components/SUbCategoriesGrid";
-import { Story } from "@/app/components/types";
+import { Story, RelatedArticle } from "@/app/components/types";
 import { transformSanityArticleToStory } from "@/app/lib/sanity.utils";
 import { getLatestArticlesByCategory } from "@/app/lib/getLatestArticlesByCategory";
+import { getTrendingArticles } from "@/app/lib/getTrendingArticles";
 import type { Metadata } from "next";
 
 // ISR: Generate static params at build time
@@ -29,17 +29,17 @@ interface PageProps {
 }
 
 /**
- * SEO metadata for category pages
+ * ✅ SEO metadata for category pages
  */
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const { category } = await params;
+  const { category } = params;
   const currentCategory = await getCategoryData(category);
 
   if (!currentCategory) {
     return {
-      title: "Category Not Found | MySite",
+      title: "Category Not Found | Kurunzi News",
       description: "This category could not be found.",
     };
   }
@@ -69,20 +69,52 @@ export async function generateMetadata({
   };
 }
 
+/**
+ * ✅ Category Page with Trending + Latest integration
+ */
 export default async function CategoryPage({ params }: PageProps) {
-  const { category: categorySlug } = await params;
+  const { category: categorySlug } = params;
 
-  // fetch main category + articles + latest-in-category in parallel
-  const [currentCategory, rawArticles, latestArticles] = await Promise.all([
-    getCategoryData(categorySlug),
-    getCategoryArticles(categorySlug),
-    getLatestArticlesByCategory(categorySlug, 6),
-  ]);
+  // Fetch everything in parallel for performance
+  const [currentCategory, rawArticles, latestArticles, trendingArticles] =
+    await Promise.all([
+      getCategoryData(categorySlug),
+      getCategoryArticles(categorySlug),
+      getLatestArticlesByCategory(categorySlug, 6),
+      getTrendingArticles(6),
+    ]);
 
   if (!currentCategory) notFound();
 
-  // normalize main article list
+  // Normalize articles to your Story model
   const articles: Story[] = rawArticles.map(transformSanityArticleToStory);
+
+  // Map trending & latest to Story shape (if needed)
+  const trendingStories: Story[] = trendingArticles.map(
+    (a: RelatedArticle) => ({
+      id: a.id,
+      slug: a.slug,
+      title: a.title,
+      excerpt: a.excerpt ?? null,
+      img: a.img ?? null,
+      category: a.category ?? null,
+      publishedAt: a.publishedAt ?? null,
+      views: a.views ?? 0,
+      readTime: a.readTime ?? 3,
+    })
+  );
+
+  const latestStories: Story[] = latestArticles.map((a: RelatedArticle) => ({
+    id: a.id,
+    slug: a.slug,
+    title: a.title,
+    excerpt: a.excerpt ?? null,
+    img: a.img ?? null,
+    category: a.category ?? null,
+    publishedAt: a.publishedAt ?? null,
+    views: a.views ?? 0,
+    readTime: a.readTime ?? 3,
+  }));
 
   return (
     <CategoryLayout
@@ -93,8 +125,8 @@ export default async function CategoryPage({ params }: PageProps) {
         { href: `/${categorySlug}`, label: currentCategory.title },
       ]}
       articles={articles}
-      trendingArticles={[]} // wire this later to your trending fetch
-      latestArticles={latestArticles}
+      trendingArticles={trendingStories}
+      latestArticles={latestStories}
       showSubcategories={<SubcategoriesGrid category={currentCategory} />}
     >
       {articles.length > 0 ? (

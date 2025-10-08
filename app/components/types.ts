@@ -41,6 +41,25 @@ export interface Story {
   views?: number | null;
 }
 
+export interface RelatedArticle {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt?: string | null;
+  img?: string | null;
+  category?: {
+    title: string;
+    slug: string;
+  } | null;
+  publishedAt?: string | null;
+  readTime?: number | null;
+  views?: number | null;
+  featuredImage?: {
+    url: string;
+    alt?: string | null;
+  } | null;
+}
+
 /** Custom Sanity image type with metadata fields */
 export type SanityMainImage = SanityImageSource & {
   alt?: string | null;
@@ -144,25 +163,6 @@ export interface HeroItem {
   author?: Author;
   image?: SanityImageSource;
   content?: PortableTextBlock[];
-}
-
-export interface RelatedArticle {
-  id: string;
-  slug: string;
-  title: string;
-  excerpt?: string | null;
-  img?: string | null;
-  category?: {
-    title: string;
-    slug: string;
-  } | null;
-  publishedAt?: string | null;
-  readTime?: number | null;
-  views?: number | null;
-  featuredImage?: {
-    url: string;
-    alt?: string | null;
-  } | null;
 }
 
 /** ✅ Represents a single comment fetched from Sanity (with nested replies) */

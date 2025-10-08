@@ -1,16 +1,16 @@
-import { notFound } from "next/navigation";
-import ArticleCard from "../../_components/ArticleCard";
-import EmptyState from "../../_components/EmptyState";
+import { RelatedArticle, Story } from "@/app/components/types";
 import {
-  getTopicArticles,
   generateTopicStaticParams,
+  getTopicArticles,
 } from "@/app/lib/categoryUtils";
-import { Story } from "@/app/components/types";
+import { getLatestArticlesByCategory } from "@/app/lib/getLatestArticlesByCategory";
 import { getTrendingArticles } from "@/app/lib/getTrendingArticles";
-import CategoryLayout from "../../_components/CategoryLayout";
 import { transformSanityArticleToStory } from "@/app/lib/sanity.utils";
 import type { Metadata } from "next";
-import { getLatestArticles } from "@/app/lib/getLatestArticles";
+import { notFound } from "next/navigation";
+import ArticleCard from "../../_components/ArticleCard";
+import CategoryLayout from "../../_components/CategoryLayout";
+import EmptyState from "../../_components/EmptyState";
 
 // ISR: Generate static params at build time
 export async function generateStaticParams() {
@@ -34,7 +34,7 @@ interface PageProps {
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const { category, subcategory, topic } = await params;
+  const { category, subcategory, topic } = params;
 
   return {
     title: `${topic} News | ${subcategory} | ${category} - Kurunzi News`,
@@ -55,19 +55,51 @@ export async function generateMetadata({
   };
 }
 
+/**
+ * ✅ Topic Page
+ */
 export default async function TopicPage({ params }: PageProps) {
   const { category, subcategory, topic } = params;
 
-  // Fetch data in parallel
+  // Fetch everything in parallel
   const [rawArticles, trendingArticles, latestArticles] = await Promise.all([
     getTopicArticles(topic),
-    getTrendingArticles(),
-    getLatestArticles(),
+    getTrendingArticles(6),
+    getLatestArticlesByCategory(category, 6),
   ]);
 
   if (!rawArticles) notFound();
 
+  // Normalize main article list
   const articles: Story[] = rawArticles.map(transformSanityArticleToStory);
+
+  // Normalize trending articles
+  const trendingStories: Story[] = trendingArticles.map(
+    (a: RelatedArticle) => ({
+      id: a.id,
+      slug: a.slug,
+      title: a.title,
+      excerpt: a.excerpt ?? null,
+      img: a.img ?? null,
+      category: a.category ?? null,
+      publishedAt: a.publishedAt ?? null,
+      views: a.views ?? 0,
+      readTime: a.readTime ?? 3,
+    })
+  );
+
+  // Normalize latest articles
+  const latestStories: Story[] = latestArticles.map((a: RelatedArticle) => ({
+    id: a.id,
+    slug: a.slug,
+    title: a.title,
+    excerpt: a.excerpt ?? null,
+    img: a.img ?? null,
+    category: a.category ?? null,
+    publishedAt: a.publishedAt ?? null,
+    views: a.views ?? 0,
+    readTime: a.readTime ?? 3,
+  }));
 
   return (
     <CategoryLayout
@@ -80,10 +112,9 @@ export default async function TopicPage({ params }: PageProps) {
         { href: `/${category}/${subcategory}/${topic}`, label: topic },
       ]}
       articles={articles}
-      trendingArticles={trendingArticles}
-      latestArticles={latestArticles}
+      trendingArticles={trendingStories}
+      latestArticles={latestStories}
     >
-      {/* Custom articles grid */}
       {articles.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {articles.map((article: Story, index: number) => (
