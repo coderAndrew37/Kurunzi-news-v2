@@ -3,7 +3,7 @@ import NewsletterSignup from "@/app/components/NewsletterSignup";
 import TrendingNews from "@/app/components/TrendingNews";
 import { formatDate } from "@/app/components/utils/formatDate";
 import { formatTimeAgo } from "@/app/components/utils/formatTimeAgo";
-import { getBreakingNewsBySlug } from "@/app/lib/getBreakingNews";
+import { getBreakingNewsBySlug } from "@/app/lib/getTrendingArticles";
 import { getRelatedArticles } from "@/app/lib/getRelatedArticles"; // <-- new import
 import { urlFor } from "@/app/lib/sanity.image";
 import TopAdBanner from "@/app/TopAdBanner";

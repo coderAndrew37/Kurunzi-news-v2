@@ -6,7 +6,7 @@ import {
   generateTopicStaticParams,
 } from "@/app/lib/categoryUtils";
 import { Story } from "@/app/components/types";
-import { getLatestBreakingNews } from "@/app/lib/getBreakingNews";
+import { getLatestBreakingNews } from "@/app/lib/getTrendingArticles";
 import CategoryLayout from "../../_components/CategoryLayout";
 import { transformSanityArticleToStory } from "@/app/lib/sanity.utils";
 import type { Metadata } from "next";

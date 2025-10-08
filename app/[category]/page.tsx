@@ -5,13 +5,13 @@ import {
   getCategoryArticles,
   generateCategoryStaticParams,
 } from "@/app/lib/categoryUtils";
-import { getLatestBreakingNews } from "../lib/getBreakingNews";
 import ArticleCard from "./_components/ArticleCard";
 import CategoryLayout from "./_components/CategoryLayout";
 import EmptyState from "./_components/EmptyState";
 import SubcategoriesGrid from "./_components/SUbCategoriesGrid";
-import { Story } from "../components/types";
-import { transformSanityArticleToStory } from "../lib/sanity.utils";
+import { Story } from "@/app/components/types";
+import { transformSanityArticleToStory } from "@/app/lib/sanity.utils";
+import { getLatestArticlesByCategory } from "@/app/lib/getLatestArticlesByCategory";
 import type { Metadata } from "next";
 
 // ISR: Generate static params at build time
@@ -29,7 +29,7 @@ interface PageProps {
 }
 
 /**
- * ✅ SEO metadata for category pages
+ * SEO metadata for category pages
  */
 export async function generateMetadata({
   params,
@@ -72,17 +72,16 @@ export async function generateMetadata({
 export default async function CategoryPage({ params }: PageProps) {
   const { category: categorySlug } = await params;
 
-  // Fetch data in parallel
-  const [currentCategory, rawArticles, trendingArticles, latestArticles] =
-    await Promise.all([
-      getCategoryData(categorySlug),
-      getCategoryArticles(categorySlug),
-      getLatestBreakingNews(),
-      getLatestBreakingNews(),
-    ]);
+  // fetch main category + articles + latest-in-category in parallel
+  const [currentCategory, rawArticles, latestArticles] = await Promise.all([
+    getCategoryData(categorySlug),
+    getCategoryArticles(categorySlug),
+    getLatestArticlesByCategory(categorySlug, 6),
+  ]);
 
   if (!currentCategory) notFound();
 
+  // normalize main article list
   const articles: Story[] = rawArticles.map(transformSanityArticleToStory);
 
   return (
@@ -94,11 +93,10 @@ export default async function CategoryPage({ params }: PageProps) {
         { href: `/${categorySlug}`, label: currentCategory.title },
       ]}
       articles={articles}
-      trendingArticles={trendingArticles}
+      trendingArticles={[]} // wire this later to your trending fetch
       latestArticles={latestArticles}
       showSubcategories={<SubcategoriesGrid category={currentCategory} />}
     >
-      {/* Custom articles grid */}
       {articles.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {articles.map((article: Story, index: number) => (

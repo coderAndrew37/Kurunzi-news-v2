@@ -5,7 +5,7 @@ import {
   getSubcategoryArticles,
   generateSubcategoryStaticParams,
 } from "@/app/lib/categoryUtils";
-import { getLatestBreakingNews } from "@/app/lib/getBreakingNews";
+import { getLatestBreakingNews } from "@/app/lib/getTrendingArticles";
 import CategoryLayout from "../_components/CategoryLayout";
 import { Story } from "@/app/components/types";
 import { transformSanityArticleToStory } from "@/app/lib/sanity.utils";

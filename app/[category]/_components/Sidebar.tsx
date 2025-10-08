@@ -1,17 +1,24 @@
-import LatestBreakingNews from "@/app/components/LatestBreakingNews";
+// app/news/_components/Sidebar.tsx
+import LatestArticlesSidebar from "@/app/article/_components/LatestArticlesSidebar";
 import TrendingNews from "@/app/components/TrendingNews";
 import { Story } from "@/app/components/types";
 import Image from "next/image";
+
 interface CategorySidebarProps {
   trendingArticles: Story[];
   latestArticles: Story[];
 }
 
-export default function CategorySidebar({}: CategorySidebarProps) {
+export default function CategorySidebar({
+  latestArticles,
+}: CategorySidebarProps) {
   return (
     <div className="space-y-6">
+      {/* keep the existing Trending component (wire later if needed) */}
       <TrendingNews />
-      <LatestBreakingNews />
+
+      {/* New: Latest articles for this category */}
+      <LatestArticlesSidebar latestArticles={latestArticles} title="Latest" />
 
       {/* Ad Banner */}
       <Image

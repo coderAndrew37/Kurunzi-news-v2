@@ -1,4 +1,5 @@
-import { getBreakingNews } from "../lib/getBreakingNews";
+import Link from "next/link";
+import { getBreakingNews } from "../lib/getTrendingArticles";
 
 export default async function BreakingNewsTicker() {
   const newsItems = await getBreakingNews();
@@ -21,12 +22,12 @@ export default async function BreakingNewsTicker() {
           <div className="flex whitespace-nowrap animate-marquee">
             {[...newsItems, ...newsItems].map((item, index) => (
               <div key={index} className="inline-flex items-center mr-8">
-                <a
+                <Link
                   href={item.href}
                   className="text-sm font-medium hover:underline"
                 >
                   {item.headline}
-                </a>
+                </Link>
                 {index < newsItems.length * 2 - 1 && (
                   <span className="mx-4 text-white/40">•</span>
                 )}

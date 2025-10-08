@@ -4,12 +4,9 @@ import { getRelatedArticles } from "@/app/lib/getRelatedArticles";
 import { Story } from "@/app/components/types";
 import { transformSanityArticleToStory } from "@/app/lib/sanity.utils";
 import Link from "next/link";
-import {
-  articleQuery,
-  latestArticlesQuery,
-  trendingArticlesQuery,
-} from "@/app/lib/getArticle";
+import { articleQuery, trendingArticlesQuery } from "@/app/lib/getArticle";
 import { Metadata } from "next";
+import { getLatestArticles } from "@/app/lib/getLatestArticles";
 
 export const revalidate = 300; // Revalidate every 5 minutes
 
@@ -94,7 +91,7 @@ export default async function ArticlePage({
   const article: Story = transformSanityArticleToStory(rawArticle);
 
   // Fetch latest articles
-  const rawLatestArticles = await serverClient.fetch(latestArticlesQuery, {
+  const rawLatestArticles = await serverClient.fetch(trendingArticlesQuery, {
     currentSlug: slug,
   });
   const latestArticles: Story[] = rawLatestArticles.map(
@@ -102,12 +99,7 @@ export default async function ArticlePage({
   );
 
   // Fetch trending articles
-  const rawTrendingArticles = await serverClient.fetch(trendingArticlesQuery, {
-    currentSlug: slug,
-  });
-  const trendingArticles: Story[] = rawTrendingArticles.map(
-    transformSanityArticleToStory
-  );
+  const trendingArticles = await getLatestArticles(6);
 
   // Fetch related articles based on category
   const relatedArticlesRaw = await getRelatedArticles(
