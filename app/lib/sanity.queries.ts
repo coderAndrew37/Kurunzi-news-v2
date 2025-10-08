@@ -47,25 +47,31 @@ export const singleArticleQuery = groq`
 }`;
 
 export const navQuery = groq`
-  *[_type == "category"] | order(title asc) {
+  *[
+    _type == "category" &&
+    defined(slug.current) &&
+    count(*[_type == "article" && references(^._id) && defined(publishedAt)]) > 0
+  ] | order(title asc) {
     _id,
     title,
     "slug": slug.current,
-    "subcategories": coalesce(
-      subcategories[]->{
+
+    "subcategories": subcategories[]->[
+      defined(slug.current) &&
+      count(*[_type == "article" && references(^._id) && defined(publishedAt)]) > 0
+    ] | order(title asc) {
+      _id,
+      title,
+      "slug": slug.current,
+
+      "topics": topics[]->[
+        defined(slug.current) &&
+        count(*[_type == "article" && references(^._id) && defined(publishedAt)]) > 0
+      ] | order(title asc) {
         _id,
         title,
-        "slug": slug.current,
-        "topics": coalesce(
-          topics[]->{
-            _id,
-            title,
-            "slug": slug.current
-          },
-          []
-        )
-      },
-      []
-    )
+        "slug": slug.current
+      }
+    }
   }
 `;
