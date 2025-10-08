@@ -13,6 +13,7 @@ import ArticleImage from "../_components/ArticleImage";
 import Breadcrumbs from "../_components/BreadCrumbs";
 import TagsList from "../_components/TagList";
 import LatestArticlesSidebar from "../_components/LatestArticlesSidebar";
+import { useIncrementArticleView } from "@/app/hooks/useIncrementArticleView";
 
 export default function ArticlePageClient({
   article,
@@ -25,6 +26,9 @@ export default function ArticlePageClient({
   trendingArticles?: Article[];
   relatedArticles?: Article[];
 }) {
+  useIncrementArticleView(article.id);
+
+  // Local state for bookmark and comments visibility
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showComments, setShowComments] = useState(false);
 
@@ -169,6 +173,12 @@ export default function ArticlePageClient({
                 <div className="mb-8">
                   <ArticleContent article={article} />
                 </div>
+
+                {article.views && (
+                  <p className="text-sm font-semibold text-gray-700">
+                    {article.views?.toLocaleString()} views
+                  </p>
+                )}
 
                 {/* Tags */}
                 <div className="mb-8 pt-6 border-t border-gray-200">

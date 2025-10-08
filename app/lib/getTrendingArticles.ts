@@ -42,13 +42,14 @@ export async function getTrendingArticles(
   limit = 6
 ): Promise<RelatedArticle[]> {
   const query = `
-    *[_type == "article" && isTrending == true && defined(publishedAt)]
-    | order(publishedAt desc)[0...$limit] {
+    *[_type == "article" && defined(publishedAt) && (isTrending == true || views > 100)]
+    | order(isTrending desc, views desc, publishedAt desc)[0...$limit] {
       _id,
       title,
       "slug": slug.current,
       excerpt,
       publishedAt,
+      views,
       readTime,
       "category": categories[0]->{
         title,
@@ -58,24 +59,19 @@ export async function getTrendingArticles(
     }
   `;
 
-  try {
-    const articles = await serverClient.fetch(query, { limit });
+  const articles = await serverClient.fetch(query, { limit });
 
-    return articles.map((a: Story) => ({
-      id: a.id,
-      slug: a.slug,
-      title: a.title,
-      excerpt: a.excerpt,
-      publishedAt: a.publishedAt,
-      readTime: a.readTime ?? 3,
-      category: a.category ?? null,
-      img: a.featuredImage
-        ? urlFor(a.featuredImage).width(400).height(300).url()
-        : null,
-      fullTitle: a.title,
-    }));
-  } catch (error) {
-    console.error("Error fetching trending articles:", error);
-    return [];
-  }
+  return articles.map((a: Story) => ({
+    id: a.id,
+    slug: a.slug,
+    title: a.title,
+    excerpt: a.excerpt,
+    publishedAt: a.publishedAt,
+    views: a.views ?? 0,
+    readTime: a.readTime ?? 3,
+    category: a.category ?? null,
+    img: a.featuredImage
+      ? urlFor(a.featuredImage).width(400).height(300).url()
+      : null,
+  }));
 }

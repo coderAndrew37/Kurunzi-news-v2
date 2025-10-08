@@ -6,10 +6,11 @@ import {
   generateTopicStaticParams,
 } from "@/app/lib/categoryUtils";
 import { Story } from "@/app/components/types";
-import { getLatestBreakingNews } from "@/app/lib/getTrendingArticles";
+import { getTrendingArticles } from "@/app/lib/getTrendingArticles";
 import CategoryLayout from "../../_components/CategoryLayout";
 import { transformSanityArticleToStory } from "@/app/lib/sanity.utils";
 import type { Metadata } from "next";
+import { getLatestArticles } from "@/app/lib/getLatestArticles";
 
 // ISR: Generate static params at build time
 export async function generateStaticParams() {
@@ -60,8 +61,8 @@ export default async function TopicPage({ params }: PageProps) {
   // Fetch data in parallel
   const [rawArticles, trendingArticles, latestArticles] = await Promise.all([
     getTopicArticles(topic),
-    getLatestBreakingNews(),
-    getLatestBreakingNews(),
+    getTrendingArticles(),
+    getLatestArticles(),
   ]);
 
   if (!rawArticles) notFound();
