@@ -4,27 +4,24 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import Footer from "./Footer";
 import "./globals.css";
 import TopAdBanner from "./TopAdBanner";
-
-import { DefaultSeo } from "next-seo";
-import { Suspense } from "react"; // ✅ import Suspense
+import { Suspense } from "react";
 import BreakingNewsTicker from "./components/BreakingNewsTicker";
 import EnhancedPageTransition from "./components/EnhancedPageTransition";
 import { getNavigation } from "./lib/getNavigation";
 import { getPopularTags } from "./lib/getPopularTags";
 import Header from "./navbar/NavBar";
 import { NavItem } from "./types/navigation";
+import PlausibleWrapper from "./providers/PlausibleWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
-
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-inter",
 });
-
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
@@ -35,22 +32,11 @@ export const metadata: Metadata = {
   description: "Independent Kenyan news, politics, sports and more",
 };
 
-<DefaultSeo
-  titleTemplate="%s | Kurunzi News"
-  defaultTitle="Kurunzi News"
-  description="Independent Kenyan news, politics, and sports."
-  openGraph={{
-    type: "website",
-    locale: "en_KE",
-    site_name: "Kurunzi News",
-  }}
-/>;
-
 export default async function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   let menuItems: NavItem[] = [];
   let popularTags: string[] = [];
 
@@ -72,16 +58,16 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* Page Transition Component */}
-        <Suspense fallback={null}>
-          <EnhancedPageTransition />
-        </Suspense>
-
-        <TopAdBanner />
-        <Header menuItems={menuItems} popularTags={popularTags} />
-        <BreakingNewsTicker />
-        <main className="container mx-auto mt-10 px-4">{children}</main>
-        <Footer />
+        <PlausibleWrapper>
+          <Suspense fallback={null}>
+            <EnhancedPageTransition />
+          </Suspense>
+          <TopAdBanner />
+          <Header menuItems={menuItems} popularTags={popularTags} />
+          <BreakingNewsTicker />
+          <main className="container mx-auto mt-10 px-4">{children}</main>
+          <Footer />
+        </PlausibleWrapper>
       </body>
     </html>
   );
