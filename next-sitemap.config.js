@@ -1,6 +1,7 @@
-/** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: "https://kurunzi.vercel.app",
+  siteUrl: "https://kurunzinews.com",
   generateRobotsTxt: true,
+  changefreq: "hourly",
+  priority: 0.7,
   sitemapSize: 7000,
 };

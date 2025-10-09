@@ -5,13 +5,14 @@ import Footer from "./Footer";
 import "./globals.css";
 import TopAdBanner from "./TopAdBanner";
 
+import { DefaultSeo } from "next-seo";
+import { Suspense } from "react"; // ✅ import Suspense
+import BreakingNewsTicker from "./components/BreakingNewsTicker";
+import EnhancedPageTransition from "./components/EnhancedPageTransition";
 import { getNavigation } from "./lib/getNavigation";
 import { getPopularTags } from "./lib/getPopularTags";
-import { NavItem } from "./types/navigation";
-import BreakingNewsTicker from "./components/BreakingNewsTicker";
 import Header from "./navbar/NavBar";
-import EnhancedPageTransition from "./components/EnhancedPageTransition";
-import { Suspense } from "react"; // ✅ import Suspense
+import { NavItem } from "./types/navigation";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +34,17 @@ export const metadata: Metadata = {
   title: "Kurunzi News",
   description: "Independent Kenyan news, politics, sports and more",
 };
+
+<DefaultSeo
+  titleTemplate="%s | Kurunzi News"
+  defaultTitle="Kurunzi News"
+  description="Independent Kenyan news, politics, and sports."
+  openGraph={{
+    type: "website",
+    locale: "en_KE",
+    site_name: "Kurunzi News",
+  }}
+/>;
 
 export default async function RootLayout({
   children,
