@@ -33,7 +33,7 @@ interface PageProps {
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const { category, subcategory } = params;
+  const { category, subcategory } = await params;
 
   return {
     title: `${subcategory} News | ${category} - Kurunzi News`,
@@ -58,7 +58,7 @@ export async function generateMetadata({
  * ✅ Subcategory Page with Trending + Latest integration
  */
 export default async function SubcategoryPage({ params }: PageProps) {
-  const { category, subcategory } = params;
+  const { category, subcategory } = await params;
 
   // Fetch data in parallel
   const [rawArticles, trendingArticles, latestArticles] = await Promise.all([
