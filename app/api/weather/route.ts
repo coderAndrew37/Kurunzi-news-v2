@@ -2,29 +2,46 @@ import { NextResponse } from "next/server";
 
 const API_KEY = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY;
 
-export async function GET() {
+if (!API_KEY) {
+  throw new Error("Missing OpenWeather API key");
+}
+
+export const runtime = "edge"; // Ensure the function runs on the Edge runtime
+
+interface WeatherData {
+  city: string;
+  temp: number;
+  condition: string;
+  icon: string;
+}
+
+export async function GET(request: Request) {
   try {
-    if (!API_KEY) throw new Error("Missing OpenWeather API key");
+    const { searchParams } = new URL(request.url);
+    const cities = searchParams.get("cities"); // comma-separated list
 
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=Nairobi,KE&units=metric&appid=${API_KEY}`;
-    console.log("🌦️ Fetching weather from:", url);
+    let results: WeatherData[] = [];
 
-    const res = await fetch(url);
+    if (cities) {
+      const cityList = cities.split(",");
+      const fetches = cityList.map(async (city) => {
+        const res = await fetch(
+          `https://api.openweathermap.org/data/2.5/weather?q=${city},KE&units=metric&appid=${API_KEY}`
+        );
+        if (!res.ok) throw new Error(`Weather fetch failed for ${city}`);
+        const data = await res.json();
+        return {
+          city: data.name,
+          temp: Math.round(data.main.temp),
+          condition: data.weather[0].main,
+          icon: data.weather[0].icon,
+        };
+      });
 
-    if (!res.ok) {
-      const text = await res.text();
-      console.error("❌ Weather API response:", text);
-      throw new Error(`Weather API failed with status ${res.status}`);
+      results = await Promise.all(fetches);
     }
 
-    const data = await res.json();
-
-    return NextResponse.json({
-      city: data.name,
-      temp: Math.round(data.main.temp),
-      condition: data.weather[0].main,
-      icon: data.weather[0].icon,
-    });
+    return NextResponse.json(results);
   } catch (error) {
     console.error("⚠️ Weather API error:", error);
     return NextResponse.json(
