@@ -34,7 +34,7 @@ interface PageProps {
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const { category } = params;
+  const { category } = await params;
   const currentCategory = await getCategoryData(category);
 
   if (!currentCategory) {
