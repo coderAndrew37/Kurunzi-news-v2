@@ -73,7 +73,7 @@ export async function generateMetadata({
  * ✅ Category Page with Trending + Latest integration
  */
 export default async function CategoryPage({ params }: PageProps) {
-  const { category: categorySlug } = params;
+  const { category: categorySlug } = await params;
 
   // Fetch everything in parallel for performance
   const [currentCategory, rawArticles, latestArticles, trendingArticles] =

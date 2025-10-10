@@ -1,10 +1,11 @@
-import { Metadata } from "next";
 import { getHeroStories } from "@/app/lib/getHeroStories";
 import { serverClient } from "@/app/lib/sanity.server";
 import { transformSanityArticleToStory } from "@/app/lib/sanity.utils";
+import { Metadata } from "next";
 import Hero from "./components/Hero";
 import SectionWithLead from "./components/SectionWithLead";
 import { RawSanityArticle, Story } from "./components/types";
+import WeatherWidget from "./components/WeatherWidget";
 import { categoriesWithStoriesQuery } from "./lib/getCategoryStories";
 
 export const revalidate = 60;
@@ -56,6 +57,9 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col">
+      <div className="flex justify-end px-4">
+        <WeatherWidget />
+      </div>
       {heroStories.length > 0 && <Hero stories={heroStories} />}
 
       {categories.map((cat: CategoryWithStories) => {

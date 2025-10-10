@@ -16,6 +16,11 @@ const baseConfig: NextConfig = {
       { protocol: "https", hostname: "cdn.sanity.io", pathname: "/images/**" },
       { protocol: "https", hostname: "via.placeholder.com" },
       { protocol: "https", hostname: "api.dicebear.com", pathname: "/**" },
+      {
+        protocol: "https",
+        hostname: "openweathermap.org",
+        pathname: "/img/wn/**",
+      },
     ],
   },
   env: {
