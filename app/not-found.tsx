@@ -26,7 +26,7 @@ export default function NotFound() {
           </Button>
 
           <Button variant="outline" asChild className="w-full">
-            <Link href="/news">
+            <Link href="/">
               <Newspaper className="h-4 w-4 mr-2" />
               Browse News
             </Link>
