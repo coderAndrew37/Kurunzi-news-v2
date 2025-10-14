@@ -60,6 +60,11 @@ export default async function Home() {
       <div className="flex justify-end px-4">
         <WeatherWidget />
       </div>
+
+      {/* <div className="flex justify-end px-4">
+        <FootballTicker />
+      </div> */}
+
       {heroStories.length > 0 && <Hero stories={heroStories} />}
 
       {categories.map((cat: CategoryWithStories) => {

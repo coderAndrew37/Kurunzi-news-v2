@@ -13,7 +13,7 @@ export const searchArticlesQuery = groq`
     title,
     subtitle,
     "slug": slug.current,
-    "img": mainImage,
+    "mainImage": mainImage,
     excerpt,
     publishedAt,
     readTime,
