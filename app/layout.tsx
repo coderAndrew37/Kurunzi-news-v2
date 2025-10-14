@@ -32,6 +32,8 @@ export const metadata: Metadata = {
   description: "Independent Kenyan news, politics, sports and more",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function RootLayout({
   children,
 }: {
