@@ -1,4 +1,4 @@
-// app/not-found.tsx
+"use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Home, Newspaper, Search } from "lucide-react";

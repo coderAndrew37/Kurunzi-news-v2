@@ -1,4 +1,4 @@
-import CategoryPageSkeleton from "./_components/CategorrPageSkeleton";
+import CategoryPageSkeleton from "./_components/CategoryPageSkeleton";
 
 export default function Loading() {
   return <CategoryPageSkeleton />;

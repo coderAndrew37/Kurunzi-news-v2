@@ -4,8 +4,7 @@ import withPWA from "next-pwa";
 // ✅ Create the base config
 const baseConfig: NextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
-  // Revalidate static content periodically (helps ISR sanity updates)
+
   experimental: {
     optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
   },
