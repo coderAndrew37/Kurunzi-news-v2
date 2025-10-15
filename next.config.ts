@@ -33,11 +33,16 @@ const baseConfig: NextConfig = {
       {
         source: "/(.*)",
         headers: [
-          // 🛡️ Security Headers
           {
             key: "Content-Security-Policy",
-            value:
-              "default-src 'self'; img-src * blob: data:; media-src *; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.vercel-insights.com *.googletagmanager.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:;",
+            value: [
+              "default-src 'self';",
+              "img-src * blob: data:;",
+              "media-src *;",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://plausible.io *.vercel-insights.com *.googletagmanager.com;",
+              "style-src 'self' 'unsafe-inline';",
+              "font-src 'self' data:;",
+            ].join(" "),
           },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "X-Frame-Options", value: "DENY" },

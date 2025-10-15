@@ -1,3 +1,5 @@
+"use client";
+
 import { ArticleComment } from "@/app/components/types";
 import { formatDistanceToNow } from "date-fns";
 import { Heart, MessageCircle, MoreHorizontal } from "lucide-react";
