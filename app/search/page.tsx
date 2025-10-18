@@ -1,4 +1,5 @@
 import { Author, Category, Story, Subcategory } from "@/app/components/types";
+import { transformSanityArticleToStory } from "@/app/lib/sanity.utils";
 import Image from "next/image";
 import Link from "next/link";
 import ArticleCard from "../[category]/_components/ArticleCard";
@@ -17,7 +18,7 @@ interface SearchPageProps {
 }
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
-  const query = (await searchParams.q) || "";
+  const query = searchParams.q || "";
 
   if (!query) {
     return (
@@ -29,15 +30,18 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     );
   }
 
-  // Fetch results in parallel
-  const [articles, authors, categories, subcategories, tags] =
+  // Fetch search results
+  const [rawArticles, authors, categories, subcategories, tags] =
     await Promise.all([
-      sanityClient.fetch(searchArticlesQuery, { q: `*${query}*` }),
-      sanityClient.fetch(searchAuthorsQuery, { q: `*${query}*` }),
-      sanityClient.fetch(searchCategoriesQuery, { q: `*${query}*` }),
-      sanityClient.fetch(searchSubcategoriesQuery, { q: `*${query}*` }),
-      sanityClient.fetch(searchTagsQuery, { q: `*${query}*` }),
+      sanityClient.fetch(searchArticlesQuery, { q: query }),
+      sanityClient.fetch(searchAuthorsQuery, { q: query }),
+      sanityClient.fetch(searchCategoriesQuery, { q: query }),
+      sanityClient.fetch(searchSubcategoriesQuery, { q: query }),
+      sanityClient.fetch(searchTagsQuery, { q: query }),
     ]);
+
+  // ✅ Transform articles for consistent data shape
+  const articles = rawArticles.map(transformSanityArticleToStory);
 
   const hasResults =
     articles.length ||

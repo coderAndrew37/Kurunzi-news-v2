@@ -1,6 +1,6 @@
 import { groq } from "next-sanity";
 
-// Articles
+// --- getSearchResults.ts ---
 export const searchArticlesQuery = groq`
   *[_type == "article" && (
     title match $q || 
@@ -9,18 +9,33 @@ export const searchArticlesQuery = groq`
     tags[] match $q || 
     author->name match $q
   )] | order(publishedAt desc)[0...20] {
-    "id": _id,
+    _id,
     title,
     subtitle,
     "slug": slug.current,
-    "mainImage": mainImage,
-    excerpt,
+    "mainImage": mainImage, 
     publishedAt,
+    excerpt,
     readTime,
+    isVideo,
+    duration,
+    isFeatured,
     tags,
     author->{
       name,
       image
+    },
+    "categories": categories[]->{
+      title,
+      "slug": slug.current
+    },
+    "subcategory": subcategory->{
+      title,
+      "slug": slug.current
+    },
+    "topic": topic->{
+      title,
+      "slug": slug.current
     }
   }
 `;
