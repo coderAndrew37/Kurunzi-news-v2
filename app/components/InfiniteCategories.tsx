@@ -5,13 +5,45 @@ import {
   useInfiniteQuery,
   type InfiniteData,
 } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { fetchCategories, SanityCategory } from "../lib/api";
 import { transformSanityArticleToStory } from "../lib/sanity.utils";
 import SectionWithLead from "./SectionWithLead";
 import { Story } from "./types";
 
 type CategoriesPage = SanityCategory[];
+
+// 🧭 Define your priority categories
+const PRIORITY_CATEGORIES = ["politics", "health", "business"];
+
+/** ✅ Helper: Sort categories by latest story date */
+function sortByLatestStory(categories: SanityCategory[]): SanityCategory[] {
+  return [...categories].sort((a, b) => {
+    const aLatest = new Date(a.stories?.[0]?.publishedAt || 0).getTime();
+    const bLatest = new Date(b.stories?.[0]?.publishedAt || 0).getTime();
+    return bLatest - aLatest;
+  });
+}
+
+/** ✅ Helper: Hybrid sorting — fixed priorities first, rest by freshness */
+function sortCategories(categories: SanityCategory[]): SanityCategory[] {
+  const priority = categories.filter((cat) =>
+    PRIORITY_CATEGORIES.includes(cat.slug)
+  );
+
+  const rest = categories.filter(
+    (cat) => !PRIORITY_CATEGORIES.includes(cat.slug)
+  );
+
+  const restSorted = sortByLatestStory(rest);
+
+  // maintain order defined in PRIORITY_CATEGORIES
+  const orderedPriority = PRIORITY_CATEGORIES.map((slug) =>
+    priority.find((cat) => cat.slug === slug)
+  ).filter(Boolean) as SanityCategory[];
+
+  return [...orderedPriority, ...restSorted];
+}
 
 export default function InfiniteCategories({
   initialCategories,
@@ -41,8 +73,10 @@ export default function InfiniteCategories({
     gcTime: 1000 * 60 * 5,
   });
 
+  // ✅ Infinite scroll observer
   useEffect(() => {
     if (!hasNextPage || isFetchingNextPage) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) fetchNextPage();
@@ -52,15 +86,19 @@ export default function InfiniteCategories({
 
     const node = loaderRef.current;
     if (node) observer.observe(node);
+
     return () => {
       if (node) observer.unobserve(node);
       observer.disconnect();
     };
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  // ✅ Proper flatten with type hint
-  const allCategories: SanityCategory[] =
-    (data as InfiniteData<CategoriesPage> | undefined)?.pages.flat() ?? [];
+  // ✅ Flatten + sort categories efficiently
+  const allCategories: SanityCategory[] = useMemo(() => {
+    const flat =
+      (data as InfiniteData<CategoriesPage> | undefined)?.pages.flat() ?? [];
+    return sortCategories(flat);
+  }, [data]);
 
   if (isError) {
     return (
@@ -73,8 +111,7 @@ export default function InfiniteCategories({
   return (
     <div>
       {allCategories.map((cat) => {
-        const rawStories = cat.stories ?? [];
-        const catStories: Story[] = rawStories.map(
+        const catStories: Story[] = (cat.stories ?? []).map(
           transformSanityArticleToStory
         );
         if (catStories.length === 0) return null;
