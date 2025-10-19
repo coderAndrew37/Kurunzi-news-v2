@@ -11,6 +11,7 @@ import { getPopularTags } from "./lib/getPopularTags";
 import Header from "./navbar/NavBar";
 import TopAdBanner from "./TopAdBanner";
 import { NavItem } from "./types/navigation";
+import Providers from "./providers/ReactQueryProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -64,7 +65,10 @@ export default async function RootLayout({
         <TopAdBanner />
         <Header menuItems={menuItems} popularTags={popularTags} />
         <BreakingNewsTicker />
-        <main className="container mx-auto mt-10 px-4">{children}</main>
+        <main className="container mx-auto mt-10 px-4">
+          {" "}
+          <Providers>{children}</Providers>
+        </main>
         <Footer />
         {/* </ClientProviders> */}
       </body>

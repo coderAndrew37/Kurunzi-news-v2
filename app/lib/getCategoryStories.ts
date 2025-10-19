@@ -41,8 +41,8 @@ export const categoryStoriesQuery = groq`
 `;
 
 // Fetch all categories with their stories
-export const categoriesWithStoriesQuery = groq`
-  *[_type == "category"] {
+export const categoriesWithStoriesPaginatedQuery = groq`
+  *[_type == "category"] | order(_createdAt desc) [$start...$end] {
     _id,
     title,
     "slug": slug.current,
