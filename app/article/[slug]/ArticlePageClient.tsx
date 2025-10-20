@@ -2,18 +2,18 @@
 import TopAdBanner from "@/app/TopAdBanner";
 import NewsletterSignup from "@/app/components/NewsletterSignup";
 import { Story as Article } from "@/app/components/types";
-import { formatTimeAgo } from "@/app/components/utils/formatTimeAgo";
+import { useIncrementArticleView } from "@/app/hooks/useIncrementArticleView";
 import RelatedArticles from "@/app/news/_components/RelatedArticles";
-import { Calendar, Clock, Share2, User, RefreshCw, MapPin } from "lucide-react";
+import { Calendar, Clock, MapPin, RefreshCw, Share2, User } from "lucide-react";
 import { useState } from "react";
 import ArticleActions from "../_components/ArticleActions";
 import CommentsSection from "../_components/ArticleCommentSection";
 import ArticleContent from "../_components/ArticleContent";
 import ArticleImage from "../_components/ArticleImage";
 import Breadcrumbs from "../_components/BreadCrumbs";
-import TagsList from "../_components/TagList";
 import LatestArticlesSidebar from "../_components/LatestArticlesSidebar";
-import { useIncrementArticleView } from "@/app/hooks/useIncrementArticleView";
+import TagsList from "../_components/TagList";
+import { formatTimeAgo } from "@/app/components/utils/formatDate";
 
 export default function ArticlePageClient({
   article,

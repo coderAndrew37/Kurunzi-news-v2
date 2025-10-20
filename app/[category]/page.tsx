@@ -10,7 +10,7 @@ import CategoryLayout from "./_components/CategoryLayout";
 import ArticleCard from "./_components/ArticleCard";
 import EmptyState from "./_components/EmptyState";
 import type { Metadata } from "next";
-import SubcategoriesGrid from "./_components/SUbCategoriesGrid";
+import SubcategoriesGrid from "./_components/SubCategoriesGrid";
 
 export async function generateStaticParams() {
   return await generateCategoryStaticParams();

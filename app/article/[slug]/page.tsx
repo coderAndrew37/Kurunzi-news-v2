@@ -1,12 +1,12 @@
-import { serverClient } from "@/app/lib/sanity.server"; // ⬅️ use the server-only client
-import ArticlePageClient from "./ArticlePageClient";
-import { getRelatedArticles } from "@/app/lib/getRelatedArticles";
 import { Story } from "@/app/components/types";
-import { transformSanityArticleToStory } from "@/app/lib/sanity.utils";
-import Link from "next/link";
-import { articleQuery, trendingArticlesQuery } from "@/app/lib/getArticle";
-import { Metadata } from "next";
+import { articleQuery, latestArticlesQuery } from "@/app/lib/getArticle";
 import { getLatestArticles } from "@/app/lib/getLatestArticles";
+import { getRelatedArticles } from "@/app/lib/getRelatedArticles";
+import { serverClient } from "@/app/lib/sanity.server"; // ⬅️ use the server-only client
+import { transformSanityArticleToStory } from "@/app/lib/sanity.utils";
+import { Metadata } from "next";
+import Link from "next/link";
+import ArticlePageClient from "./ArticlePageClient";
 
 export const revalidate = 300; // Revalidate every 5 minutes
 
@@ -91,9 +91,10 @@ export default async function ArticlePage({
   const article: Story = transformSanityArticleToStory(rawArticle);
 
   // Fetch latest articles
-  const rawLatestArticles = await serverClient.fetch(trendingArticlesQuery, {
+  const rawLatestArticles = await serverClient.fetch(latestArticlesQuery, {
     currentSlug: slug,
   });
+
   const latestArticles: Story[] = rawLatestArticles.map(
     transformSanityArticleToStory
   );

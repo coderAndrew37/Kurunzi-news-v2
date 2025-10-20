@@ -4,8 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Story } from "./types";
 import { Play, Clock, Calendar } from "lucide-react";
-import { formatTimeAgo } from "./utils/formatTimeAgo";
-
+import { formatTimeAgo } from "./utils/formatDate";
 // Generate slug from title
 const generateSlug = (title: string) =>
   title

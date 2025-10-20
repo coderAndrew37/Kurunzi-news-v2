@@ -1,4 +1,5 @@
 import { Story } from "@/app/components/types";
+import { formatTimeAgo } from "@/app/components/utils/formatDate";
 import { Clock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -16,17 +17,6 @@ export default function ArticleCard({
   href,
   variant = "default",
 }: ArticleCardProps) {
-  const formatTimeAgo = (date: Date) => {
-    const now = new Date();
-    const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
-    );
-
-    if (diffInHours < 1) return "Just now";
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    return `${Math.floor(diffInHours / 24)}d ago`;
-  };
-
   if (variant === "compact") {
     return (
       <Link href={href} className="group block">

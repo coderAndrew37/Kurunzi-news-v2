@@ -3,7 +3,8 @@
 import { Clock } from "lucide-react";
 import Link from "next/link";
 import { Story as Article } from "@/app/components/types";
-import { formatTimeAgo } from "@/app/components/utils/formatTimeAgo";
+import { formatTimeAgo } from "@/app/components/utils/formatDate";
+import Image from "next/image";
 
 interface LatestArticlesSidebarProps {
   latestArticles: Article[];
@@ -30,16 +31,30 @@ export default function LatestArticlesSidebar({
             className="block group hover:bg-gray-50 p-3 rounded-lg transition-colors"
           >
             <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0 w-2 h-2 bg-red-600 rounded-full mt-2"></div>
+              <div className="relative w-16 h-12 flex-shrink-0">
+                <Image
+                  src={item.img || "/placeholder-hero.jpeg"}
+                  alt={item.title || "Article image"}
+                  fill
+                  className="object-cover rounded-md"
+                  sizes="64px"
+                  loading="lazy"
+                  placeholder="blur"
+                  blurDataURL="/placeholder-blur.jpg"
+                />
+              </div>
 
               <div className="flex-1 min-w-0">
                 <h3 className="font-medium text-gray-900 group-hover:text-red-600 line-clamp-2 leading-snug">
                   {item.title}
                 </h3>
-
                 <div className="flex items-center space-x-2 mt-1 text-xs text-gray-500">
                   <Clock className="h-3 w-3" />
-                  <span>{formatTimeAgo(new Date(item.publishedAt ?? ""))}</span>
+                  <span>
+                    {formatTimeAgo(
+                      item.publishedAt ? new Date(item.publishedAt) : new Date()
+                    )}
+                  </span>
                   {item.category && (
                     <>
                       <span>•</span>
