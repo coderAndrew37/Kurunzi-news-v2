@@ -14,6 +14,7 @@ import Breadcrumbs from "../_components/BreadCrumbs";
 import LatestArticlesSidebar from "../_components/LatestArticlesSidebar";
 import TagsList from "../_components/TagList";
 import { formatTimeAgo } from "@/app/components/utils/formatDate";
+import Link from "next/link";
 
 export default function ArticlePageClient({
   article,
@@ -100,13 +101,16 @@ export default function ArticlePageClient({
                   {/* Meta Information - Compact row */}
                   <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-2">
                     {/* Author */}
-                    {article.author && (
-                      <div className="flex items-center space-x-1">
+                    {article.author && article.author.slug && (
+                      <Link
+                        href={`/authors/${article.author.slug}`}
+                        className="flex items-center space-x-1 text-red-600 hover:text-red-800 transition-colors"
+                      >
                         <User className="h-4 w-4" />
-                        <span className="font-medium">
+                        <span className="font-medium underline decoration-transparent hover:decoration-red-600">
                           {article.author.name}
                         </span>
-                      </div>
+                      </Link>
                     )}
 
                     {/* Published Date */}

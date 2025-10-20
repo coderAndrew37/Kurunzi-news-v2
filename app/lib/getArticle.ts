@@ -12,10 +12,12 @@ export const articleQuery = `*[_type == "article" && slug.current == $slug][0]{
   duration,
   isFeatured,
   tags,
-  author->{
-    name,
-    image
-  },
+  "author": author->{
+  name,
+  "slug": slug.current,
+  image
+},
+
   "categories": categories[]->{
     _id,
     title,
