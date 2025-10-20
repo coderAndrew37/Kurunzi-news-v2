@@ -74,9 +74,13 @@ export function transformSanityArticleToStory(raw: RawSanityArticle): Story {
       raw.categories && raw.categories.length
         ? {
             title: raw.categories[0]?.title ?? "General",
-            slug: raw.categories[0]?.slug?.current ?? "general",
+            slug:
+              typeof raw.categories[0]?.slug === "string"
+                ? raw.categories[0]?.slug
+                : (raw.categories[0]?.slug?.current ?? "general"),
           }
         : null,
+
     publishedAt: raw.publishedAt ?? null,
     author: raw.author ?? null,
     content: raw.body ?? null,
