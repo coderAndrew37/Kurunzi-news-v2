@@ -8,6 +8,7 @@ import { NavItem } from "../types/navigation";
 import MainNav from "./MainNav";
 import MobileNav from "./MobileNav";
 import SearchBar from "./SearchBar";
+import Image from "next/image";
 
 interface HeaderProps {
   menuItems: NavItem[];
@@ -42,7 +43,7 @@ export default function Header({ menuItems, popularTags }: HeaderProps) {
           <Link href="/" className="flex items-center space-x-3">
             <div className="relative w-10 h-10">
               {/* Replace with your actual logo */}
-              <img
+              <Image
                 src="/images/logo.png"
                 alt="Kurunzi News"
                 className="h-10 w-auto"
@@ -123,12 +124,9 @@ export default function Header({ menuItems, popularTags }: HeaderProps) {
 }
 
 // Helper function to group categories
-function groupCategories(categories: NavItem[]): any {
-  // Implement your grouping logic here
-  // Example: Group by featured, or by type (News, Sports, Entertainment, etc.)
+function groupCategories(categories: NavItem[]): Record<string, NavItem[]> {
   return {
     featured: categories.filter((cat) => cat.featured).slice(0, 6),
     news: categories.filter((cat) => !cat.featured).slice(0, 8),
-    // Add more groups as needed
   };
 }

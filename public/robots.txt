@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Host
-Host: https://kurunzinews.com
+Host: https://kurunzinews.co.ke
 
 # Sitemaps
-Sitemap: https://kurunzinews.com/sitemap.xml
+Sitemap: https://kurunzinews.co.ke/sitemap.xml

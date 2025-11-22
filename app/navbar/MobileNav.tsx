@@ -14,7 +14,7 @@ import { NavItem } from "../types/navigation";
 interface MobileNavProps {
   isMobileMenuOpen: boolean;
   menuItems: NavItem[];
-  groupedCategories: any;
+  groupedCategories: Record<string, NavItem[]>;
 }
 
 export default function MobileNav({

@@ -20,7 +20,7 @@ interface MainNavProps {
   isMobileMenuOpen: boolean;
   toggleMobileMenu: () => void;
   menuItems: NavItem[];
-  groupedCategories: any;
+  groupedCategories: Record<string, NavItem[]>;
 }
 
 export default function MainNav({
@@ -29,7 +29,6 @@ export default function MainNav({
   isMobileMenuOpen,
   toggleMobileMenu,
   menuItems,
-  groupedCategories,
 }: MainNavProps) {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 

@@ -26,7 +26,7 @@ export default function ArticlePageClient({
   trendingArticles?: Article[];
   relatedArticles?: Article[];
 }) {
-  useIncrementArticleView(article.id);
+  useIncrementArticleView(article.slug);
 
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showComments, setShowComments] = useState(false);

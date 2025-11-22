@@ -14,7 +14,7 @@ export default function ClientProviders({ children }: { children: ReactNode }) {
           type: "website",
           locale: "en_KE",
           site_name: "Kurunzi News",
-          url: "https://kurunzinews.com",
+          url: "https://kurunzinews.co.ke",
           images: [
             {
               url: "/og-image.jpg",

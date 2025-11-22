@@ -7,7 +7,13 @@ const baseConfig: NextConfig = {
 
   experimental: {
     optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
+
+    // 🔥 Fix warning: "Webpack is configured while Turbopack is not"
+    turbo: {
+      rules: {},
+    },
   },
+
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [
@@ -22,12 +28,14 @@ const baseConfig: NextConfig = {
       },
     ],
   },
+
   env: {
     NEXT_PUBLIC_BASE_URL:
-      process.env.NEXT_PUBLIC_BASE_URL || "https://kurunzinews.com",
+      process.env.NEXT_PUBLIC_BASE_URL || "https://kurunzinews.co.ke",
     NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
     NEXT_PUBLIC_ANALYTICS_ID: process.env.NEXT_PUBLIC_ANALYTICS_ID,
   },
+
   async headers() {
     return [
       {

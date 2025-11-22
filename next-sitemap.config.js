@@ -1,5 +1,5 @@
 module.exports = {
-  siteUrl: "https://kurunzinews.com",
+  siteUrl: "https://kurunzinews.co.ke",
   generateRobotsTxt: true,
   changefreq: "hourly",
   priority: 0.7,
