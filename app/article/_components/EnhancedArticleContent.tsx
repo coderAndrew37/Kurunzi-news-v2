@@ -22,6 +22,7 @@ export default function EnhancedArticleContent({
 }: EnhancedArticleContentProps) {
   const [tocItems, setTocItems] = useState<TableOfContentsItem[]>([]);
   const [activeId, setActiveId] = useState<string>("");
+  const [isTocExpanded, setIsTocExpanded] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   // Generate table of contents from headings
@@ -75,7 +76,20 @@ export default function EnhancedArticleContent({
     return () => observer.disconnect();
   }, [tocItems]);
 
-  // Enhanced PortableText components for better readability
+  const scrollToHeading = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      const offset = 100;
+      const elementPosition = element.offsetTop - offset;
+      window.scrollTo({
+        top: elementPosition,
+        behavior: "smooth",
+      });
+      setIsTocExpanded(false);
+    }
+  };
+
+  // Enhanced PortableText components for clean readability
   const components: PortableTextComponents = {
     types: {
       image: ({ value }) => {
@@ -83,7 +97,7 @@ export default function EnhancedArticleContent({
 
         return (
           <figure className="my-12">
-            <div className="relative w-full h-[400px] md:h-[500px] rounded-lg overflow-hidden bg-gray-100">
+            <div className="relative w-full h-[400px] md:h-[500px] rounded-xl overflow-hidden bg-gray-100">
               <Image
                 src={urlFor(value).width(1200).fit("max").url()}
                 alt={value.alt || "Article image"}
@@ -94,7 +108,7 @@ export default function EnhancedArticleContent({
               />
             </div>
             {value.caption && (
-              <figcaption className="text-center text-sm text-gray-600 mt-3 italic leading-relaxed">
+              <figcaption className="text-center text-gray-600 mt-3 text-sm leading-relaxed">
                 {value.caption}
               </figcaption>
             )}
@@ -113,7 +127,7 @@ export default function EnhancedArticleContent({
         return isInternal ? (
           <Link
             href={href}
-            className="text-blue-600 hover:text-blue-800 underline decoration-blue-300 hover:decoration-blue-600 transition-colors duration-200"
+            className="text-blue-600 hover:text-blue-800 underline transition-colors duration-200"
           >
             {children}
           </Link>
@@ -122,50 +136,43 @@ export default function EnhancedArticleContent({
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 hover:text-blue-800 underline decoration-blue-300 hover:decoration-blue-600 transition-colors duration-200"
+            className="text-blue-600 hover:text-blue-800 underline transition-colors duration-200"
           >
             {children}
           </a>
         );
       },
       strong: ({ children }) => (
-        <strong className="font-semibold text-gray-900 bg-yellow-50 px-1 rounded">
-          {children}
-        </strong>
+        <strong className="font-semibold text-gray-900">{children}</strong>
       ),
       em: ({ children }) => (
         <em className="italic text-gray-700">{children}</em>
       ),
-      code: ({ children }) => (
-        <code className="bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded text-sm font-mono">
-          {children}
-        </code>
-      ),
     },
     block: {
       normal: ({ children }) => (
-        <p className="text-lg leading-relaxed text-gray-800 mb-7 font-light tracking-wide">
+        <p className="text-lg leading-relaxed text-gray-800 mb-8 font-light">
           {children}
         </p>
       ),
       h2: ({ children }) => (
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mt-14 mb-6 pb-3 border-b border-gray-200 leading-tight tracking-tight">
+        <h2 className="text-3xl font-bold text-gray-900 mt-16 mb-8 leading-tight">
           {children}
         </h2>
       ),
       h3: ({ children }) => (
-        <h3 className="text-xl md:text-2xl font-semibold text-gray-900 mt-12 mb-5 leading-tight tracking-tight">
+        <h3 className="text-2xl font-semibold text-gray-900 mt-12 mb-6 leading-tight">
           {children}
         </h3>
       ),
       h4: ({ children }) => (
-        <h4 className="text-lg md:text-xl font-semibold text-gray-800 mt-10 mb-4 leading-tight">
+        <h4 className="text-xl font-semibold text-gray-800 mt-10 mb-4 leading-tight">
           {children}
         </h4>
       ),
       blockquote: ({ children }) => (
-        <blockquote className="border-l-4 border-blue-500 pl-6 py-4 my-10 bg-blue-50 rounded-r-lg">
-          <div className="text-lg italic text-gray-700 leading-relaxed font-light">
+        <blockquote className="border-l-4 border-blue-500 pl-8 py-4 my-12 bg-blue-50 rounded-r-xl">
+          <div className="text-xl text-gray-700 italic leading-relaxed">
             {children}
           </div>
         </blockquote>
@@ -173,12 +180,12 @@ export default function EnhancedArticleContent({
     },
     list: {
       bullet: ({ children }) => (
-        <ul className="list-disc list-inside space-y-3 mb-8 text-gray-800 text-lg leading-relaxed font-light">
+        <ul className="list-disc list-inside space-y-4 mb-8 text-gray-800 text-lg leading-relaxed">
           {children}
         </ul>
       ),
       number: ({ children }) => (
-        <ol className="list-decimal list-inside space-y-3 mb-8 text-gray-800 text-lg leading-relaxed font-light">
+        <ol className="list-decimal list-inside space-y-4 mb-8 text-gray-800 text-lg leading-relaxed">
           {children}
         </ol>
       ),
@@ -187,18 +194,6 @@ export default function EnhancedArticleContent({
       bullet: ({ children }) => <li className="pl-2 mb-2">{children}</li>,
       number: ({ children }) => <li className="pl-2 mb-2">{children}</li>,
     },
-  };
-
-  const scrollToHeading = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      const offset = 100; // Account for fixed header
-      const elementPosition = element.offsetTop - offset;
-      window.scrollTo({
-        top: elementPosition,
-        behavior: "smooth",
-      });
-    }
   };
 
   if (!article.content) return null;
@@ -212,11 +207,60 @@ export default function EnhancedArticleContent({
 
   return (
     <div className="relative">
-      {/* Table of Contents Sidebar */}
+      {/* Mobile Table of Contents */}
       {tocItems.length > 0 && (
-        <div className="hidden xl:block absolute -left-80 top-0 w-72">
-          <div className="sticky top-24 bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-            <h3 className="font-bold text-gray-900 mb-4 text-lg">
+        <div className="lg:hidden mb-12">
+          <button
+            onClick={() => setIsTocExpanded(!isTocExpanded)}
+            className="w-full bg-gray-50 rounded-xl p-6 flex justify-between items-center"
+          >
+            <span className="font-semibold text-gray-900 text-lg">
+              Table of Contents
+            </span>
+            <svg
+              className={`w-5 h-5 text-gray-600 transition-transform ${
+                isTocExpanded ? "transform rotate-180" : ""
+              }`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </button>
+
+          {isTocExpanded && (
+            <nav className="mt-4 bg-gray-50 rounded-xl p-6 space-y-3">
+              {tocItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => scrollToHeading(item.id)}
+                  className={`block w-full text-left py-3 px-4 rounded-lg transition-colors ${
+                    item.level === 3 ? "pl-8 text-base" : "text-lg font-medium"
+                  } ${
+                    activeId === item.id
+                      ? "bg-blue-600 text-white"
+                      : "text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  {item.text}
+                </button>
+              ))}
+            </nav>
+          )}
+        </div>
+      )}
+
+      {/* Desktop Table of Contents */}
+      {tocItems.length > 0 && (
+        <div className="hidden lg:block absolute -left-80 top-0 w-72">
+          <div className="sticky top-24 bg-white rounded-xl border border-gray-200 p-6">
+            <h3 className="font-bold text-gray-900 mb-6 text-xl">
               In this article
             </h3>
             <nav className="space-y-2">
@@ -224,12 +268,12 @@ export default function EnhancedArticleContent({
                 <button
                   key={item.id}
                   onClick={() => scrollToHeading(item.id)}
-                  className={`block w-full text-left py-2 px-3 rounded-lg transition-all duration-200 ${
-                    item.level === 3 ? "pl-6 text-sm" : "text-base font-medium"
+                  className={`block w-full text-left py-3 px-4 rounded-lg transition-colors ${
+                    item.level === 3 ? "pl-8 text-base" : "text-lg font-medium"
                   } ${
                     activeId === item.id
-                      ? "bg-blue-50 text-blue-700 border-l-4 border-blue-500"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                      ? "bg-blue-600 text-white"
+                      : "text-gray-700 hover:bg-gray-100"
                   }`}
                 >
                   {item.text}
@@ -238,10 +282,12 @@ export default function EnhancedArticleContent({
             </nav>
 
             {/* Reading Progress */}
-            <div className="mt-6 pt-4 border-t border-gray-200">
-              <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <div className="flex items-center justify-between text-gray-600 mb-3">
                 <span>Reading progress</span>
-                <span>{Math.round(currentProgress)}%</span>
+                <span className="font-semibold">
+                  {Math.round(currentProgress)}%
+                </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
@@ -254,113 +300,61 @@ export default function EnhancedArticleContent({
         </div>
       )}
 
-      {/* Mobile Table of Contents */}
-      {tocItems.length > 0 && (
-        <div className="xl:hidden mb-8">
-          <details className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            <summary className="p-4 font-semibold text-gray-900 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors list-none">
-              <div className="flex items-center justify-between">
-                <span>Table of Contents</span>
-                <svg
-                  className="w-4 h-4 transition-transform"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </div>
-            </summary>
-            <nav className="p-4 border-t border-gray-200 space-y-2 max-h-60 overflow-y-auto">
-              {tocItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => scrollToHeading(item.id)}
-                  className={`block w-full text-left py-2 px-3 rounded transition-colors ${
-                    item.level === 3 ? "pl-6 text-sm" : "text-base font-medium"
-                  } ${
-                    activeId === item.id
-                      ? "bg-blue-50 text-blue-700"
-                      : "text-gray-600 hover:text-gray-900"
-                  }`}
-                >
-                  {item.text}
-                </button>
-              ))}
-            </nav>
-          </details>
-        </div>
-      )}
-
       {/* Article Content */}
       <div
         ref={contentRef}
-        className="prose prose-lg max-w-none text-gray-800 
-                  prose-headings:font-serif
+        className="prose prose-lg max-w-none
                   prose-headings:text-gray-900
-                  prose-p:font-light
+                  prose-headings:font-bold
+                  prose-p:text-gray-800
                   prose-p:leading-relaxed
-                  prose-p:tracking-wide
-                  prose-strong:font-semibold
+                  prose-p:mb-8
                   prose-strong:text-gray-900
-                  prose-em:italic
                   prose-em:text-gray-700
                   prose-blockquote:border-blue-500
                   prose-blockquote:bg-blue-50
                   prose-blockquote:text-gray-700
-                  prose-ul:font-light
-                  prose-ol:font-light
-                  prose-li:my-1
+                  prose-blockquote:rounded-r-xl
+                  prose-ul:text-gray-800
+                  prose-ol:text-gray-800
+                  prose-li:my-2
                   prose-a:text-blue-600
                   prose-a:no-underline
-                  prose-a:border-b
-                  prose-a:border-blue-300
-                  prose-a:pb-0.5
-                  hover:prose-a:border-blue-600
-                  prose-code:bg-gray-100
-                  prose-code:text-gray-800
-                  prose-code:px-1.5
-                  prose-code:py-0.5
-                  prose-code:rounded
-                  prose-code:text-sm
-                  prose-pre:bg-gray-900
-                  prose-pre:text-gray-100
-                  prose-img:rounded-lg
+                  hover:prose-a:text-blue-800
+                  prose-img:rounded-xl
                   prose-img:shadow-md
                   prose-figcaption:text-center
                   prose-figcaption:text-gray-600
-                  prose-figcaption:italic
                   prose-figcaption:text-sm
-                  lg:prose-xl"
+                  lg:prose-xl
+                  prose-lg:prose-p:leading-relaxed
+                  prose-lg:prose-p:mb-8"
       >
         <PortableText value={article.content} components={components} />
       </div>
 
-      {/* Reading Time & Progress Bar (Fixed at bottom) */}
+      {/* Reading Progress Bar (Fixed at bottom) */}
       {tocItems.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 px-4 shadow-lg z-40">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-4 px-6 shadow-lg z-40">
           <div className="container mx-auto max-w-4xl">
-            <div className="flex items-center justify-between text-sm text-gray-600">
-              <div className="flex items-center space-x-4">
-                <span>{article.readTime} min read</span>
+            <div className="flex items-center justify-between text-gray-600 mb-3">
+              <div className="flex items-center space-x-6">
+                <span className="font-medium">{article.readTime} min read</span>
                 <span>•</span>
-                <span>{Math.round(currentProgress)}% complete</span>
+                <span className="font-semibold">
+                  {Math.round(currentProgress)}% complete
+                </span>
               </div>
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                className="text-blue-600 hover:text-blue-800 font-medium"
+                className="text-blue-600 hover:text-blue-800 font-semibold"
               >
                 Back to top
               </button>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+            <div className="w-full bg-gray-200 rounded-full h-2">
               <div
-                className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${currentProgress}%` }}
               />
             </div>
