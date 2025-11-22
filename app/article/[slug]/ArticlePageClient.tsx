@@ -2,19 +2,19 @@
 import TopAdBanner from "@/app/TopAdBanner";
 import NewsletterSignup from "@/app/components/NewsletterSignup";
 import { Story as Article } from "@/app/components/types";
+import { formatTimeAgo } from "@/app/components/utils/formatDate";
 import { useIncrementArticleView } from "@/app/hooks/useIncrementArticleView";
 import RelatedArticles from "@/app/news/_components/RelatedArticles";
 import { Calendar, Clock, MapPin, RefreshCw, Share2, User } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import ArticleActions from "../_components/ArticleActions";
 import CommentsSection from "../_components/ArticleCommentSection";
-import ArticleContent from "../_components/ArticleContent";
 import ArticleImage from "../_components/ArticleImage";
 import Breadcrumbs from "../_components/BreadCrumbs";
 import LatestArticlesSidebar from "../_components/LatestArticlesSidebar";
 import TagsList from "../_components/TagList";
-import { formatTimeAgo } from "@/app/components/utils/formatDate";
-import Link from "next/link";
+import EnhancedArticleContent from "../_components/EnhancedArticleContent";
 
 export default function ArticlePageClient({
   article,
@@ -29,7 +29,6 @@ export default function ArticlePageClient({
 }) {
   useIncrementArticleView(article.id);
 
-  // Local state for bookmark and comments visibility
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showComments, setShowComments] = useState(false);
 
@@ -55,68 +54,68 @@ export default function ArticlePageClient({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-white font-serif">
         {/* Top Ad Banner */}
-        <div className="bg-white border-b">
+        <div className="bg-white border-b border-gray-200">
           <div className="container mx-auto px-4">
             <TopAdBanner />
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="container mx-auto px-4 py-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Main Article Content - Left Column */}
-            <div className="lg:col-span-8">
-              {/* Breadcrumb - More subtle */}
-              <div className="mb-4">
+        <div className="container mx-auto px-4 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-7xl mx-auto">
+            {/* Main Article Content */}
+            <div className="lg:col-span-8 xl:col-span-9">
+              {/* Breadcrumb */}
+              <div className="mb-6">
                 <Breadcrumbs article={article} />
               </div>
 
-              {/* Article Card - Updated to match Citizen style */}
-              <article className="bg-white rounded-lg">
-                {/* Article Header - Compact like Citizen */}
-                <header className="mb-6 border-b border-gray-200 pb-4">
-                  {/* Category Badge - Top position */}
+              {/* Article Card */}
+              <article className="bg-white">
+                {/* Article Header */}
+                <header className="mb-8">
+                  {/* Category Badge */}
                   {article.category && (
-                    <div className="mb-3">
-                      <span className="inline-block bg-red-600 text-white px-3 py-1 text-sm font-medium rounded">
+                    <div className="mb-4">
+                      <span className="inline-block bg-red-600 text-white px-4 py-2 text-sm font-semibold rounded-full tracking-wide">
                         {article.category.title}
                       </span>
                     </div>
                   )}
 
                   {/* Title */}
-                  <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight tracking-tight font-serif">
                     {article.title}
                   </h1>
 
                   {/* Subtitle/Excerpt */}
                   {article.subtitle && (
-                    <p className="text-lg text-gray-700 mb-4 leading-relaxed font-medium">
+                    <p className="text-xl md:text-2xl text-gray-700 mb-6 leading-relaxed font-light tracking-wide border-l-4 border-red-600 pl-6 py-2 bg-red-50 rounded-r-lg">
                       {article.subtitle}
                     </p>
                   )}
 
-                  {/* Meta Information - Compact row */}
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-2">
+                  {/* Meta Information */}
+                  <div className="flex flex-wrap items-center gap-4 text-base text-gray-600 mb-4">
                     {/* Author */}
                     {article.author && article.author.slug && (
                       <Link
                         href={`/authors/${article.author.slug}`}
-                        className="flex items-center space-x-1 text-red-600 hover:text-red-800 transition-colors"
+                        className="flex items-center space-x-2 text-red-600 hover:text-red-800 transition-colors font-medium"
                       >
-                        <User className="h-4 w-4" />
-                        <span className="font-medium underline decoration-transparent hover:decoration-red-600">
+                        <User className="h-5 w-5" />
+                        <span className="underline decoration-transparent hover:decoration-red-600">
                           {article.author.name}
                         </span>
                       </Link>
                     )}
 
                     {/* Published Date */}
-                    <div className="flex items-center space-x-1">
-                      <Calendar className="h-4 w-4" />
-                      <span>
+                    <div className="flex items-center space-x-2">
+                      <Calendar className="h-5 w-5" />
+                      <span className="font-medium">
                         {publishedDate.toLocaleDateString("en-KE", {
                           year: "numeric",
                           month: "long",
@@ -127,95 +126,99 @@ export default function ArticlePageClient({
 
                     {/* Reading Time */}
                     {article.readTime && (
-                      <div className="flex items-center space-x-1">
-                        <Clock className="h-4 w-4" />
-                        <span>{article.readTime} min read</span>
+                      <div className="flex items-center space-x-2">
+                        <Clock className="h-5 w-5" />
+                        <span className="font-medium">
+                          {article.readTime} min read
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Location & Updated */}
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                    {article.location && (
+                      <div className="flex items-center space-x-2">
+                        <MapPin className="h-4 w-4" />
+                        <span>{article.location}</span>
                       </div>
                     )}
 
-                    {/* Updated Date */}
                     {updatedDate && (
-                      <div className="flex items-center space-x-1 text-blue-600">
+                      <div className="flex items-center space-x-2 text-blue-600">
                         <RefreshCw className="h-4 w-4" />
                         <span>Updated {formatTimeAgo(updatedDate)}</span>
                       </div>
                     )}
-                  </div>
 
-                  {/* Location */}
-                  {article.location && (
-                    <div className="flex items-center space-x-1 text-sm text-gray-600 mb-2">
-                      <MapPin className="h-4 w-4" />
-                      <span>{article.location}</span>
+                    {/* Time Ago */}
+                    <div className="text-sm text-gray-500 flex items-center">
+                      <Clock className="h-4 w-4 mr-1" />
+                      {formatTimeAgo(publishedDate)}
                     </div>
-                  )}
-
-                  {/* Time Ago - Secondary */}
-                  <div className="text-sm text-gray-500 flex items-center">
-                    <Clock className="h-4 w-4 mr-1" />
-                    {formatTimeAgo(publishedDate)}
                   </div>
                 </header>
 
                 {/* Featured Image */}
-                <div className="mb-6">
+                <div className="mb-8">
                   <ArticleImage article={article} />
                 </div>
 
-                {/* Share Buttons - Prominent like Citizen */}
-                <div className="flex items-center justify-between mb-8 p-4 bg-gray-50 rounded-lg border-l-4 border-red-600">
-                  <span className="text-sm font-semibold text-gray-700">
+                {/* Share Buttons */}
+                <div className="flex items-center justify-between mb-8 p-6 bg-gray-50 rounded-xl border-l-4 border-red-600">
+                  <span className="text-base font-semibold text-gray-700">
                     Share this article:
                   </span>
                   <div className="flex items-center space-x-2">
-                    <Share2 className="h-4 w-4 text-gray-600" />
-                    <span className="text-sm text-gray-600">Share</span>
+                    <Share2 className="h-5 w-5 text-gray-600" />
+                    <span className="text-base text-gray-600">Share</span>
                   </div>
                 </div>
 
-                {/* Article Content */}
-                <div className="mb-8">
-                  <ArticleContent article={article} />
+                {/* Enhanced Article Content with TOC */}
+                <div className="mb-8 relative">
+                  <EnhancedArticleContent article={article} />
                 </div>
 
-                {article.views && (
-                  <p className="text-sm font-semibold text-gray-700">
-                    {article.views?.toLocaleString()} views
-                  </p>
-                )}
+                {/* Article Footer */}
+                <div className="border-t border-gray-200 pt-8">
+                  {/* Views */}
+                  {article.views && (
+                    <p className="text-sm font-semibold text-gray-700 mb-6">
+                      {article.views?.toLocaleString()} people read this
+                    </p>
+                  )}
 
-                {/* Tags */}
-                <div className="mb-8 pt-6 border-t border-gray-200">
-                  <TagsList tags={article.tags} />
-                </div>
+                  {/* Tags */}
+                  <div className="mb-8">
+                    <TagsList tags={article.tags} />
+                  </div>
 
-                {/* Sources - If available */}
-                {article.sources && article.sources?.length > 0 && (
-                  <div className="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <h3 className="font-semibold text-blue-900 mb-3">
-                      Sources
-                    </h3>
-                    <ul className="space-y-2 text-sm text-blue-800">
-                      {article.sources &&
-                        article.sources.map((source, index) => (
+                  {/* Sources */}
+                  {article.sources && article.sources?.length > 0 && (
+                    <div className="mb-8 p-6 bg-blue-50 rounded-xl border border-blue-200">
+                      <h3 className="font-semibold text-blue-900 mb-4 text-lg">
+                        Sources & References
+                      </h3>
+                      <ul className="space-y-3 text-blue-800">
+                        {article.sources.map((source, index) => (
                           <li key={index} className="flex items-start">
-                            <span className="text-blue-600 mr-2">•</span>
+                            <span className="text-blue-600 mr-3 mt-1">•</span>
                             <a
                               href={source.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="underline hover:text-blue-900"
+                              className="underline hover:text-blue-900 transition-colors leading-relaxed"
                             >
                               {source.title}
                             </a>
                           </li>
                         ))}
-                    </ul>
-                  </div>
-                )}
+                      </ul>
+                    </div>
+                  )}
 
-                {/* Article Actions */}
-                <div className="mt-8 pt-6 border-t border-gray-200">
+                  {/* Article Actions */}
                   <ArticleActions
                     isBookmarked={isBookmarked}
                     setIsBookmarked={setIsBookmarked}
@@ -224,14 +227,14 @@ export default function ArticlePageClient({
                   />
 
                   {/* Share Again at Bottom */}
-                  <div className="flex items-center justify-center mt-6 p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-center mt-8 p-6 bg-gray-50 rounded-xl">
                     <div className="text-center">
-                      <p className="text-sm font-medium text-gray-700 mb-2">
+                      <p className="text-base font-medium text-gray-700 mb-3">
                         Found this article informative? Share it:
                       </p>
                       <div className="flex items-center space-x-2 justify-center">
-                        <Share2 className="h-4 w-4 text-gray-600" />
-                        <span className="text-sm text-gray-600">Share</span>
+                        <Share2 className="h-5 w-5 text-gray-600" />
+                        <span className="text-base text-gray-600">Share</span>
                       </div>
                     </div>
                   </div>
@@ -250,9 +253,9 @@ export default function ArticlePageClient({
 
               {/* Related Articles */}
               {relatedArticles && relatedArticles.length > 0 && (
-                <div className="mt-8">
-                  <h2 className="text-xl font-bold text-amber-600 mb-4 pb-3 border-b border-gray-200">
-                    Also Read
+                <div className="mt-12">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6 pb-3 border-b border-gray-200 font-serif">
+                    Continue Reading
                   </h2>
                   <RelatedArticles
                     currentSlug={article.slug}
@@ -262,42 +265,42 @@ export default function ArticlePageClient({
               )}
 
               {/* Newsletter Signup */}
-              <div className="mt-8">
+              <div className="mt-12">
                 <NewsletterSignup />
               </div>
             </div>
 
-            {/* Sidebar - Right Column */}
-            <div className="lg:col-span-4 space-y-6">
+            {/* Sidebar */}
+            <div className="lg:col-span-4 xl:col-span-3 space-y-8">
               {/* Latest Articles Sidebar */}
               <LatestArticlesSidebar latestArticles={latestArticles ?? []} />
 
               {/* Trending Articles Sidebar */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4 pb-3 border-b border-gray-200">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4 pb-3 border-b border-gray-200 font-serif">
                   Trending Now
                 </h2>
                 <div className="space-y-4">
                   {trendingArticles?.map((item, index) => (
-                    <a
+                    <Link
                       key={item.id}
                       href={`/article/${item.slug}`}
-                      className="flex items-center space-x-3 group hover:bg-gray-50 p-3 rounded-lg transition-colors"
+                      className="flex items-start space-x-3 group hover:bg-gray-50 p-3 rounded-lg transition-colors"
                     >
-                      <span className="flex-shrink-0 w-6 h-6 bg-red-600 text-white rounded-full text-sm font-bold flex items-center justify-center">
+                      <span className="flex-shrink-0 w-6 h-6 bg-red-600 text-white rounded-full text-sm font-bold flex items-center justify-center mt-1">
                         {index + 1}
                       </span>
-                      <h3 className="font-medium text-gray-900 group-hover:text-red-600 line-clamp-2 text-sm leading-snug">
+                      <h3 className="font-medium text-gray-900 group-hover:text-red-600 line-clamp-3 text-sm leading-relaxed">
                         {item.title}
                       </h3>
-                    </a>
+                    </Link>
                   ))}
                 </div>
               </div>
 
               {/* Sidebar Ad */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                <div className="w-full h-60 bg-gray-200 flex items-center justify-center rounded">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                <div className="w-full h-60 bg-gray-200 flex items-center justify-center rounded-lg">
                   <span className="text-gray-500">Sidebar Ad</span>
                 </div>
               </div>
