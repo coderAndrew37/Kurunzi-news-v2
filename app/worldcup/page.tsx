@@ -444,10 +444,16 @@ export default function FIFAWorldCup2026() {
                         </span>
                       </div>
                       <div className="flex items-center space-x-3">
-                        <button className="text-gray-400 hover:text-red-600">
+                        <button
+                          className="text-gray-400 hover:text-red-600"
+                          aria-label="Bookmark Button"
+                        >
                           <Bookmark className="h-4 w-4" />
                         </button>
-                        <button className="text-gray-400 hover:text-red-600">
+                        <button
+                          className="text-gray-400 hover:text-red-600"
+                          aria-label="share button"
+                        >
                           <Share className="h-4 w-4" />
                         </button>
                         <div className="flex items-center text-gray-500">

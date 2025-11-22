@@ -64,7 +64,7 @@ export default function Header({ menuItems, popularTags }: HeaderProps) {
           {/* Quick Links */}
           <div className="hidden lg:flex items-center space-x-6">
             <Link
-              href="https://worldcup.kurunzi.com"
+              href="https://worldcup.kurunzinews.co.ke"
               target="_blank"
               className="flex items-center text-sm font-medium text-orange-600 hover:text-orange-700 transition-colors"
             >
