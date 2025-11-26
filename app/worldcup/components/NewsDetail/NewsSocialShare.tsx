@@ -12,7 +12,7 @@ export default function NewsSocialShare({ article }: NewsSocialShareProps) {
 
   const shareUrl =
     typeof window !== "undefined"
-      ? `${window.location.origin}/news/${article.slug}`
+      ? `${window.location.origin}/worldcup/news/${article.slug}`
       : "";
 
   const shareText = `Check out: ${article.title}`;

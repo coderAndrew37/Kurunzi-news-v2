@@ -1,13 +1,16 @@
 "use client";
 
+import { urlFor } from "@/app/lib/sanity.image";
 import { useState } from "react";
 
 interface NewsGalleryProps {
-  images: string[];
+  images: any[];
 }
 
 export default function NewsGallery({ images }: NewsGalleryProps) {
   const [selectedImage, setSelectedImage] = useState(0);
+
+  if (!images || images.length === 0) return null;
 
   return (
     <div className="mt-8 bg-white rounded-lg shadow-sm border p-6">
@@ -15,11 +18,18 @@ export default function NewsGallery({ images }: NewsGalleryProps) {
 
       {/* Main Image */}
       <div className="mb-4">
-        <div className="w-full h-80 bg-gradient-to-br from-blue-500 to-green-500 rounded-lg overflow-hidden relative">
-          <div className="absolute inset-0 flex items-center justify-center text-white text-xl font-bold">
-            Image {selectedImage + 1}
-          </div>
+        <div className="w-full h-80 bg-gray-200 rounded-lg overflow-hidden relative">
+          <img
+            src={urlFor(images[selectedImage]).width(800).height(600).url()}
+            alt={images[selectedImage].alt || "Gallery image"}
+            className="w-full h-full object-cover"
+          />
         </div>
+        {images[selectedImage].caption && (
+          <div className="text-sm text-gray-600 mt-2 text-center italic">
+            {images[selectedImage].caption}
+          </div>
+        )}
       </div>
 
       {/* Thumbnails */}
@@ -29,13 +39,17 @@ export default function NewsGallery({ images }: NewsGalleryProps) {
             <button
               key={index}
               onClick={() => setSelectedImage(index)}
-              className={`h-20 bg-gradient-to-br from-blue-400 to-green-400 rounded overflow-hidden relative ${
-                selectedImage === index ? "ring-2 ring-blue-600" : ""
+              className={`h-20 bg-gray-200 rounded overflow-hidden relative transition-all ${
+                selectedImage === index
+                  ? "ring-2 ring-blue-600 ring-offset-2"
+                  : "opacity-70 hover:opacity-100"
               }`}
             >
-              <div className="absolute inset-0 flex items-center justify-center text-white text-sm">
-                {index + 1}
-              </div>
+              <img
+                src={urlFor(image).width(200).height(200).url()}
+                alt={image.alt || `Gallery image ${index + 1}`}
+                className="w-full h-full object-cover"
+              />
             </button>
           ))}
         </div>
