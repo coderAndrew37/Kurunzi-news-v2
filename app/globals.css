@@ -107,3 +107,47 @@ a:focus-visible {
     scroll-behavior: auto;
   }
 }
+
+@tailwind utilities;
+
+@layer components {
+  .prose {
+    max-width: none;
+  }
+
+  .prose h2 {
+    @apply text-2xl font-bold mt-8 mb-4 text-gray-900;
+  }
+
+  .prose h3 {
+    @apply text-xl font-bold mt-6 mb-3 text-gray-900;
+  }
+
+  .prose p {
+    @apply mb-4 text-gray-700 leading-relaxed;
+  }
+
+  .prose ul,
+  .prose ol {
+    @apply mb-4 pl-6;
+  }
+
+  .prose li {
+    @apply mb-2 text-gray-700;
+  }
+
+  .prose blockquote {
+    @apply border-l-4 border-blue-600 pl-4 italic text-gray-600 my-6;
+  }
+
+  .prose blockquote footer {
+    @apply not-italic text-sm text-gray-500 mt-2;
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
