@@ -25,7 +25,7 @@ export default function NewsSidebar({ currentArticle }: NewsSidebarProps) {
           {latestNews.map((article) => (
             <Link
               key={article.id}
-              href={`/news/${article.slug}`}
+              href={`/worldcup/news/${article.slug}`}
               className="block group"
             >
               <div className="flex space-x-3">
@@ -58,7 +58,7 @@ export default function NewsSidebar({ currentArticle }: NewsSidebarProps) {
           {popularNews.map((article, index) => (
             <Link
               key={article.id}
-              href={`/news/${article.slug}`}
+              href={`/worldcup/news/${article.slug}`}
               className="block group"
             >
               <div className="flex items-start space-x-3">

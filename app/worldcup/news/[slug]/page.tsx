@@ -1,12 +1,17 @@
-import { notFound } from "next/navigation";
+"use client";
+
 import { newsArticles } from "@/app/data/newsData";
-import NewsHeader from "../../components/NewsDetail/NewsHeader";
-import Breadcrumb from "../../components/UI/Breadcrumb";
-import NewsContent from "../../components/NewsDetail/NewsContent";
-import NewsGallery from "../../components/NewsDetail/NewsGallery";
+import { notFound } from "next/navigation";
+import { useEffect, useState } from "react";
 import AuthorBio from "../../components/NewsDetail/AuthorBio";
-import RelatedNews from "../../components/NewsDetail/RelatedNews";
+import NewsContent from "../../components/NewsDetail/NewsContent";
+import NewsDetailSkeleton from "../../components/NewsDetail/NewsDetailSkeleton";
+import NewsGallery from "../../components/NewsDetail/NewsGallery";
+import NewsHeader from "../../components/NewsDetail/NewsHeader";
 import NewsSidebar from "../../components/NewsDetail/NewsSidebar";
+import RelatedNews from "../../components/NewsDetail/RelatedNews";
+import TableOfContents from "../../components/NewsDetail/TableOfContents";
+import Breadcrumb from "../../components/UI/Breadcrumb";
 
 interface PageProps {
   params: {
@@ -14,14 +19,24 @@ interface PageProps {
   };
 }
 
-export async function generateStaticParams() {
-  return newsArticles.map((article) => ({
-    slug: article.slug,
-  }));
-}
-
 export default function NewsDetailPage({ params }: PageProps) {
-  const article = newsArticles.find((a) => a.slug === params.slug);
+  const [loading, setLoading] = useState(true);
+  const [article, setArticle] = useState(null);
+
+  useEffect(() => {
+    // Simulate API call
+    const timer = setTimeout(() => {
+      const foundArticle = newsArticles.find((a) => a.slug === params.slug);
+      setArticle(foundArticle);
+      setLoading(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [params.slug]);
+
+  if (loading) {
+    return <NewsDetailSkeleton />;
+  }
 
   if (!article) {
     notFound();
@@ -32,7 +47,7 @@ export default function NewsDetailPage({ params }: PageProps) {
     { label: "News", href: "/news" },
     {
       label: article.category,
-      href: `/news/category/${article.category.toLowerCase()}`,
+      href: `/news?category=${article.category.toLowerCase()}`,
     },
     { label: article.title, href: `/news/${article.slug}` },
   ];
@@ -67,7 +82,10 @@ export default function NewsDetailPage({ params }: PageProps) {
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 space-y-8">
+            {/* Table of Contents */}
+            <TableOfContents content={article.content} />
+
             <NewsSidebar currentArticle={article} />
           </div>
         </div>
