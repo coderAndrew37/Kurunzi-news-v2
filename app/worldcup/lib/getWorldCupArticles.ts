@@ -5,6 +5,7 @@ import {
   worldCupArticleQuery,
   worldCupCategoriesQuery,
   worldCupArticlesByCategoryQuery,
+  relatedWorldCupArticlesQuery,
 } from "@/app/lib/worldcupQueries";
 
 export function getAllWorldCupArticles() {
@@ -27,4 +28,9 @@ export function getWorldCupArticlesByCategory(categorySlug: string) {
   return serverClient.fetch(worldCupArticlesByCategoryQuery, {
     category: categorySlug,
   });
+}
+
+export async function getRelatedWorldCupArticles(id: string) {
+  const result = await serverClient.fetch(relatedWorldCupArticlesQuery, { id });
+  return result?.related ?? [];
 }

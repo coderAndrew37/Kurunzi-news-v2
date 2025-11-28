@@ -9,38 +9,33 @@ interface Heading {
 }
 
 interface TableOfContentsProps {
-  content: string;
+  content: string; // HTML string
 }
 
 export default function TableOfContents({ content }: TableOfContentsProps) {
   const [headings, setHeadings] = useState<Heading[]>([]);
-  const [activeId, setActiveId] = useState<string>("");
+  const [activeId, setActiveId] = useState("");
 
+  // Extract headings from HTML
   useEffect(() => {
-    // Extract headings from content
     const parser = new DOMParser();
     const doc = parser.parseFromString(content, "text/html");
-    const headingElements = doc.querySelectorAll("h2, h3");
 
-    const extractedHeadings: Heading[] = Array.from(headingElements).map(
-      (heading) => {
-        const id =
-          heading.textContent
-            ?.toLowerCase()
-            .replace(/\s+/g, "-")
-            .replace(/[^\w-]/g, "") || "";
-        return {
-          id,
-          text: heading.textContent || "",
-          level: parseInt(heading.tagName.charAt(1)),
-        };
-      }
-    );
+    const hNodes = Array.from(doc.querySelectorAll("h2, h3"));
 
-    setHeadings(extractedHeadings);
+    const items = hNodes.map((h) => ({
+      id: h.id,
+      text: h.textContent ?? "",
+      level: parseInt(h.tagName.replace("H", "")),
+    }));
+
+    setHeadings(items);
   }, [content]);
 
+  // Scroll spy
   useEffect(() => {
+    if (!headings.length) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -49,49 +44,52 @@ export default function TableOfContents({ content }: TableOfContentsProps) {
           }
         });
       },
-      { rootMargin: "0% 0% -80% 0%" }
+      {
+        rootMargin: "0px 0px -70% 0px",
+        threshold: 0.2,
+      }
     );
 
-    headings.forEach((heading) => {
-      const element = document.getElementById(heading.id);
-      if (element) {
-        observer.observe(element);
-      }
+    headings.forEach((h) => {
+      const el = document.getElementById(h.id);
+      if (el) observer.observe(el);
     });
 
     return () => observer.disconnect();
   }, [headings]);
 
-  if (headings.length === 0) return null;
+  if (!headings.length) return null;
 
   return (
-    <div className="bg-gray-50 rounded-lg p-6 border sticky top-24">
+    <aside className="bg-gray-50 rounded-lg p-6 border sticky top-24">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
         Table of Contents
       </h3>
+
       <nav className="space-y-2">
-        {headings.map((heading) => (
+        {headings.map((h) => (
           <a
-            key={heading.id}
-            href={`#${heading.id}`}
-            className={`block text-sm transition hover:text-blue-600 ${
-              heading.level === 3 ? "pl-4" : ""
-            } ${
-              activeId === heading.id
-                ? "text-blue-600 font-medium"
-                : "text-gray-600"
-            }`}
+            key={h.id}
+            href={`#${h.id}`}
             onClick={(e) => {
               e.preventDefault();
-              document.getElementById(heading.id)?.scrollIntoView({
+              document.getElementById(h.id)?.scrollIntoView({
                 behavior: "smooth",
+                block: "start",
               });
             }}
+            className={`block text-sm transition ${
+              h.level === 3 ? "pl-4" : ""
+            } ${
+              activeId === h.id
+                ? "text-blue-600 font-semibold"
+                : "text-gray-700 hover:text-blue-500"
+            }`}
           >
-            {heading.text}
+            {h.text}
           </a>
         ))}
       </nav>
-    </div>
+    </aside>
   );
 }

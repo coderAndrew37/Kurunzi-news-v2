@@ -10,26 +10,28 @@ import RelatedNews from "../../components/NewsDetail/RelatedNews";
 import TableOfContents from "../../components/NewsDetail/TableOfContents";
 import { WorldCupArticle } from "../../components/types";
 import Breadcrumb from "../../components/UI/Breadcrumb";
+
 interface NewsDetailClientProps {
   article: WorldCupArticle;
   latestArticles: WorldCupArticle[];
+  htmlContent: string;
+  relatedArticles: WorldCupArticle[];
 }
 
 export default function NewsDetailClient({
   article,
   latestArticles,
+  htmlContent,
+  relatedArticles,
 }: NewsDetailClientProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Smooth skeleton loading
     const t = setTimeout(() => setLoading(false), 200);
     return () => clearTimeout(t);
   }, []);
 
   if (loading) return <NewsDetailSkeleton />;
-
-  const primaryCategory = article.categories?.[0];
 
   const breadcrumbItems = [
     { label: "Home", href: "/" },
@@ -46,25 +48,24 @@ export default function NewsDetailClient({
         <Breadcrumb items={breadcrumbItems} />
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mt-6">
-          {/* MAIN */}
           <div className="lg:col-span-3">
             <NewsContent article={article} />
 
-            {(article.gallery ?? []).length > 0 && (
-              <NewsGallery images={article.gallery ?? []} />
+            {article.gallery && article.gallery?.length > 0 && (
+              <NewsGallery images={article.gallery} />
             )}
 
-            {(article.relatedArticles?.length ?? 0) > 0 && (
+            {relatedArticles?.length > 0 && (
               <RelatedNews
                 currentArticleId={article._id}
-                relatedArticles={article.relatedArticles ?? []}
+                relatedArticles={relatedArticles}
               />
             )}
           </div>
 
-          {/* SIDEBAR */}
           <div className="lg:col-span-1 space-y-8">
-            <TableOfContents content={article.content} />
+            <TableOfContents content={htmlContent} />
+
             <NewsSidebar
               currentArticle={article}
               latestArticles={latestArticles}

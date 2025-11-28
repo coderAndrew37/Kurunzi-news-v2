@@ -153,3 +153,51 @@ export const latestWorldCupArticlesQuery = groq`
     readTime
   }
 `;
+
+export const relatedWorldCupArticlesQuery = `
+{
+  "original": *[_type == "worldCupArticle" && _id == $id][0]{
+    _id,
+    categories[]->{ _id },
+    tags,
+    matchDetails { teams },
+    relatedArticles[]->{ _id }
+  },
+
+  "related": *[_type == "worldCupArticle" && _id != $id]{
+    ...,
+    categories[]->{ _id },
+
+    // --- SCORING MODEL ---
+    "score": (
+      // 1. Manual relatedArticles boost
+      select(
+        _id in ^.original.relatedArticles[]._id => 10,
+        0
+      )
+      +
+
+      // 2. Category overlap (4 pts each)
+      (
+        count(categories[@._id in ^.original.categories[]._id]) * 4
+      )
+      +
+
+      // 3. Tag overlap (3 pts each)
+      (
+        count(tags[@ in ^.original.tags]) * 3
+      )
+      +
+
+      // 4. Team overlap (5 pts each)
+      (
+        count(matchDetails.teams[@ in ^.original.matchDetails.teams]) * 5
+      )
+      +
+
+      // 5. Recency boost
+      dateTime(publishedAt)
+    )
+  } | order(score desc)[0...4]
+}
+`;
