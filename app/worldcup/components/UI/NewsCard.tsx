@@ -1,4 +1,6 @@
 import Link from "next/link";
+import Image from "next/image";
+import { urlFor } from "@/app/lib/sanity.image";
 
 export interface NewsCardProps {
   id: string | number;
@@ -7,7 +9,7 @@ export interface NewsCardProps {
   excerpt: string;
   category: string;
   date: string;
-  image?: string;
+  image?: any;
   readTime?: number;
   variant?: "default" | "featured" | "compact";
   className?: string;
@@ -46,16 +48,25 @@ export default function NewsCard({
     compact: "p-4",
   };
 
+  const imageUrl =
+    image && image.asset ? urlFor(image).width(800).height(500).url() : null;
+
   return (
     <article className={`${cardClasses[variant]} ${className} group`}>
-      <Link href={`worldcup/news/${slug}`} className="block">
+      {/* FIX: absolute route */}
+      <Link href={`/worldcup/news/${slug}`} className="block">
         {/* Image Container */}
         <div
           className={`${imageHeight[variant]} bg-gray-200 relative overflow-hidden`}
         >
-          {/* Placeholder for image - you can replace this with Next/Image later */}
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-green-500 opacity-80 group-hover:opacity-90 transition-opacity duration-300">
-            {/* You can add an actual image here later */}
+          {imageUrl ? (
+            <Image
+              src={imageUrl}
+              alt={title}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          ) : (
             <div className="absolute inset-0 flex items-center justify-center text-white opacity-20">
               <svg
                 className="w-16 h-16"
@@ -69,7 +80,7 @@ export default function NewsCard({
                 />
               </svg>
             </div>
-          </div>
+          )}
 
           {/* Category Badge */}
           <div className="absolute top-4 left-4">
@@ -78,7 +89,7 @@ export default function NewsCard({
             </span>
           </div>
 
-          {/* Read Time (if provided) */}
+          {/* Read Time */}
           {readTime && (
             <div className="absolute top-4 right-4">
               <span className="bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs">
@@ -90,7 +101,6 @@ export default function NewsCard({
 
         {/* Content */}
         <div className={contentPadding[variant]}>
-          {/* Title */}
           <h3
             className={`font-semibold mb-3 text-gray-900 group-hover:text-blue-600 transition-colors duration-300 ${
               variant === "featured"
@@ -103,7 +113,6 @@ export default function NewsCard({
             {title}
           </h3>
 
-          {/* Excerpt */}
           <p
             className={`text-gray-600 mb-4 ${
               variant === "compact" ? "text-sm line-clamp-2" : "line-clamp-3"
@@ -112,7 +121,6 @@ export default function NewsCard({
             {excerpt}
           </p>
 
-          {/* Footer */}
           <div
             className={`flex justify-between items-center ${
               variant === "compact" ? "text-xs" : "text-sm"
@@ -125,6 +133,7 @@ export default function NewsCard({
                 day: "numeric",
               })}
             </span>
+
             <span className="text-blue-600 hover:text-blue-700 font-medium group-hover:translate-x-1 transition-transform duration-300">
               Read More →
             </span>

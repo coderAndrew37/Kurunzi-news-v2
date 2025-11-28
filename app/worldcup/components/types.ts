@@ -37,10 +37,14 @@ export interface WorldCupArticle {
   };
   excerpt: string;
   featuredImage?: any;
+  content: any;
   publishedAt: string;
+  updatedAt?: string;
   author: {
     name: string;
     image?: any;
+    bio?: any;
+    socialLinks?: any;
   };
   categories: Array<{
     title: string;
@@ -48,8 +52,29 @@ export interface WorldCupArticle {
       current: string;
     };
     color?: string;
+    icon?: string;
   }>;
   tags: string[];
   readTime: number;
-  matchDetails?: any;
+  gallery?: any[];
+  matchDetails?: {
+    teams: string[];
+    date: string;
+    venue: string;
+    competition: string;
+    stage?: string;
+  };
+  relatedArticles?: any[];
+  featured?: boolean;
+}
+
+export interface WorldCupCategory {
+  _id: string;
+  title: string;
+  slug: {
+    current: string;
+  };
+  description?: string;
+  color?: string;
+  icon?: string;
 }
