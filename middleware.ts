@@ -2,9 +2,14 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(req: NextRequest) {
-  let host = req.headers.get("host") || "";
+  let res = NextResponse.next();
 
-  // Remove port (e.g., :3000)
+  // generate nonce
+  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+  res.headers.set("x-nonce", nonce);
+
+  // handle subdomain rewrites
+  let host = req.headers.get("host") || "";
   host = host.split(":")[0];
 
   if (host.startsWith("sports.")) {
@@ -20,10 +25,9 @@ export function middleware(req: NextRequest) {
   }
 
   if (host.startsWith("worldcup.")) {
-    return NextResponse.rewrite(
-      new URL(`/worldcup${req.nextUrl.pathname}`, req.url)
-    );
+    const path = req.nextUrl.pathname || "/";
+    return NextResponse.rewrite(new URL(`/worldcup${path}`, req.url));
   }
 
-  return NextResponse.next();
+  return res;
 }

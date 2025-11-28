@@ -1,9 +1,12 @@
 "use client";
 
-import { newsArticles } from "@/app/data/newsData";
+import { serverClient } from "@/app/lib/sanity.server";
+import {
+  latestWorldCupArticlesQuery,
+  worldCupArticleQuery,
+} from "@/app/lib/worldcupQueries";
 import { notFound } from "next/navigation";
 import { useEffect, useState } from "react";
-import AuthorBio from "../../components/NewsDetail/AuthorBio";
 import NewsContent from "../../components/NewsDetail/NewsContent";
 import NewsDetailSkeleton from "../../components/NewsDetail/NewsDetailSkeleton";
 import NewsGallery from "../../components/NewsDetail/NewsGallery";
@@ -19,19 +22,68 @@ interface PageProps {
   };
 }
 
+interface WorldCupArticle {
+  _id: string;
+  title: string;
+  slug: {
+    current: string;
+  };
+  excerpt: string;
+  featuredImage?: any;
+  content: any;
+  publishedAt: string;
+  updatedAt?: string;
+  author: {
+    name: string;
+    image?: any;
+    bio?: any;
+    socialLinks?: any;
+  };
+  categories: Array<{
+    title: string;
+    slug: {
+      current: string;
+    };
+    color?: string;
+    icon?: string;
+  }>;
+  tags: string[];
+  readTime: number;
+  gallery?: any[];
+  matchDetails?: {
+    teams: string[];
+    date: string;
+    venue: string;
+    competition: string;
+    stage?: string;
+  };
+  relatedArticles?: any[];
+  featured?: boolean;
+}
+
 export default function NewsDetailPage({ params }: PageProps) {
   const [loading, setLoading] = useState(true);
-  const [article, setArticle] = useState(null);
+  const [article, setArticle] = useState<WorldCupArticle | null>(null);
+  const [latestArticles, setLatestArticles] = useState<any[]>([]);
 
   useEffect(() => {
-    // Simulate API call
-    const timer = setTimeout(() => {
-      const foundArticle = newsArticles.find((a) => a.slug === params.slug);
-      setArticle(foundArticle);
-      setLoading(false);
-    }, 1500);
+    async function fetchArticle() {
+      try {
+        const [articleData, latestData] = await Promise.all([
+          serverClient.fetch(worldCupArticleQuery, { slug: params.slug }),
+          serverClient.fetch(latestWorldCupArticlesQuery),
+        ]);
 
-    return () => clearTimeout(timer);
+        setArticle(articleData);
+        setLatestArticles(latestData);
+      } catch (error) {
+        console.error("Error fetching article:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchArticle();
   }, [params.slug]);
 
   if (loading) {
@@ -42,14 +94,15 @@ export default function NewsDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  const primaryCategory = article.categories?.[0];
   const breadcrumbItems = [
     { label: "Home", href: "/" },
     { label: "News", href: "/news" },
     {
-      label: article.category,
-      href: `/news?category=${article.category.toLowerCase()}`,
+      label: primaryCategory?.title || "News",
+      href: `/news?category=${primaryCategory?.slug.current || "news"}`,
     },
-    { label: article.title, href: `/news/${article.slug}` },
+    { label: article.title, href: `/news/${article.slug.current}` },
   ];
 
   return (
@@ -67,18 +120,20 @@ export default function NewsDetailPage({ params }: PageProps) {
             <NewsContent article={article} />
 
             {/* Gallery */}
-            {article.gallery.length > 0 && (
+            {article.gallery && article.gallery.length > 0 && (
               <NewsGallery images={article.gallery} />
             )}
 
-            {/* Author Bio */}
-            <AuthorBio author={article.author} />
+            {/* Author Bio
+            <AuthorBio author={article.author} /> */}
 
             {/* Related News */}
-            <RelatedNews
-              currentArticleId={article.id}
-              relatedIds={article.relatedArticles}
-            />
+            {article.relatedArticles && article.relatedArticles.length > 0 && (
+              <RelatedNews
+                currentArticleId={article._id}
+                relatedArticles={article.relatedArticles}
+              />
+            )}
           </div>
 
           {/* Sidebar */}
@@ -86,7 +141,10 @@ export default function NewsDetailPage({ params }: PageProps) {
             {/* Table of Contents */}
             <TableOfContents content={article.content} />
 
-            <NewsSidebar currentArticle={article} />
+            <NewsSidebar
+              currentArticle={article}
+              latestArticles={latestArticles}
+            />
           </div>
         </div>
       </div>

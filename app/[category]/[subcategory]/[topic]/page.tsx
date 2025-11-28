@@ -1,3 +1,4 @@
+// app/[category]/[subcategory]/[topic]/page.tsx
 import { notFound } from "next/navigation";
 import {
   getTopicArticles,
@@ -16,21 +17,28 @@ export async function generateStaticParams() {
 export const revalidate = 3600;
 
 interface PageProps {
-  params: { category: string; subcategory: string; topic: string };
+  params: Promise<{ category: string; subcategory: string; topic: string }>;
 }
 
+// ---------------------------
+// FIXED: params must be awaited
+// ---------------------------
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const { category, subcategory, topic } = params;
+  const { category, subcategory, topic } = await params;
+
   return {
     title: `${topic} News | ${subcategory} | ${category} - Kurunzi News`,
     description: `Latest stories and updates in ${topic}, under ${subcategory} / ${category}.`,
   };
 }
 
+// ---------------------------
+// FIXED: await params in the Page component
+// ---------------------------
 export default async function TopicPage({ params }: PageProps) {
-  const { category, subcategory, topic } = params;
+  const { category, subcategory, topic } = await params;
 
   const { articles, trendingStories, latestStories } =
     await fetchCategoryContent({

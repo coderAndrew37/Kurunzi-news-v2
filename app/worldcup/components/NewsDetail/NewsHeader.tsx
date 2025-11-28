@@ -1,12 +1,12 @@
 // app/components/NewsDetail/NewsHeader.tsx
 "use client";
 
-import { NewsArticle } from "@/app/data/newsData";
+import { urlFor } from "@/app/lib/sanity.image";
 import NewsSocialShare from "./NewsSocialShare";
 import NewsTags from "./NewsTags";
 
 interface NewsHeaderProps {
-  article: NewsArticle;
+  article: any;
 }
 
 export default function NewsHeader({ article }: NewsHeaderProps) {
@@ -20,19 +20,23 @@ export default function NewsHeader({ article }: NewsHeaderProps) {
     });
   };
 
+  const primaryCategory = article.categories?.[0];
+
   return (
     <header className="bg-white border-b">
       <div className="container mx-auto px-4 py-8">
         {/* Category and Date */}
         <div className="flex flex-wrap items-center justify-between mb-4">
           <div className="flex items-center space-x-4">
-            <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-              {article.category}
-            </span>
+            {primaryCategory && (
+              <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                {primaryCategory.title}
+              </span>
+            )}
             <span className="text-gray-500 text-sm">
               {formatDate(article.publishedAt)}
             </span>
-            {article.updatedAt !== article.publishedAt && (
+            {article.updatedAt && article.updatedAt !== article.publishedAt && (
               <span className="text-gray-400 text-sm">
                 Updated: {formatDate(article.updatedAt)}
               </span>
@@ -61,24 +65,35 @@ export default function NewsHeader({ article }: NewsHeaderProps) {
         {/* Author Info */}
         <div className="flex items-center space-x-4 mb-6">
           <div className="w-12 h-12 bg-gray-300 rounded-full overflow-hidden">
-            {/* Placeholder for author image */}
-            <div className="w-full h-full bg-gradient-to-br from-blue-500 to-green-500 flex items-center justify-center text-white font-semibold">
-              {article.author.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")}
-            </div>
+            {article.author?.image ? (
+              <img
+                src={urlFor(article.author.image).width(48).height(48).url()}
+                alt={article.author.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-blue-500 to-green-500 flex items-center justify-center text-white font-semibold">
+                {article.author?.name
+                  ?.split(" ")
+                  .map((n: string) => n[0])
+                  .join("")}
+              </div>
+            )}
           </div>
           <div>
             <div className="font-semibold text-gray-900">
-              {article.author.name}
+              {article.author?.name}
             </div>
-            <div className="text-gray-500 text-sm">{article.author.role}</div>
+            <div className="text-gray-500 text-sm">
+              {article.author?.role || "Contributor"}
+            </div>
           </div>
         </div>
 
         {/* Tags */}
-        <NewsTags tags={article.tags} />
+        {article.tags && article.tags.length > 0 && (
+          <NewsTags tags={article.tags} />
+        )}
       </div>
     </header>
   );

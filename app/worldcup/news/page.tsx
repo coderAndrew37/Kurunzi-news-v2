@@ -1,39 +1,106 @@
 // app/news/page.tsx
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { serverClient } from "@/app/lib/sanity.server";
+import {
+  allWorldCupArticlesQuery,
+  worldCupCategoriesQuery,
+} from "@/app/lib/worldcupQueries";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import Breadcrumb from "../components/UI/Breadcrumb";
 import NewsCard from "../components/UI/NewsCard";
 import NewsCardSkeleton from "../components/UI/NewsCardSkeleton";
-import Pagination from "../components/UI/Pagination";
 import NewsFilter from "../components/UI/NewsFilter";
-import Breadcrumb from "../components/UI/Breadcrumb";
-import { useSearchParams } from "next/navigation";
-import { newsArticles } from "@/app/data/newsData";
+import Pagination from "../components/UI/Pagination";
 
 const ITEMS_PER_PAGE = 9;
+
+interface WorldCupArticle {
+  _id: string;
+  title: string;
+  slug: {
+    current: string;
+  };
+  excerpt: string;
+  featuredImage?: any;
+  publishedAt: string;
+  updatedAt?: string;
+  author: {
+    name: string;
+    image?: any;
+  };
+  categories: Array<{
+    title: string;
+    slug: {
+      current: string;
+    };
+    color?: string;
+  }>;
+  tags: string[];
+  readTime: number;
+  featured?: boolean;
+  matchDetails?: any;
+}
+
+interface WorldCupCategory {
+  _id: string;
+  title: string;
+  slug: {
+    current: string;
+  };
+  description?: string;
+  color?: string;
+  icon?: string;
+}
 
 export default function NewsPage() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
+  const [articles, setArticles] = useState<WorldCupArticle[]>([]);
+  const [categories, setCategories] = useState<WorldCupCategory[]>([]);
 
   // Get current filters from URL
   const currentPage = parseInt(searchParams.get("page") || "1");
   const currentCategory = searchParams.get("category") || "all";
   const currentSort = searchParams.get("sort") || "newest";
 
-  // Extract unique categories
-  const categories = useMemo(() => {
-    return Array.from(new Set(newsArticles.map((article) => article.category)));
+  // Fetch data from Sanity
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        console.log("Fetching articles...");
+        const [articlesData, categoriesData] = await Promise.all([
+          serverClient.fetch(allWorldCupArticlesQuery),
+          serverClient.fetch(worldCupCategoriesQuery),
+        ]);
+
+        setArticles(articlesData);
+        console.log("Fetched articles:", articlesData);
+        setCategories(categoriesData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
   }, []);
+
+  // Extract category titles for filter
+  const categoryTitles = useMemo(() => {
+    return categories.map((cat) => cat.title);
+  }, [categories]);
 
   // Filter and sort articles
   const filteredArticles = useMemo(() => {
-    let filtered = newsArticles;
+    let filtered = articles;
 
     // Filter by category
     if (currentCategory !== "all") {
-      filtered = filtered.filter(
-        (article) => article.category === currentCategory
+      filtered = filtered.filter((article) =>
+        article.categories.some((cat) => cat.title === currentCategory)
       );
     }
 
@@ -57,7 +124,7 @@ export default function NewsPage() {
     });
 
     return filtered;
-  }, [currentCategory, currentSort]);
+  }, [articles, currentCategory, currentSort]);
 
   // Paginate articles
   const paginatedArticles = useMemo(() => {
@@ -66,14 +133,6 @@ export default function NewsPage() {
   }, [filteredArticles, currentPage]);
 
   const totalPages = Math.ceil(filteredArticles.length / ITEMS_PER_PAGE);
-
-  // Simulate loading
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [currentPage, currentCategory, currentSort]);
 
   const breadcrumbItems = [
     { label: "Home", href: "/" },
@@ -98,7 +157,7 @@ export default function NewsPage() {
         </div>
 
         {/* Filters */}
-        <NewsFilter categories={categories} />
+        <NewsFilter categories={categoryTitles} />
 
         {/* News Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 pb-8">
@@ -110,9 +169,14 @@ export default function NewsPage() {
             : // Show actual news cards
               paginatedArticles.map((article) => (
                 <NewsCard
-                  date={""}
-                  key={article.id}
-                  {...article}
+                  key={article._id}
+                  id={article._id}
+                  slug={article.slug.current}
+                  title={article.title}
+                  excerpt={article.excerpt}
+                  category={article.categories[0]?.title || "News"}
+                  date={article.publishedAt}
+                  readTime={article.readTime}
                   variant="default"
                 />
               ))}
