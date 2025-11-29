@@ -1,8 +1,7 @@
 import { Metadata } from "next";
-import { Author, Category, Story, Subcategory } from "@/app/components/types";
-import { transformSanityArticleToStory } from "@/app/lib/sanity.utils";
 import Image from "next/image";
 import Link from "next/link";
+import { sanityClient } from "@/app/lib/sanity.client";
 import {
   searchArticlesQuery,
   searchAuthorsQuery,
@@ -10,28 +9,45 @@ import {
   searchSubcategoriesQuery,
   searchTagsQuery,
 } from "@/app/lib/getSearchResults";
-import { sanityClient } from "@/app/lib/sanity.client";
+import { transformSanityArticleToStory } from "@/app/lib/sanity.utils";
+import { Author, Category, Story, Subcategory } from "@/app/components/types";
 import { urlFor } from "@/app/lib/sanity.image";
 import ArticleCard from "../category/[category]/_components/ArticleCard";
 
 interface SearchPageProps {
-  searchParams: { q?: string };
+  // Next's searchParams may be a promise-like dynamic API — treat as unknown and await
+  searchParams:
+    | Record<string, string | string[] | undefined>
+    | Promise<Record<string, string | string[] | undefined>>;
+}
+
+const PAGE_SIZE = 10;
+
+/* ------------------ 🔹 Helpers ------------------ */
+function toStringParam(p: string | string[] | undefined): string {
+  if (!p) return "";
+  return Array.isArray(p) ? p[0] : p;
+}
+
+function buildSearchHref(query: string, page: number) {
+  const q = encodeURIComponent(query);
+  return `/search?q=${q}${page > 1 ? `&page=${page}` : ""}`;
 }
 
 /* ------------------ 🔹 Dynamic Metadata ------------------ */
-export async function generateMetadata({
-  searchParams,
-}: SearchPageProps): Promise<Metadata> {
-  const query = searchParams.q || "";
+export async function generateMetadata(
+  props: SearchPageProps
+): Promise<Metadata> {
+  // Await because searchParams may be an async/dynamic API
+  const params = await props.searchParams;
+  const query = toStringParam(params.q) || "";
 
   const title = query
     ? `Search results for "${query}" | Kurunzi News`
     : "Search | Kurunzi News";
-
   const description = query
     ? `Explore articles, authors, and topics related to "${query}" on Kurunzi News.`
-    : "Search our articles, authors, and topics on YourSiteName.";
-
+    : "Search our articles, authors, and topics on Kurunzi News.";
   const canonical = query
     ? `https://kurunzinews.com/search?q=${encodeURIComponent(query)}`
     : "https://kurunzinews.com/search";
@@ -39,9 +55,7 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: {
-      canonical,
-    },
+    alternates: { canonical },
     openGraph: {
       title,
       description,
@@ -58,8 +72,17 @@ export async function generateMetadata({
 }
 
 /* ------------------ 🔹 Page Component ------------------ */
-export default async function SearchPage({ searchParams }: SearchPageProps) {
-  const query = searchParams.q || "";
+export default async function SearchPage(props: SearchPageProps) {
+  const params = await props.searchParams;
+  const query = toStringParam(params.q).trim();
+
+  // parse page param safely
+  const pageParam = toStringParam(params.page);
+  let pageNum = 1;
+  if (pageParam) {
+    const n = parseInt(pageParam, 10);
+    if (!Number.isNaN(n) && n > 0) pageNum = n;
+  }
 
   if (!query) {
     return (
@@ -71,26 +94,36 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     );
   }
 
-  // Fetch search results in parallel
+  const offset = (pageNum - 1) * PAGE_SIZE;
+
+  // run fetches in parallel
   const [rawArticles, authors, categories, subcategories, tags] =
     await Promise.all([
-      sanityClient.fetch(searchArticlesQuery, { q: query }),
+      // article query supports pagination params: { q, limit, offset }
+      sanityClient.fetch(searchArticlesQuery, {
+        q: query,
+        limit: PAGE_SIZE,
+        offset,
+      }),
       sanityClient.fetch(searchAuthorsQuery, { q: query }),
       sanityClient.fetch(searchCategoriesQuery, { q: query }),
       sanityClient.fetch(searchSubcategoriesQuery, { q: query }),
       sanityClient.fetch(searchTagsQuery, { q: query }),
     ]);
 
-  const articles = rawArticles.map(transformSanityArticleToStory);
+  // Map/transform articles into Story objects (safe fallback to empty array)
+  const articles: Story[] = Array.isArray(rawArticles)
+    ? rawArticles.map(transformSanityArticleToStory)
+    : [];
 
-  const canonical = `https://kurunzinews.com/search?q=${encodeURIComponent(query)}`;
+  const canonical = `https://kurunzinews.com/search?q=${encodeURIComponent(query)}${pageNum > 1 ? `&page=${pageNum}` : ""}`;
 
   /* ------------------ 🔹 JSON-LD Structured Data ------------------ */
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "SearchResultsPage",
     name: `Search results for "${query}"`,
-    description: `Browse articles, authors, and categories matching "${query}" on YourSiteName.`,
+    description: `Browse articles, authors, and categories matching "${query}" on Kurunzi News.`,
     url: canonical,
     potentialAction: {
       "@type": "SearchAction",
@@ -103,10 +136,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       description: article.excerpt || "",
       url: `https://kurunzinews.com/article/${article.slug}`,
       author: article.author
-        ? {
-            "@type": "Person",
-            name: article.author.name,
-          }
+        ? { "@type": "Person", name: article.author.name }
         : undefined,
       datePublished: article.publishedAt || undefined,
       image: article.featuredImage?.url || undefined,
@@ -122,11 +152,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   };
 
   const hasResults =
-    articles.length ||
-    authors.length ||
-    categories.length ||
-    subcategories.length ||
-    tags.length;
+    (Array.isArray(articles) && articles.length > 0) ||
+    (Array.isArray(authors) && authors.length > 0) ||
+    (Array.isArray(categories) && categories.length > 0) ||
+    (Array.isArray(subcategories) && subcategories.length > 0) ||
+    (Array.isArray(tags) && tags.length > 0);
 
   if (!hasResults) {
     return (
@@ -144,17 +174,16 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     );
   }
 
-  /* ------------------ 🔹 Render Results ------------------ */
+  const hasMore = Array.isArray(articles) && articles.length === PAGE_SIZE;
+
   return (
     <>
-      {/* Inject JSON-LD into page head */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(structuredData, null, 2),
         }}
       />
-
       <div className="max-w-7xl mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold mb-8">
           Search results for:{" "}
@@ -164,7 +193,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main Results */}
           <div className="lg:col-span-3 space-y-12">
-            {authors.length > 0 && (
+            {Array.isArray(authors) && authors.length > 0 && (
               <section>
                 <h2 className="text-2xl font-semibold mb-4">Authors</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
@@ -192,7 +221,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               </section>
             )}
 
-            {categories.length > 0 && (
+            {Array.isArray(categories) && categories.length > 0 && (
               <section>
                 <h2 className="text-2xl font-semibold mb-4">Categories</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
@@ -214,7 +243,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               </section>
             )}
 
-            {subcategories.length > 0 && (
+            {Array.isArray(subcategories) && subcategories.length > 0 && (
               <section>
                 <h2 className="text-2xl font-semibold mb-4">Subcategories</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
@@ -236,7 +265,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               </section>
             )}
 
-            {tags.length > 0 && (
+            {Array.isArray(tags) && tags.length > 0 && (
               <section>
                 <h2 className="text-2xl font-semibold mb-4">Tags</h2>
                 <div className="flex flex-wrap gap-2">
@@ -253,7 +282,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               </section>
             )}
 
-            {articles.length > 0 && (
+            {Array.isArray(articles) && articles.length > 0 && (
               <section>
                 <h2 className="text-2xl font-semibold mb-4">Articles</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -264,6 +293,49 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                       href={`/article/${article.slug}`}
                     />
                   ))}
+                </div>
+
+                {/* Pagination */}
+                <div className="mt-8 flex items-center justify-between">
+                  <div>
+                    {pageNum > 1 ? (
+                      <Link
+                        href={buildSearchHref(query, pageNum - 1)}
+                        className="inline-flex items-center px-4 py-2 bg-white border rounded-md shadow-sm hover:bg-gray-50"
+                      >
+                        ← Prev
+                      </Link>
+                    ) : (
+                      <button
+                        disabled
+                        className="inline-flex items-center px-4 py-2 bg-gray-100 border rounded-md text-gray-400"
+                        aria-disabled
+                      >
+                        ← Prev
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="text-sm text-neutral-600">Page {pageNum}</div>
+
+                  <div>
+                    {hasMore ? (
+                      <Link
+                        href={buildSearchHref(query, pageNum + 1)}
+                        className="inline-flex items-center px-4 py-2 bg-white border rounded-md shadow-sm hover:bg-gray-50"
+                      >
+                        Next →
+                      </Link>
+                    ) : (
+                      <button
+                        disabled
+                        className="inline-flex items-center px-4 py-2 bg-gray-100 border rounded-md text-gray-400"
+                        aria-disabled
+                      >
+                        Next →
+                      </button>
+                    )}
+                  </div>
                 </div>
               </section>
             )}

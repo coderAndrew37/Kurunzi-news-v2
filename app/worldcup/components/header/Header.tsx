@@ -20,29 +20,24 @@ export default function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
             <Link
-              href="/news"
+              href="/worldcup/news"
               className="text-gray-700 hover:text-blue-600 font-medium"
             >
               News
             </Link>
             <Link
-              href="/matches"
+              href="/worldcup/matches"
               className="text-gray-700 hover:text-blue-600 font-medium"
             >
               Matches
             </Link>
             <Link
-              href="/teams"
+              href="/worldcup/teams"
               className="text-gray-700 hover:text-blue-600 font-medium"
             >
               Teams
             </Link>
-            <Link
-              href="/tickets"
-              className="text-gray-700 hover:text-blue-600 font-medium"
-            >
-              Tickets
-            </Link>
+
             <Link
               href="/shop"
               className="text-gray-700 hover:text-blue-600 font-medium"
@@ -76,16 +71,19 @@ export default function Header() {
                 News
               </Link>
               <Link
-                href="/matches"
+                href="/worldcup/matches"
                 className="text-gray-700 hover:text-blue-600"
               >
                 Matches
               </Link>
-              <Link href="/teams" className="text-gray-700 hover:text-blue-600">
+              <Link
+                href="/worldcup/teams"
+                className="text-gray-700 hover:text-blue-600"
+              >
                 Teams
               </Link>
               <Link
-                href="/tickets"
+                href="/worldcup/tickets"
                 className="text-gray-700 hover:text-blue-600"
               >
                 Tickets

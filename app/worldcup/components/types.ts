@@ -1,7 +1,7 @@
 import { Author, SanityMainImage } from "@/app/components/types";
 import { PortableTextBlock } from "next-sanity";
 
-interface Team {
+export interface Team {
   _id: string;
   name: string;
   code: string;
@@ -67,6 +67,7 @@ export interface WorldCupArticle {
   }[];
 
   featured?: boolean;
+  isBreaking?: boolean;
 }
 
 export interface WorldCupCategory {
