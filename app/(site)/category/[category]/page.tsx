@@ -1,4 +1,3 @@
-// app/(news)/[category]/page.tsx
 import { notFound } from "next/navigation";
 import {
   getCategoryData,

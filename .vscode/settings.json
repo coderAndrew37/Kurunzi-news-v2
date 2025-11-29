@@ -1,1 +1,9 @@
-{}
+{
+  "typescript.inlayHints.parameterTypes.enabled": true,
+  "typescript.tsserver.experimental.enableProjectDiagnostics": true,
+  "typescript.preferences.includePackageJsonAutoImports": "on",
+  "typescript.tsserver.useSeparateSyntaxServer": true,
+  "typescript.tsserver.implicitProjectConfig.checkJs": true,
+  "typescript.tsserver.implicitProjectConfig.strictNullChecks": true,
+  "typescript.tsserver.implicitProjectConfig.noImplicitAny": true
+}

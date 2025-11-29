@@ -20,7 +20,6 @@ interface MobileNavProps {
 export default function MobileNav({
   isMobileMenuOpen,
   menuItems,
-  groupedCategories,
 }: MobileNavProps) {
   if (!isMobileMenuOpen) return null;
 

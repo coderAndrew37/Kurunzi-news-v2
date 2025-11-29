@@ -1,3 +1,6 @@
+import { Author, SanityMainImage } from "@/app/components/types";
+import { PortableTextBlock } from "next-sanity";
+
 interface Team {
   _id: string;
   name: string;
@@ -16,7 +19,7 @@ interface Team {
   worldCupWins?: number;
 }
 
-interface Match {
+export interface Match {
   _id: string;
   matchDate: string;
   homeTeam: Team;
@@ -32,39 +35,37 @@ interface Match {
 export interface WorldCupArticle {
   _id: string;
   title: string;
-  slug: {
-    current: string;
-  };
+  slug: { current: string };
   excerpt: string;
-  featuredImage?: any;
-  content: any;
+
+  featuredImage?: SanityMainImage | null;
+
+  content: PortableTextBlock[];
+
   publishedAt: string;
   updatedAt?: string;
-  author: {
-    name: string;
-    image?: any;
-    bio?: any;
-    socialLinks?: any;
-  };
-  categories: Array<{
-    title: string;
-    slug: {
-      current: string;
-    };
-    color?: string;
-    icon?: string;
-  }>;
+
+  author: Author;
+
+  categories: WorldCupCategory[];
+
   tags: string[];
   readTime: number;
-  gallery?: any[];
-  matchDetails?: {
-    teams: string[];
-    date: string;
-    venue: string;
-    competition: string;
-    stage?: string;
-  };
-  relatedArticles?: any[];
+
+  gallery?: SanityMainImage[];
+
+  matchDetails?: WorldCupMatchDetails;
+
+  relatedArticles?: {
+    _id: string;
+    title: string;
+    slug: { current: string };
+    excerpt?: string | null;
+    featuredImage?: SanityMainImage | null;
+    publishedAt?: string;
+    readTime?: number;
+  }[];
+
   featured?: boolean;
 }
 
@@ -78,3 +79,37 @@ export interface WorldCupCategory {
   color?: string;
   icon?: string;
 }
+
+export interface WorldCupMatchDetails {
+  teams: string[];
+  date: string;
+  venue: string;
+  competition: string;
+  stage?: string;
+}
+
+export interface PTImage {
+  _type: "image";
+  asset: { _ref: string };
+  alt?: string;
+  caption?: string;
+  alignment?: "left" | "right" | "center";
+}
+
+export interface PTCodeBlock {
+  _type: "code";
+  language: string;
+  code: string;
+}
+
+export interface PTYouTube {
+  _type: "youtube";
+  url: string;
+  caption?: string;
+}
+
+export type WorldCupPortableText =
+  | PortableTextBlock
+  | PTImage
+  | PTCodeBlock
+  | PTYouTube;

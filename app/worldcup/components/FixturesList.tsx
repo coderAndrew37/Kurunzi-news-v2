@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Clock, MapPin } from "lucide-react";
+import { Match } from "./types";
 
 interface FixturesListProps {
   fixtures: Match[];

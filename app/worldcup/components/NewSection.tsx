@@ -1,96 +1,100 @@
 import Link from "next/link";
-import NewsCard from "./UI/NewsCard";
-import NewsCardSkeleton from "./UI/NewsCardSkeleton";
 import { getFeaturedWorldCupArticles } from "../lib/getWorldCupArticles";
 import { WorldCupArticle } from "./types";
+import NewsCard from "./UI/NewsCard";
 
 export default async function NewsSection() {
-  console.log("🟦 [NewsSection] Fetching featured WC articles…");
-
   let articles: WorldCupArticle[] = [];
 
   try {
     const result = await getFeaturedWorldCupArticles();
 
-    console.log(
-      "🟩 [NewsSection] Raw Sanity Response:",
-      JSON.stringify(result, null, 2)
-    );
-
     if (Array.isArray(result)) {
       articles = result;
     } else {
-      console.log("🟨 [NewsSection] Warning: Sanity returned non-array value");
+      console.warn(
+        "🟨 [NewsSection] Warning: Expected an array of WorldCupArticle"
+      );
     }
-  } catch (error: any) {
-    console.error(
-      "🟥 [NewsSection] Sanity fetch failure:",
-      error?.message || error
-    );
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unknown Sanity error";
+    console.error("🟥 [NewsSection] Sanity fetch failure:", message);
   }
 
-  console.log("🟪 [NewsSection] Final article count:", articles?.length);
-
-  const fallbackNews = [
+  // -----------------------------
+  // 📌 Strongly typed fallback
+  // -----------------------------
+  const fallbackNews: WorldCupArticle[] = [
     {
-      _id: "1",
+      _id: "fallback-1",
       slug: { current: "host-cities-announced-world-cup-2026" },
       title: "Host Cities Announced for World Cup 2026",
       excerpt:
         "FIFA reveals the final list of host cities across North America for the expanded 48-team tournament.",
-      category: "Official",
       publishedAt: "2024-01-15T00:00:00Z",
       readTime: 4,
+      content: [],
       categories: [
-        { title: "Official", slug: { current: "official" }, color: "blue" },
+        {
+          _id: "cat-official",
+          title: "Official",
+          slug: { current: "official" },
+          color: "blue",
+        },
       ],
-      author: { name: "World Cup News Team" },
+      author: { name: "World Cup News Team", image: undefined },
       tags: ["host-cities", "announcement"],
+      featuredImage: null,
+      matchDetails: undefined,
     },
     {
-      _id: "2",
+      _id: "fallback-2",
       slug: { current: "qualification-process-begins-2026" },
       title: "Qualification Process Begins",
       excerpt:
         "Teams from 211 nations start their journey to secure one of 48 spots in the expanded World Cup format.",
-      category: "Qualifiers",
       publishedAt: "2024-01-12T00:00:00Z",
       readTime: 3,
+      content: [],
       categories: [
         {
+          _id: "cat-qualifiers",
           title: "Qualifiers",
           slug: { current: "qualifiers" },
           color: "green",
         },
       ],
-      author: { name: "World Cup News Team" },
+      author: { name: "World Cup News Team", image: undefined },
       tags: ["qualification", "teams"],
+      featuredImage: null,
+      matchDetails: undefined,
     },
     {
-      _id: "3",
+      _id: "fallback-3",
       slug: { current: "stadium-upgrades-underway" },
       title: "Stadium Upgrades Underway",
       excerpt:
         "Major renovations and infrastructure improvements begin across all host stadiums.",
-      category: "Infrastructure",
       publishedAt: "2024-01-10T00:00:00Z",
       readTime: 5,
+      content: [],
       categories: [
         {
+          _id: "cat-infrastructure",
           title: "Infrastructure",
           slug: { current: "infrastructure" },
           color: "orange",
         },
       ],
-      author: { name: "World Cup News Team" },
+      author: { name: "World Cup News Team", image: undefined },
       tags: ["stadiums", "construction"],
+      featuredImage: null,
+      matchDetails: undefined,
     },
   ];
 
-  const displayArticles =
-    articles && Array.isArray(articles) && articles.length > 0
-      ? articles
-      : fallbackNews;
+  const displayArticles = articles.length > 0 ? articles : fallbackNews;
 
   return (
     <section className="py-16 bg-gray-50">
@@ -100,7 +104,7 @@ export default async function NewsSection() {
             Latest World Cup News
           </h2>
           <Link
-            href="/news"
+            href="/worldcup/news"
             className="text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-300"
           >
             View All News →
@@ -108,7 +112,7 @@ export default async function NewsSection() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {displayArticles.slice(0, 3).map((article: WorldCupArticle) => (
+          {displayArticles.slice(0, 3).map((article) => (
             <NewsCard
               key={article._id}
               id={article._id}
