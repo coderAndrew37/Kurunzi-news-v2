@@ -73,6 +73,7 @@ export function ReplyForm({ onSubmit, onCancel }: ReplyFormProps) {
             onClick={handleCancel}
             disabled={isSubmitting}
             className="px-4 py-2 text-gray-600 hover:text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
+            aria-label="Cancel reply"
           >
             <X className="w-4 h-4" />
           </button>

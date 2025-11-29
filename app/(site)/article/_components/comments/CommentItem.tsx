@@ -58,7 +58,10 @@ export function CommentItem({ comment, onReply }: CommentItemProps) {
               </h4>
               <span className="text-sm text-gray-500">{formattedDate}</span>
             </div>
-            <button className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+            <button
+              className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="More options"
+            >
               <MoreHorizontal className="w-4 h-4 text-gray-400" />
             </button>
           </div>

@@ -3,16 +3,16 @@ import { Author, Category, Story, Subcategory } from "@/app/components/types";
 import { transformSanityArticleToStory } from "@/app/lib/sanity.utils";
 import Image from "next/image";
 import Link from "next/link";
-import ArticleCard from "../[category]/_components/ArticleCard";
 import {
   searchArticlesQuery,
   searchAuthorsQuery,
   searchCategoriesQuery,
   searchSubcategoriesQuery,
   searchTagsQuery,
-} from "../lib/getSearchResults";
-import { sanityClient } from "../lib/sanity.client";
-import { urlFor } from "../lib/sanity.image";
+} from "@/app/lib/getSearchResults";
+import { sanityClient } from "@/app/lib/sanity.client";
+import { urlFor } from "@/app/lib/sanity.image";
+import ArticleCard from "../category/[category]/_components/ArticleCard";
 
 interface SearchPageProps {
   searchParams: { q?: string };

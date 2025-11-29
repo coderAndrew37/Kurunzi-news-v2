@@ -61,7 +61,7 @@ export default async function CategoryPage({ params }: PageProps) {
       description={currentCategory.description}
       breadcrumbs={[
         { href: "/", label: "Home" },
-        { href: `/${category}`, label: currentCategory.title },
+        { href: `/category/${category}`, label: currentCategory.title },
       ]}
       articles={articles}
       trendingArticles={trendingStories}

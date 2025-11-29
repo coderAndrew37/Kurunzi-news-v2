@@ -64,7 +64,7 @@ export default function MainNav({
                   </>
                 ) : (
                   <Link
-                    href={`/${category.slug}`}
+                    href={`/category/${category.slug}`}
                     className={`${navigationMenuTriggerStyle()} font-semibold text-slate-800 hover:text-blue-700 hover:bg-blue-50 text-[15px] px-4 py-2`}
                   >
                     {category.title}
@@ -89,7 +89,7 @@ export default function MainNav({
                       {moreCategories.map((category) => (
                         <Link
                           key={category._id}
-                          href={`/${category.slug}`}
+                          href={`/category/${category.slug}`}
                           className="block p-3 rounded-lg hover:bg-blue-50 transition-colors group"
                         >
                           <span className="font-medium text-slate-800 group-hover:text-blue-700">
@@ -157,7 +157,7 @@ function MegaMenu({ category }: { category: NavItem }) {
       {/* Header */}
       <div className="mb-6">
         <Link
-          href={`/${category.slug}`}
+          href={`/category/${category.slug}`}
           className="inline-flex items-center text-lg font-bold text-blue-900 hover:text-blue-700 mb-2 transition-colors"
         >
           {category.title}
@@ -174,7 +174,7 @@ function MegaMenu({ category }: { category: NavItem }) {
           <div key={sub._id} className="space-y-4">
             {/* Subcategory Header */}
             <Link
-              href={`/${category.slug}/${sub.slug}`}
+              href={`/category/${category.slug}/${sub.slug}`}
               className="group block border-l-4 border-blue-200 pl-3"
             >
               <h4 className="font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">
@@ -188,7 +188,7 @@ function MegaMenu({ category }: { category: NavItem }) {
                 {sub.topics.slice(0, 6).map((topic) => (
                   <Link
                     key={topic._id}
-                    href={`/${category.slug}/${sub.slug}/${topic.slug}`}
+                    href={`/category/${category.slug}/${sub.slug}/${topic.slug}`}
                     className="flex items-center text-sm text-slate-700 hover:text-blue-700 py-1 transition-colors group/topic"
                   >
                     <div className="w-1.5 h-1.5 bg-slate-300 rounded-full mr-3 group-hover/topic:bg-blue-500 transition-colors" />
@@ -197,7 +197,7 @@ function MegaMenu({ category }: { category: NavItem }) {
                 ))}
                 {sub.topics.length > 6 && (
                   <Link
-                    href={`/${category.slug}/${sub.slug}`}
+                    href={`/category/${category.slug}/${sub.slug}`}
                     className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800 font-medium mt-2 transition-colors"
                   >
                     View all {sub.topics.length} topics
@@ -213,7 +213,7 @@ function MegaMenu({ category }: { category: NavItem }) {
       {/* View All Link */}
       <div className="mt-6 pt-4 border-t border-slate-200">
         <Link
-          href={`/${category.slug}`}
+          href={`/category/${category.slug}`}
           className="inline-flex items-center text-sm font-medium text-blue-700 hover:text-blue-900 transition-colors"
         >
           Browse all {category.subcategories.length} subcategories in{" "}

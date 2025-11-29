@@ -101,7 +101,7 @@ function MobileNavItem({
   if (category.subcategories?.length === 0) {
     return (
       <Link
-        href={`/${category.slug}`}
+        href={`/category/${category.slug}}`}
         className={`flex items-center justify-between ${
           nested ? "py-2 text-sm" : "py-3 text-base"
         } text-slate-800 font-medium hover:text-blue-700 transition-colors`}
@@ -129,7 +129,7 @@ function MobileNavItem({
           <div className="pl-4 space-y-3 border-l border-slate-200 ml-3 mt-2">
             {/* View All Link */}
             <Link
-              href={`/${category.slug}`}
+              href={`/category/${category.slug}}`}
               className="block py-2 text-blue-600 font-medium hover:text-blue-800 transition-colors"
             >
               View All in {category.title}
@@ -139,7 +139,7 @@ function MobileNavItem({
             {category.subcategories.map((sub) => (
               <div key={sub._id}>
                 <Link
-                  href={`/${category.slug}/${sub.slug}`}
+                  href={`/category/${category.slug}}/${sub.slug}`}
                   className="block py-2 text-slate-700 font-medium hover:text-blue-700 transition-colors"
                 >
                   {sub.title}
@@ -151,7 +151,7 @@ function MobileNavItem({
                     {sub.topics.slice(0, 5).map((topic) => (
                       <Link
                         key={topic._id}
-                        href={`/${category.slug}/${sub.slug}/${topic.slug}`}
+                        href={`/category/${category.slug}}/${sub.slug}/${topic.slug}`}
                         className="block py-1 text-sm text-slate-600 hover:text-blue-700 transition-colors"
                       >
                         {topic.title}
@@ -159,7 +159,7 @@ function MobileNavItem({
                     ))}
                     {sub.topics.length > 5 && (
                       <Link
-                        href={`/${category.slug}/${sub.slug}`}
+                        href={`/category/${category.slug}}/${sub.slug}`}
                         className="block py-1 text-sm text-blue-600 hover:text-blue-800 font-medium"
                       >
                         View all {sub.topics.length} topics →

@@ -55,9 +55,9 @@ export default async function TopicPage({ params }: PageProps) {
       description={`Latest stories in ${topic} under ${subcategory} / ${category}`}
       breadcrumbs={[
         { href: "/", label: "Home" },
-        { href: `/${category}`, label: category },
-        { href: `/${category}/${subcategory}`, label: subcategory },
-        { href: `/${category}/${subcategory}/${topic}`, label: topic },
+        { href: `/category/${category}`, label: category },
+        { href: `/category/${category}/${subcategory}`, label: subcategory },
+        { href: `/category/${category}/${subcategory}/${topic}`, label: topic },
       ]}
       articles={articles}
       trendingArticles={trendingStories}

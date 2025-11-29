@@ -4,7 +4,6 @@ import NewsletterSignup from "@/app/components/NewsletterSignup";
 import { Story as Article } from "@/app/components/types";
 import { formatTimeAgo } from "@/app/components/utils/formatDate";
 import { useIncrementArticleView } from "@/app/hooks/useIncrementArticleView";
-import RelatedArticles from "@/app/news/_components/RelatedArticles";
 import { Calendar, Clock, MapPin, RefreshCw, Share2, User } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -249,10 +248,10 @@ export default function ArticlePageClient({
                     <h2 className="text-3xl font-bold text-gray-900 mb-8">
                       Continue Reading
                     </h2>
-                    <RelatedArticles
+                    {/* <RelatedArticles
                       currentSlug={article.slug}
                       relatedArticles={relatedArticles}
-                    />
+                    /> */}
                   </div>
                 )}
 

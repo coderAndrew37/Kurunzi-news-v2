@@ -1,5 +1,5 @@
 // app/news/_components/Sidebar.tsx
-import LatestArticlesSidebar from "@/app/article/_components/LatestArticlesSidebar";
+import LatestArticlesSidebar from "@/app/(site)/article/_components/LatestArticlesSidebar";
 import TrendingNews from "@/app/components/TrendingNews";
 import { Story } from "@/app/components/types";
 import Image from "next/image";

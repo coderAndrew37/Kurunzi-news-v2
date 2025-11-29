@@ -7,6 +7,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Skeleton from "react-loading-skeleton";
+// @ts-ignore: Missing type declarations for side-effect CSS import
 import "react-loading-skeleton/dist/skeleton.css";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import { urlFor } from "../lib/sanity.image";

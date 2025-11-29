@@ -1,10 +1,10 @@
 import { getHeroStories } from "@/app/lib/getHeroStories";
 import { serverClient } from "@/app/lib/sanity.server";
 import { categoriesWithStoriesPaginatedQuery } from "@/app/lib/getCategoryStories";
-import Hero from "./components/Hero";
-import WeatherWidget from "./components/WeatherWidget";
-import InfiniteCategories from "./components/InfiniteCategories";
-import { SanityCategory } from "./lib/api";
+import Hero from "../components/Hero";
+import WeatherWidget from "../components/WeatherWidget";
+import InfiniteCategories from "../components/InfiniteCategories";
+import { SanityCategory } from "../lib/api";
 
 export const revalidate = 60;
 

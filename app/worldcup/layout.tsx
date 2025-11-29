@@ -16,20 +16,16 @@ export const metadata: Metadata = {
     "Your ultimate destination for FIFA World Cup 2026 news, matches, and official updates",
 };
 
-// 🚨 Name must NOT be RootLayout (it confuses Next bundling)
-// ✔ Correct isolated layout component
 export default function WorldCupLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        <Header />
-        <main>{children}</main>
-        <Footer />
-      </body>
-    </html>
+    <div className={inter.className}>
+      <Header />
+      <main>{children}</main>
+      <Footer />
+    </div>
   );
 }

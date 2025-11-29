@@ -47,8 +47,8 @@ export default async function SubcategoryPage({ params }: PageProps) {
       description={`Latest stories in ${subcategory} under ${category}`}
       breadcrumbs={[
         { href: "/", label: "Home" },
-        { href: `/${category}`, label: category },
-        { href: `/${category}/${subcategory}`, label: subcategory },
+        { href: `/category/${category}`, label: category },
+        { href: `/category/${category}/${subcategory}`, label: subcategory },
       ]}
       articles={articles}
       trendingArticles={trendingStories}

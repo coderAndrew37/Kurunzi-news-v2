@@ -6,11 +6,11 @@ import {
   getAllAuthorSlugs,
 } from "@/app/lib/getAuthor";
 import { urlFor } from "@/app/lib/sanity.image";
-import ArticleCard from "@/app/[category]/_components/ArticleCard";
 import type { Metadata } from "next";
 import { Story } from "@/app/components/types";
 import { PortableText } from "@portabletext/react";
 import Link from "next/link";
+import ArticleCard from "../../category/[category]/_components/ArticleCard";
 
 interface AuthorPageProps {
   params: { slug: string };
