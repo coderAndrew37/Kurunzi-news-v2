@@ -1,12 +1,14 @@
-// app/components/NewsDetail/NewsHeader.tsx
+// app/worldcup/components/NewsDetail/NewsHeader.tsx
 "use client";
 
 import { urlFor } from "@/app/lib/sanity.image";
+import Image from "next/image";
 import NewsSocialShare from "./NewsSocialShare";
 import NewsTags from "./NewsTags";
+import { WorldCupArticle } from "../types";
 
 interface NewsHeaderProps {
-  article: any;
+  article: WorldCupArticle;
 }
 
 export default function NewsHeader({ article }: NewsHeaderProps) {
@@ -21,11 +23,12 @@ export default function NewsHeader({ article }: NewsHeaderProps) {
   };
 
   const primaryCategory = article.categories?.[0];
+  const author = article.author;
 
   return (
     <header className="bg-white border-b">
       <div className="container mx-auto px-4 py-8">
-        {/* Category and Date */}
+        {/* Category + Date */}
         <div className="flex flex-wrap items-center justify-between mb-4">
           <div className="flex items-center space-x-4">
             {primaryCategory && (
@@ -33,9 +36,11 @@ export default function NewsHeader({ article }: NewsHeaderProps) {
                 {primaryCategory.title}
               </span>
             )}
+
             <span className="text-gray-500 text-sm">
               {formatDate(article.publishedAt)}
             </span>
+
             {article.updatedAt && article.updatedAt !== article.publishedAt && (
               <span className="text-gray-400 text-sm">
                 Updated: {formatDate(article.updatedAt)}
@@ -43,7 +48,7 @@ export default function NewsHeader({ article }: NewsHeaderProps) {
             )}
           </div>
 
-          {/* Read Time and Social Share */}
+          {/* Read Time + Share */}
           <div className="flex items-center space-x-4">
             <span className="text-gray-500 text-sm">
               {article.readTime} min read
@@ -62,38 +67,37 @@ export default function NewsHeader({ article }: NewsHeaderProps) {
           {article.excerpt}
         </p>
 
-        {/* Author Info */}
+        {/* Author */}
         <div className="flex items-center space-x-4 mb-6">
-          <div className="w-12 h-12 bg-gray-300 rounded-full overflow-hidden">
-            {article.author?.image ? (
-              <img
-                src={urlFor(article.author.image).width(48).height(48).url()}
-                alt={article.author.name}
-                className="w-full h-full object-cover"
+          <div className="w-12 h-12 bg-gray-300 rounded-full overflow-hidden relative">
+            {author?.image ? (
+              <Image
+                src={urlFor(author.image).width(48).height(48).url()}
+                alt={author.name}
+                fill
+                className="object-cover"
+                sizes="48px"
               />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-blue-500 to-green-500 flex items-center justify-center text-white font-semibold">
-                {article.author?.name
+                {author?.name
                   ?.split(" ")
-                  .map((n: string) => n[0])
+                  .map((n) => n[0])
                   .join("")}
               </div>
             )}
           </div>
+
           <div>
-            <div className="font-semibold text-gray-900">
-              {article.author?.name}
-            </div>
+            <div className="font-semibold text-gray-900">{author?.name}</div>
             <div className="text-gray-500 text-sm">
-              {article.author?.role || "Contributor"}
+              {author?.role || "Contributor"}
             </div>
           </div>
         </div>
 
         {/* Tags */}
-        {article.tags && article.tags.length > 0 && (
-          <NewsTags tags={article.tags} />
-        )}
+        {article.tags.length > 0 && <NewsTags tags={article.tags} />}
       </div>
     </header>
   );

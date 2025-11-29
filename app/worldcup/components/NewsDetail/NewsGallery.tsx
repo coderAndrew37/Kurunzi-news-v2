@@ -1,16 +1,20 @@
 "use client";
 
 import { urlFor } from "@/app/lib/sanity.image";
+import Image from "next/image";
 import { useState } from "react";
+import type { SanityMainImage } from "@/app/components/types";
 
 interface NewsGalleryProps {
-  images: any[];
+  images: SanityMainImage[];
 }
 
 export default function NewsGallery({ images }: NewsGalleryProps) {
   const [selectedImage, setSelectedImage] = useState(0);
 
   if (!images || images.length === 0) return null;
+
+  const selected = images[selectedImage];
 
   return (
     <div className="mt-8 bg-white rounded-lg shadow-sm border p-6">
@@ -19,15 +23,18 @@ export default function NewsGallery({ images }: NewsGalleryProps) {
       {/* Main Image */}
       <div className="mb-4">
         <div className="w-full h-80 bg-gray-200 rounded-lg overflow-hidden relative">
-          <img
-            src={urlFor(images[selectedImage]).width(800).height(600).url()}
-            alt={images[selectedImage].alt || "Gallery image"}
-            className="w-full h-full object-cover"
+          <Image
+            src={urlFor(selected).width(800).height(600).url()}
+            alt={selected.alt ?? "Gallery image"}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 800px"
           />
         </div>
-        {images[selectedImage].caption && (
+
+        {selected.caption && (
           <div className="text-sm text-gray-600 mt-2 text-center italic">
-            {images[selectedImage].caption}
+            {selected.caption}
           </div>
         )}
       </div>
@@ -37,6 +44,7 @@ export default function NewsGallery({ images }: NewsGalleryProps) {
         <div className="grid grid-cols-4 gap-2">
           {images.map((image, index) => (
             <button
+              aria-label="select Button"
               key={index}
               onClick={() => setSelectedImage(index)}
               className={`h-20 bg-gray-200 rounded overflow-hidden relative transition-all ${
@@ -45,10 +53,12 @@ export default function NewsGallery({ images }: NewsGalleryProps) {
                   : "opacity-70 hover:opacity-100"
               }`}
             >
-              <img
+              <Image
                 src={urlFor(image).width(200).height(200).url()}
-                alt={image.alt || `Gallery image ${index + 1}`}
-                className="w-full h-full object-cover"
+                alt={image.alt ?? `Gallery image ${index + 1}`}
+                fill
+                className="object-cover"
+                sizes="150px"
               />
             </button>
           ))}

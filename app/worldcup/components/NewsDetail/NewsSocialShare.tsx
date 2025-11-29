@@ -1,10 +1,10 @@
 "use client";
 
-import { NewsArticle } from "@/app/data/newsData";
 import { useState } from "react";
+import { WorldCupArticle } from "../types";
 
 interface NewsSocialShareProps {
-  article: NewsArticle;
+  article: WorldCupArticle;
 }
 
 export default function NewsSocialShare({ article }: NewsSocialShareProps) {

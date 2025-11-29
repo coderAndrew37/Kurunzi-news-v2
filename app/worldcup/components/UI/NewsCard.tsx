@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { urlFor } from "@/app/lib/sanity.image";
+import { SanityMainImage } from "@/app/components/types";
 
 export interface NewsCardProps {
   id: string | number;
@@ -9,7 +10,7 @@ export interface NewsCardProps {
   excerpt: string;
   category: string;
   date: string;
-  image?: any;
+  image?: SanityMainImage;
   readTime?: number;
   variant?: "default" | "featured" | "compact";
   className?: string;
@@ -49,7 +50,9 @@ export default function NewsCard({
   };
 
   const imageUrl =
-    image && image.asset ? urlFor(image).width(800).height(500).url() : null;
+    image && typeof image === "object" && "asset" in image
+      ? urlFor(image).width(800).height(500).url()
+      : null;
 
   return (
     <article className={`${cardClasses[variant]} ${className} group`}>

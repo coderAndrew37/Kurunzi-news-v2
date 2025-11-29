@@ -1,12 +1,19 @@
-import { toHTML, PortableTextHtmlComponents } from "@portabletext/to-html";
+import type { PortableTextBlock } from "@portabletext/types";
+import { PortableTextHtmlComponents, toHTML } from "@portabletext/to-html";
 
-export function ptToHtml(content: any) {
+// Accepts typed PortableText
+export function ptToHtml(content: PortableTextBlock[] | undefined): string {
+  if (!content) return "";
+
   try {
     const components: PortableTextHtmlComponents = {
       block: ({ value, children }) => {
-        if (value.style === "h2" || value.style === "h3") {
-          const tag = value.style;
-          const rawText = (children ?? "")
+        const style = value.style || "normal";
+
+        if (style === "h2" || style === "h3") {
+          const tag = style;
+
+          const rawText = String(children)
             .replace(/<[^>]*>/g, "")
             .trim()
             .toLowerCase()
@@ -15,24 +22,45 @@ export function ptToHtml(content: any) {
 
           return `<${tag} id="${rawText}">${children}</${tag}>`;
         }
+
         return `<p>${children}</p>`;
       },
+
+      // No custom types yet
       types: {},
+
       marks: {},
-      list: () => "",
-      listItem: () => "",
+
+      list: ({ children }) => `<ul>${children}</ul>`,
+
+      listItem: ({ children }) => `<li>${children}</li>`,
+
       hardBreak: () => "<br />",
+
+      // Unknown fallbacks
       unknownType: () => "",
       unknownMark: () => "",
       unknownBlockStyle: () => "",
       unknownList: () => "",
       unknownListItem: () => "",
-      escapeHTML: (input: string) => input, // Add this line to satisfy the required property
+
+      // Safe HTML escaping
+      escapeHTML: (input: string) =>
+        input.replace(/[&<>"']/g, (char) => {
+          const escapes: Record<string, string> = {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;",
+          };
+          return escapes[char];
+        }),
     };
 
     return toHTML(content, { components });
-  } catch (e) {
-    console.error("PortableText → HTML failed:", e);
+  } catch (error) {
+    console.error("PortableText → HTML failed:", error);
     return "";
   }
 }

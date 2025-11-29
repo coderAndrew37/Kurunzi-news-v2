@@ -1,8 +1,9 @@
+import { WorldCupArticle } from "../types";
 import NewsCard from "../UI/NewsCard";
 
 interface RelatedNewsProps {
   currentArticleId: string;
-  relatedArticles: any[];
+  relatedArticles: WorldCupArticle[] | undefined;
 }
 
 export default function RelatedNews({
