@@ -703,16 +703,17 @@ export default function HomePage() {
       <MatchGallery matches={sampleMatches} />
 
       <LiveMatchCenter />
+      <NewsGrid articles={articles} />
       <TournamentBracket />
       <PlayerSpotlight />
       <StadiumMap />
 
       <MatchFixtures matches={matches} />
-      <NewsGrid articles={articles} />
+
       <TeamsShowcase teams={teams} />
       <VideoHighlights videos={videos} />
       <StatisticsSection topScorers={topScorers} teamStats={teamStats} />
-      {/* <SocialMediaFeed /> */}
+      <SocialMediaFeed />
       <NewsletterSignup />
     </main>
   );
