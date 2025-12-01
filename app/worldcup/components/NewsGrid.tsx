@@ -99,36 +99,6 @@ export default function NewsGrid({ articles }: NewsGridProps) {
         </div>
       </div>
 
-      {/* Breaking News Banner (if any) */}
-      {/* {breakingArticles.length > 0 && (
-        <div className="mb-8">
-          <div className="flex items-center mb-4">
-            <div className="w-2 h-6 bg-red-600 mr-3"></div>
-            <h2 className="text-xl font-bold text-gray-900 uppercase tracking-wider">
-              Breaking News
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {breakingArticles.slice(0, 3).map((article) => (
-              <NewsCard
-                key={article._id}
-                id={article._id}
-                slug={article.slug}
-                title={article.title}
-                excerpt={article.excerpt}
-                category={article.category}
-                date={article.publishedAt}
-                readTime={article.readTime}
-                image={
-                  article.image ? { asset: { _ref: article.image } } : undefined
-                }
-                variant="headline"
-              />
-            ))}
-          </div>
-        </div>
-      )} */}
-
       {/* Featured Article (if any) */}
       {featuredArticle && (
         <div className="mb-12">
@@ -234,27 +204,6 @@ export default function NewsGrid({ articles }: NewsGridProps) {
             </button>
           </div>
         )}
-      </div>
-
-      {/* Newsletter Signup - Chelsea Style */}
-      <div className="mt-16 p-8 bg-gradient-to-r from-blue-900 to-blue-700 rounded-lg text-center">
-        <h3 className="text-2xl font-bold text-white mb-2">Stay Updated</h3>
-        <p className="text-blue-100 mb-6">
-          Get the latest World Cup news delivered to your inbox
-        </p>
-        <form className="max-w-md mx-auto flex gap-2">
-          <input
-            type="email"
-            placeholder="Your email address"
-            className="flex-1 px-4 py-3 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
-          />
-          <button
-            type="submit"
-            className="px-6 py-3 bg-yellow-500 text-gray-900 font-bold rounded-md hover:bg-yellow-400 transition-colors"
-          >
-            Subscribe
-          </button>
-        </form>
       </div>
     </div>
   );

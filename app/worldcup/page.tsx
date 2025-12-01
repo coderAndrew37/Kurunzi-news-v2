@@ -3,7 +3,6 @@ import NewsletterSignup from "../components/NewsletterSignup";
 import { sampleMatches } from "../data/sampleMatches";
 import MatchFixtures from "./MatchFixtures";
 import TeamsShowcase from "./TeamsShowcase";
-import BreakingNewsTicker from "./components/BreakingNewsTicker";
 import HeroSection from "./components/HeroSection";
 import LiveMatchCenter from "./components/LiveMatchCenter";
 import MatchGallery from "./components/MatchGallery";
@@ -691,8 +690,6 @@ export default function HomePage() {
   const heroArticles = featuredArticles.slice(0, 3);
   return (
     <main className="min-h-screen bg-white">
-      <BreakingNewsTicker news={breakingNews} />
-
       {/* <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"> */}
       <HeroSection
         featuredArticles={heroArticles}
