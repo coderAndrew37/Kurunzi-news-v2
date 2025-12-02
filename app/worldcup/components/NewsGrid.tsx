@@ -122,16 +122,7 @@ export default function NewsGrid({ articles, categories }: NewsGridProps) {
                 }
                 date={featuredArticle.publishedAt}
                 readTime={featuredArticle.readTime}
-                image={
-                  featuredArticle.featuredImage
-                    ? {
-                        asset: {
-                          _type: "reference",
-                          _ref: featuredArticle.featuredImage,
-                        },
-                      }
-                    : undefined
-                }
+                image={featuredArticle.featuredImage ?? undefined}
                 variant="featured"
               />
             </div>
@@ -163,11 +154,7 @@ export default function NewsGrid({ articles, categories }: NewsGridProps) {
               category={article.categories?.[0]?.title ?? "Uncategorized"}
               date={article.publishedAt}
               readTime={article.readTime}
-              image={
-                article.featuredImage
-                  ? { asset: { _ref: article.featuredImage } }
-                  : undefined
-              }
+              image={article.featuredImage ?? undefined}
               variant="default"
             />
           ))}
