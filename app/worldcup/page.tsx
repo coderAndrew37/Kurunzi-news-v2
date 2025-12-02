@@ -1,7 +1,10 @@
-// app/page.tsx
 import NewsletterSignup from "../components/NewsletterSignup";
 import { sampleMatches } from "../data/sampleMatches";
 import { serverClient } from "../lib/sanity.server";
+import {
+  allWorldCupArticlesQuery,
+  worldCupCategoriesQuery,
+} from "../lib/worldcupQueries";
 import MatchFixtures from "./MatchFixtures";
 import TeamsShowcase from "./TeamsShowcase";
 import HeroSection from "./components/HeroSection";
@@ -15,43 +18,6 @@ import StatisticsSection from "./components/StatisticsSection";
 import TournamentBracket from "./components/TournamentBracket";
 import VideoHighlights from "./components/VideoHighlights";
 import { heroQuery } from "./lib/heroQuery";
-
-// Mock data
-const breakingNews = [
-  {
-    _id: "1",
-    title: "Host Cities Announce Final Preparations for World Cup 2026",
-    slug: "host-cities-preparations",
-    publishedAt: "2024-01-15T10:00:00Z",
-  },
-  {
-    _id: "2",
-    title: "Qualification Drama: Last Spot Decided in Penalty Shootout",
-    slug: "qualification-drama",
-    publishedAt: "2024-01-15T09:30:00Z",
-  },
-  {
-    _id: "3",
-    title: "Injury Update: Star Player Returns to Training",
-    slug: "injury-update-star-return",
-    publishedAt: "2024-01-15T08:45:00Z",
-  },
-];
-
-const featuredArticle = {
-  _id: "1",
-  title: "World Cup 2026: Stadium Guide - Inside the 16 Magnificent Venues",
-  slug: "stadium-guide-2026",
-  excerpt:
-    "Explore the state-of-the-art stadiums across USA, Canada, and Mexico that will host the biggest World Cup in history. From the iconic MetLife to the stunning Azteca.",
-  publishedAt: "2024-01-15T08:00:00Z",
-  category: "Features",
-  author: { name: "James Rodriguez", slug: "james-rodriguez" },
-  image: "/stadiums-hero.jpg",
-  readTime: 8,
-  isBreaking: false,
-  isFeatured: true,
-};
 
 const matches = [
   {
@@ -129,93 +95,6 @@ const matches = [
     homeScore: 1,
     awayScore: 1,
     status: "finished",
-  },
-];
-
-const articles = [
-  {
-    _id: "1",
-    title: "Tactical Analysis: How Argentina Won the World Cup",
-    slug: "tactical-analysis-argentina",
-    excerpt:
-      "Deep dive into the strategic masterclass that led Argentina to their third World Cup title with incredible team cohesion.",
-    publishedAt: "2024-01-14T15:30:00Z",
-    category: "Analysis",
-    author: { name: "Maria Santos", slug: "maria-santos" },
-    image: "/tactical-analysis.jpg",
-    readTime: 6,
-    isBreaking: false,
-    isFeatured: false,
-  },
-  {
-    _id: "2",
-    title: "Rising Stars: 5 Young Players Who Shone Brightest",
-    slug: "rising-stars-world-cup",
-    excerpt:
-      "Meet the next generation of football superstars who announced themselves on the world stage in spectacular fashion.",
-    publishedAt: "2024-01-13T11:20:00Z",
-    category: "Features",
-    author: { name: "David Chen", slug: "david-chen" },
-    image: "/rising-stars.jpg",
-    readTime: 5,
-    isBreaking: false,
-    isFeatured: true,
-  },
-  {
-    _id: "3",
-    title: "VAR Controversy: The Decisions That Shaped the Tournament",
-    slug: "var-controversy-decisions",
-    excerpt:
-      "Examining the key VAR interventions that sparked debate and ultimately influenced the outcome of crucial matches.",
-    publishedAt: "2024-01-12T09:15:00Z",
-    category: "News",
-    author: { name: "Sarah Johnson", slug: "sarah-johnson" },
-    image: "/var-controversy.jpg",
-    readTime: 4,
-    isBreaking: true,
-    isFeatured: false,
-  },
-  {
-    _id: "4",
-    title: "Fan Experience: The Incredible Atmosphere Across 3 Nations",
-    slug: "fan-experience-atmosphere",
-    excerpt:
-      "From Mexican waves in Vancouver to samba in Miami - relive the best fan moments from across North America.",
-    publishedAt: "2024-01-11T16:45:00Z",
-    category: "Culture",
-    author: { name: "Carlos Mendez", slug: "carlos-mendez" },
-    image: "/fan-experience.jpg",
-    readTime: 7,
-    isBreaking: false,
-    isFeatured: false,
-  },
-  {
-    _id: "5",
-    title: "Injury Crisis: How Teams Managed Their Squads",
-    slug: "injury-crisis-management",
-    excerpt:
-      "With the expanded format, squad depth became crucial. Analysis of how top teams handled injuries and rotations.",
-    publishedAt: "2024-01-10T14:20:00Z",
-    category: "Analysis",
-    author: { name: "James Rodriguez", slug: "james-rodriguez" },
-    image: "/injury-crisis.jpg",
-    readTime: 5,
-    isBreaking: false,
-    isFeatured: false,
-  },
-  {
-    _id: "6",
-    title: "The Economic Impact: Billions Generated for Host Nations",
-    slug: "economic-impact-billions",
-    excerpt:
-      "Tourism, infrastructure, and global exposure - calculating the massive economic benefits for USA, Canada, and Mexico.",
-    publishedAt: "2024-01-09T12:30:00Z",
-    category: "Business",
-    author: { name: "Lisa Wang", slug: "lisa-wang" },
-    image: "/economic-impact.jpg",
-    readTime: 8,
-    isBreaking: false,
-    isFeatured: true,
   },
 ];
 
@@ -456,6 +335,12 @@ const teamStats = [
 
 export default async function HomePage() {
   const heroArticles = await serverClient.fetch(heroQuery);
+  const [rawArticles, categories] = await Promise.all([
+    serverClient.fetch(allWorldCupArticlesQuery),
+    serverClient.fetch(worldCupCategoriesQuery),
+  ]);
+
+  const articles = rawArticles;
   return (
     <main className="min-h-screen bg-white">
       {/* <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"> */}
@@ -469,7 +354,11 @@ export default async function HomePage() {
       <MatchGallery matches={sampleMatches} />
 
       <LiveMatchCenter />
-      <NewsGrid articles={articles} />
+
+      <NewsGrid
+        articles={articles}
+        categories={categories} // optional if you want dynamic filter UI
+      />
       <TournamentBracket />
       <PlayerSpotlight />
       <StadiumMap />

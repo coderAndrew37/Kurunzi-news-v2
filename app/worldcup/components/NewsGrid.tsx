@@ -3,38 +3,39 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Filter } from "lucide-react";
 import NewsCard from "./UI/NewsCard";
-
-interface Article {
-  _id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  publishedAt: string;
-  category: string;
-  author: { name: string; slug: string };
-  image?: string;
-  readTime: number;
-  isBreaking: boolean;
-  isFeatured: boolean;
-}
+import { WorldCupArticle, WorldCupCategory } from "./types";
 
 interface NewsGridProps {
-  articles: Article[];
+  articles: WorldCupArticle[];
+  categories: WorldCupCategory[];
 }
 
-// Chelsea FC inspired categories with colors
-const CATEGORIES = [
-  { name: "All", slug: "all", color: "bg-blue-600" },
-  { name: "Matches", slug: "matches", color: "bg-green-600" },
-  { name: "Transfers", slug: "transfers", color: "bg-yellow-500" },
-  { name: "Interviews", slug: "interviews", color: "bg-purple-600" },
-  { name: "Analysis", slug: "analysis", color: "bg-indigo-600" },
-];
+interface UICategory {
+  name: string;
+  slug: string;
+  color: string;
+}
 
-export default function NewsGrid({ articles }: NewsGridProps) {
+const COLOR_MAP: Record<string, string> = {
+  blue: "bg-blue-600",
+  red: "bg-red-600",
+  green: "bg-green-600",
+  yellow: "bg-yellow-600",
+};
+
+export default function NewsGrid({ articles, categories }: NewsGridProps) {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
+
+  const categoriesUI: UICategory[] = [
+    { name: "All", slug: "all", color: "bg-blue-600" },
+    ...categories.map((c) => ({
+      name: c.title,
+      slug: c.slug.current,
+      color: COLOR_MAP[c.color ?? "blue"],
+    })),
+  ];
 
   // Filter articles based on selected category
   const filteredArticles =
@@ -43,7 +44,9 @@ export default function NewsGrid({ articles }: NewsGridProps) {
       : articles.filter((article) =>
           selectedCategory === "breaking"
             ? article.isBreaking
-            : article.category.toLowerCase() === selectedCategory
+            : article.categories.some(
+                (cat: WorldCupCategory) => cat.slug.current === selectedCategory
+              )
         );
 
   // Calculate pagination
@@ -55,10 +58,8 @@ export default function NewsGrid({ articles }: NewsGridProps) {
   );
 
   // Separate featured/breaking articles
-  const featuredArticle = articles.find((article) => article.isFeatured);
-  const breakingArticles = articles.filter((article) => article.isBreaking);
-  const regularArticles = articles.filter(
-    (article) => !article.isFeatured && !article.isBreaking
+  const featuredArticle = articles.find(
+    (article: WorldCupArticle) => article.featured
   );
 
   return (
@@ -80,7 +81,7 @@ export default function NewsGrid({ articles }: NewsGridProps) {
 
         {/* Category Filter - Chelsea Style */}
         <div className="flex flex-wrap gap-2 mb-8 pb-4 border-b border-gray-200">
-          {CATEGORIES.map((category) => (
+          {categoriesUI.map((category) => (
             <button
               key={category.slug}
               onClick={() => {
@@ -113,15 +114,22 @@ export default function NewsGrid({ articles }: NewsGridProps) {
               <NewsCard
                 key={featuredArticle._id}
                 id={featuredArticle._id}
-                slug={featuredArticle.slug}
+                slug={featuredArticle.slug.current}
                 title={featuredArticle.title}
                 excerpt={featuredArticle.excerpt}
-                category={featuredArticle.category}
+                category={
+                  featuredArticle.categories?.[0]?.title ?? "Uncategorized"
+                }
                 date={featuredArticle.publishedAt}
                 readTime={featuredArticle.readTime}
                 image={
-                  featuredArticle.image
-                    ? { asset: { _ref: featuredArticle.image } }
+                  featuredArticle.featuredImage
+                    ? {
+                        asset: {
+                          _type: "reference",
+                          _ref: featuredArticle.featuredImage,
+                        },
+                      }
                     : undefined
                 }
                 variant="featured"
@@ -149,14 +157,16 @@ export default function NewsGrid({ articles }: NewsGridProps) {
             <NewsCard
               key={article._id}
               id={article._id}
-              slug={article.slug}
+              slug={article.slug.current}
               title={article.title}
               excerpt={article.excerpt}
-              category={article.category}
+              category={article.categories?.[0]?.title ?? "Uncategorized"}
               date={article.publishedAt}
               readTime={article.readTime}
               image={
-                article.image ? { asset: { _ref: article.image } } : undefined
+                article.featuredImage
+                  ? { asset: { _ref: article.featuredImage } }
+                  : undefined
               }
               variant="default"
             />

@@ -5,26 +5,24 @@ export const allWorldCupArticlesQuery = groq`
   *[_type == "worldCupArticle"] | order(publishedAt desc) {
     _id,
     title,
-    slug,
+    "slug": slug.current,
     excerpt,
-    featuredImage,
     publishedAt,
-    updatedAt,
+    readTime,
+    isBreaking,
+    featured,
+    featuredImage ,
+
+    "category": categories[0]->{
+      title,
+      "slug": slug.current,
+      color
+    },
+
     "author": author->{
       name,
-      role,
-      image
-    },
-    "categories": categories[]->{
-      title,
-      slug,
-      color,
-      icon
-    },
-    tags,
-    readTime,
-    featured,
-    matchDetails
+      "slug": slug.current
+    }
   }
 `;
 
