@@ -61,10 +61,41 @@ export interface RelatedArticle {
 }
 
 /** Custom Sanity image type with metadata fields */
-export type SanityMainImage = SanityImageSource & {
+export interface SanityImageAssetRef {
+  _ref: string;
+  _type: "reference";
+}
+
+export interface SanityImage {
+  _type: "image";
+  asset: SanityImageAssetRef;
+
+  // Optional metadata
   alt?: string | null;
   caption?: string | null;
-};
+  credit?: string | null;
+  source?: string | null;
+  alignment?: "left" | "center" | "right" | "full" | null;
+
+  // Sanity built-in fields
+  hotspot?: {
+    x: number;
+    y: number;
+    height: number;
+    width: number;
+  };
+  crop?: {
+    top: number;
+    bottom: number;
+    left: number;
+    right: number;
+  };
+}
+
+export type SanityMainImage =
+  | SanityImage // new CMS images
+  | { url: string; alt?: string | null; caption?: string | null } // legacy images
+  | null;
 
 export interface RawSanityArticle {
   _id: string;

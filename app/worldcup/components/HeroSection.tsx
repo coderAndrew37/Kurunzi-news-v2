@@ -275,7 +275,7 @@ export default function HeroSection({
               </span>
             )}
             <span className="text-white/90 font-medium text-sm tracking-wider uppercase">
-              {currentArticle.categories?.[0] || "Featured"}
+              {currentArticle.categories?.[0].title || "Featured"}
             </span>
           </div>
 
@@ -299,7 +299,7 @@ export default function HeroSection({
           {/* CTA Button */}
           <div className="hero-meta mb-12">
             <Link
-              href={`/worldcup/news/${currentArticle.slug}`}
+              href={`/worldcup/news/${currentArticle.slug.current}`}
               className="inline-flex items-center gap-2 bg-white text-gray-900 hover:bg-gray-100 px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl group"
             >
               Read Full Story
@@ -342,7 +342,7 @@ export default function HeroSection({
                             : "text-gray-600"
                         }`}
                       >
-                        {article.categories?.[0] || "Featured"}
+                        {article.categories?.[0].title || "Featured"}
                       </span>
                     </div>
                     <span className="text-xs text-gray-500">

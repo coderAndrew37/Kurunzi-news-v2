@@ -1,6 +1,7 @@
 // app/page.tsx
 import NewsletterSignup from "../components/NewsletterSignup";
 import { sampleMatches } from "../data/sampleMatches";
+import { serverClient } from "../lib/sanity.server";
 import MatchFixtures from "./MatchFixtures";
 import TeamsShowcase from "./TeamsShowcase";
 import HeroSection from "./components/HeroSection";
@@ -13,6 +14,7 @@ import StadiumMap from "./components/StadiumMap";
 import StatisticsSection from "./components/StatisticsSection";
 import TournamentBracket from "./components/TournamentBracket";
 import VideoHighlights from "./components/VideoHighlights";
+import { heroQuery } from "./lib/heroQuery";
 
 // Mock data
 const breakingNews = [
@@ -452,249 +454,16 @@ const teamStats = [
   },
 ];
 
-// Sample data for featured articles
-export const featuredArticles: WorldCupArticle[] = [
-  {
-    _id: "1",
-    title: "Argentina Crowned Champions Again: Messi's Dream Come True",
-    slug: "argentina-crowned-champions-messi-dream",
-    excerpt:
-      "In a breathtaking final at MetLife Stadium, Argentina secured their third World Cup title with a dramatic 3-2 victory over Brazil. Lionel Messi scored the winning goal in extra time.",
-    publishedAt: "2024-07-15T19:30:00Z",
-    updatedAt: "2024-07-16T10:15:00Z",
-    categories: ["Final", "Match Report", "Victory"],
-    tags: ["Argentina", "Messi", "World Cup Final", "Brazil"],
-    author: {
-      _id: "author1",
-      name: "James Rodriguez",
-      slug: "james-rodriguez",
-      bio: "Senior Football Correspondent with 15 years of experience covering international tournaments.",
-      role: "Chief Football Writer",
-    },
-    readTime: 8,
-    isBreaking: true,
-    isFeatured: true,
-    isExclusive: true,
-    priority: "critical",
-    views: 1245000,
-    likes: 98500,
-    comments: 3420,
-    videoUrl: "https://youtube.com/watch?v=argentina-final-highlights",
-    matchReport: {
-      homeTeam: "Argentina",
-      awayTeam: "Brazil",
-      score: "3-2",
-      venue: "MetLife Stadium, New York",
-      date: "2024-07-15",
-      highlights: [
-        "Messi's 89th minute equalizer",
-        "Di María's spectacular volley",
-        "Neymar's brilliant free-kick",
-        "Martinez's crucial penalty save",
-      ],
-    },
-  },
-  {
-    _id: "2",
-    title:
-      "England's Golden Generation: The Tactical Masterclass That Took Them to Semis",
-    slug: "england-tactical-masterclass-semi-finals",
-    excerpt:
-      "Gareth Southgate's tactical revolution led England to their most successful World Cup campaign in decades. Analysis of the 4-3-3 formation that dominated European giants.",
-    publishedAt: "2024-07-10T14:45:00Z",
-    updatedAt: "2024-07-11T09:20:00Z",
-    categories: ["Tactical Analysis", "Team Strategy", "England"],
-    tags: ["Gareth Southgate", "Tactics", "Bellingham", "Kane"],
-    author: {
-      _id: "author2",
-      name: "Maria Santos",
-      slug: "maria-santos",
-      bio: "Tactical analyst and former professional football coach specializing in European football.",
-      role: "Tactical Analyst",
-    },
-    readTime: 12,
-    isBreaking: false,
-    isFeatured: true,
-    priority: "high",
-    views: 876500,
-    likes: 65400,
-    comments: 2180,
-  },
-  {
-    _id: "3",
-    title:
-      "Inside the VAR Room: The Controversial Decisions That Shaped the Tournament",
-    slug: "var-controversial-decisions-tournament",
-    excerpt:
-      "Exclusive access to the VAR control room reveals the tension and precision behind the game-changing decisions. Interviews with match officials and analysis of key moments.",
-    publishedAt: "2024-07-08T11:30:00Z",
-    categories: ["Technology", "Controversy", "Analysis"],
-    tags: ["VAR", "Refereeing", "Controversy", "Technology"],
-    author: {
-      _id: "author3",
-      name: "David Chen",
-      slug: "david-chen",
-      bio: "Sports technology specialist and journalist with a focus on football officiating and innovations.",
-      role: "Technology Correspondent",
-    },
-    readTime: 10,
-    isBreaking: true,
-    isFeatured: true,
-    isExclusive: true,
-    priority: "high",
-    views: 1023400,
-    likes: 43200,
-    comments: 3890,
-  },
-  {
-    _id: "4",
-    title:
-      "USA 2026: The Most Spectacular World Cup Opening Ceremony in History",
-    slug: "usa-2026-spectacular-opening-ceremony",
-    excerpt:
-      "Beyoncé, Coldplay, and local artists created an unforgettable spectacle celebrating North American culture. Behind-the-scenes look at the $50 million production.",
-    publishedAt: "2024-06-28T20:15:00Z",
-    updatedAt: "2024-06-29T08:45:00Z",
-    categories: ["Culture", "Entertainment", "Host Cities"],
-    tags: ["Opening Ceremony", "Beyoncé", "Coldplay", "Entertainment"],
-    author: {
-      _id: "author4",
-      name: "Sarah Johnson",
-      slug: "sarah-johnson",
-      bio: "Arts and culture correspondent specializing in major event coverage and celebrity interviews.",
-      role: "Entertainment Editor",
-    },
-    readTime: 6,
-    isBreaking: false,
-    isFeatured: true,
-    priority: "normal",
-    views: 2567000,
-    likes: 198500,
-    comments: 7540,
-    gallery: [
-      { _key: "1", caption: "Beyoncé's halftime performance" },
-      { _key: "2", caption: "Drones forming World Cup trophy" },
-      { _key: "3", caption: "Cultural dance performance" },
-    ],
-  },
-  {
-    _id: "5",
-    title:
-      "Mbappé vs Haaland: The $1 Billion Showdown That Lived Up to the Hype",
-    slug: "mbappe-vs-haaland-billion-showdown",
-    excerpt:
-      "In the most expensive player matchup in football history, both superstars delivered. Statistical analysis of their quarter-final performances and what it means for their legacies.",
-    publishedAt: "2024-07-05T16:20:00Z",
-    categories: ["Player Analysis", "Statistics", "Superstars"],
-    tags: ["Mbappé", "Haaland", "PSG", "Manchester City", "Transfer Market"],
-    author: {
-      _id: "author5",
-      name: "Carlos Mendez",
-      slug: "carlos-mendez",
-      bio: "Data analyst and football statistician focusing on player performance metrics and transfer valuations.",
-      role: "Data Analyst",
-    },
-    readTime: 9,
-    isBreaking: false,
-    isFeatured: true,
-    priority: "high",
-    views: 1892000,
-    likes: 143200,
-    comments: 6210,
-  },
-  {
-    _id: "6",
-    title: "The Underdog Story: Morocco's Incredible Journey to Quarter-Finals",
-    slug: "morocco-underdog-story-quarter-finals",
-    excerpt:
-      "Against all odds, Morocco became the first African nation to reach consecutive World Cup quarter-finals. Inside their historic camp and the tactical genius behind their success.",
-    publishedAt: "2024-07-02T09:15:00Z",
-    updatedAt: "2024-07-03T14:30:00Z",
-    categories: ["Underdogs", "African Football", "Tactics"],
-    tags: ["Morocco", "Africa", "Underdog", "Hakimi", "Regragui"],
-    author: {
-      _id: "author6",
-      name: "Amina Hassan",
-      slug: "amina-hassan",
-      bio: "Specialist in African football with extensive experience covering continental tournaments and emerging talents.",
-      role: "African Football Correspondent",
-    },
-    readTime: 11,
-    isBreaking: false,
-    isFeatured: true,
-    isExclusive: true,
-    priority: "normal",
-    views: 945600,
-    likes: 87200,
-    comments: 2950,
-  },
-  {
-    _id: "7",
-    title: "Stadium Tech Revolution: How AI Changed the Fan Experience in 2026",
-    slug: "stadium-tech-revolution-ai-fan-experience",
-    excerpt:
-      "From augmented reality replays to AI-powered concession stands, discover how technology transformed the stadium experience across 16 host cities.",
-    publishedAt: "2024-07-12T13:45:00Z",
-    categories: ["Technology", "Innovation", "Fan Experience"],
-    tags: ["AI", "Technology", "Innovation", "Fan Experience", "Stadiums"],
-    author: {
-      _id: "author7",
-      name: "Lisa Wang",
-      slug: "lisa-wang",
-      bio: "Tech journalist covering sports innovation, AI applications, and digital transformation in stadium experiences.",
-      role: "Technology Innovation Editor",
-    },
-    readTime: 7,
-    isBreaking: true,
-    isFeatured: true,
-    priority: "high",
-    views: 763400,
-    likes: 54300,
-    comments: 1890,
-  },
-  {
-    _id: "8",
-    title:
-      "Women's Football Soars: Record Viewership and Attendance at Co-Hosted Events",
-    slug: "womens-football-record-viewership-attendance",
-    excerpt:
-      "The 2026 World Cup marked a turning point for women's football, with co-hosted events shattering previous records and inspiring a new generation of female athletes.",
-    publishedAt: "2024-07-14T10:30:00Z",
-    categories: ["Women's Football", "Inclusion", "Record Breaking"],
-    tags: [
-      "Women's Football",
-      "Equality",
-      "Viewership",
-      "Alex Morgan",
-      "Marta",
-    ],
-    author: {
-      _id: "author8",
-      name: "Emma Wilson",
-      slug: "emma-wilson",
-      bio: "Advocate for women's sports and journalist covering gender equality in football for over a decade.",
-      role: "Women's Football Correspondent",
-    },
-    readTime: 8,
-    isBreaking: false,
-    isFeatured: true,
-    isExclusive: true,
-    priority: "normal",
-    views: 654300,
-    likes: 49800,
-    comments: 2310,
-  },
-];
-
-export default function HomePage() {
-  const heroArticles = featuredArticles.slice(0, 3);
+export default async function HomePage() {
+  const heroArticles = await serverClient.fetch(heroQuery);
   return (
     <main className="min-h-screen bg-white">
       {/* <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"> */}
       <HeroSection
-        featuredArticles={heroArticles}
-        autoPlayInterval={10000} // Optional: custom interval
+        featuredArticles={heroArticles.articles}
+        autoPlayInterval={heroArticles.autoPlayInterval}
       />
+
       {/* </div> */}
 
       <MatchGallery matches={sampleMatches} />

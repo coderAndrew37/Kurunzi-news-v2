@@ -19,3 +19,16 @@ export function urlFor(source: SanityImageSource) {
   // _legacyMainImage ignored intentionally (legacy support)
   return builder.image(source);
 }
+
+export function isSanityImage(value: unknown): value is SanityImageSource {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "_type" in value &&
+    (value as any)._type === "image" &&
+    "asset" in value &&
+    typeof (value as any).asset === "object" &&
+    (value as any).asset !== null &&
+    "_ref" in (value as any).asset
+  );
+}
