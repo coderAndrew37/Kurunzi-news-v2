@@ -5,7 +5,7 @@ export const heroQuery = `
       title,
       slug,
       excerpt,
-      image,
+      featuredImage,
       publishedAt,
       category,
       author->{name, slug},
