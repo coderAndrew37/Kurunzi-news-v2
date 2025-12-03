@@ -3,13 +3,21 @@ export const heroQuery = `
     articles[]->{
       _id,
       title,
-      slug,
+      "slug": slug.current,
       excerpt,
       featuredImage,
       publishedAt,
-      category,
-      author->{name, slug},
-      readTime
+      "category": categories[0]->{
+        title,
+        "slug": slug.current,
+        color
+      },
+      author->{ 
+        name, 
+        "slug": slug.current 
+      },
+      readTime,
+      isBreaking
     },
     autoPlayInterval
   }

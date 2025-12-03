@@ -1,15 +1,15 @@
 // components/HeroSection.tsx
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { urlFor } from "@/app/lib/sanity.image";
+import gsap from "gsap";
 import Image from "next/image";
 import Link from "next/link";
-import gsap from "gsap";
-import { WorldCupArticle } from "./types";
-import { urlFor } from "@/app/lib/sanity.image";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { WorldCupHeroArticle } from "./types";
 
 interface HeroSectionProps {
-  featuredArticles: WorldCupArticle[];
+  featuredArticles: WorldCupHeroArticle[];
   autoPlayInterval?: number;
 }
 
@@ -275,7 +275,9 @@ export default function HeroSection({
               </span>
             )}
             <span className="text-white/90 font-medium text-sm tracking-wider uppercase">
-              {currentArticle.categories?.[0].title || "Featured"}
+              {typeof currentArticle.category === "string"
+                ? currentArticle.category
+                : currentArticle.category?.title || "Featured"}
             </span>
           </div>
 
@@ -299,7 +301,7 @@ export default function HeroSection({
           {/* CTA Button */}
           <div className="hero-meta mb-12">
             <Link
-              href={`/worldcup/news/${currentArticle.slug.current}`}
+              href={`/worldcup/news/${currentArticle.slug}`}
               className="inline-flex items-center gap-2 bg-white text-gray-900 hover:bg-gray-100 px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl group"
             >
               Read Full Story
@@ -342,7 +344,9 @@ export default function HeroSection({
                             : "text-gray-600"
                         }`}
                       >
-                        {article.categories?.[0].title || "Featured"}
+                        {typeof article.category === "string"
+                          ? article.category
+                          : article.category?.title || "Featured"}
                       </span>
                     </div>
                     <span className="text-xs text-gray-500">

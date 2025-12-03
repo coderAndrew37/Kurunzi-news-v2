@@ -70,6 +70,26 @@ export interface WorldCupArticle {
   isBreaking?: boolean;
 }
 
+export interface WorldCupHeroArticle {
+  _id: string;
+  title: string;
+  slug: string; // MUST be string
+  excerpt: string;
+  featuredImage?: any;
+  publishedAt: string;
+  readTime: number;
+  isBreaking?: boolean;
+  category?: {
+    title: string;
+    slug: string;
+    color?: string;
+  };
+  author: {
+    name: string;
+    slug: string;
+  };
+}
+
 export interface WorldCupUIArticle {
   _id: string;
   title: string;
