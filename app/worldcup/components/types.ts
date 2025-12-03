@@ -35,7 +35,8 @@ export interface Match {
 export interface WorldCupArticle {
   _id: string;
   title: string;
-  slug: { current: string };
+  slug: string;
+
   excerpt: string;
 
   featuredImage?: SanityMainImage | null;
@@ -59,7 +60,8 @@ export interface WorldCupArticle {
   relatedArticles?: {
     _id: string;
     title: string;
-    slug: { current: string };
+    slug: string;
+
     excerpt?: string | null;
     featuredImage?: SanityMainImage | null;
     publishedAt?: string;

@@ -114,7 +114,7 @@ export default function NewsGrid({ articles, categories }: NewsGridProps) {
               <NewsCard
                 key={featuredArticle._id}
                 id={featuredArticle._id}
-                slug={featuredArticle.slug.current}
+                slug={featuredArticle.slug}
                 title={featuredArticle.title}
                 excerpt={featuredArticle.excerpt}
                 category={
@@ -148,7 +148,7 @@ export default function NewsGrid({ articles, categories }: NewsGridProps) {
             <NewsCard
               key={article._id}
               id={article._id}
-              slug={article.slug.current}
+              slug={article.slug}
               title={article.title}
               excerpt={article.excerpt}
               category={article.categories?.[0]?.title ?? "Uncategorized"}
