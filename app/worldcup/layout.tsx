@@ -4,12 +4,9 @@ export const preferredRegion = "auto";
 export const fetchCache = "force-no-store";
 
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import Header from "./components/header/Header";
 import Footer from "./components/Footer";
 import BreakingNewsTicker from "./components/BreakingNewsTicker";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "FIFA World Cup 2026 - Official News, Matches & Tickets",
@@ -44,7 +41,7 @@ export default function WorldCupLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className={inter.className}>
+    <div>
       <Header />
       <BreakingNewsTicker news={breakingNews} />
       <main>{children}</main>

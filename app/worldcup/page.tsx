@@ -18,6 +18,8 @@ import StatisticsSection from "./components/StatisticsSection";
 import TournamentBracket from "./components/TournamentBracket";
 import VideoHighlights from "./components/VideoHighlights";
 import { heroQuery } from "./lib/heroQuery";
+import { worldCupMatchQuery } from "./lib/worldCupMatchQuery";
+import { worldCupPlayersQuery } from "./lib/worldCupPlayersQuery";
 
 const matches = [
   {
@@ -335,12 +337,14 @@ const teamStats = [
 
 export default async function HomePage() {
   const heroArticles = await serverClient.fetch(heroQuery);
-  const [rawArticles, categories] = await Promise.all([
+  const [rawArticles, categories, matches] = await Promise.all([
     serverClient.fetch(allWorldCupArticlesQuery),
     serverClient.fetch(worldCupCategoriesQuery),
+    serverClient.fetch(worldCupMatchQuery),
   ]);
 
   const articles = rawArticles;
+  const players = await getWorldCupPlayers();
   return (
     <main className="min-h-screen bg-white">
       {/* <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"> */}
@@ -351,7 +355,7 @@ export default async function HomePage() {
 
       {/* </div> */}
 
-      <MatchGallery matches={sampleMatches} />
+      <MatchGallery matches={matches} />
 
       <LiveMatchCenter />
 
@@ -360,7 +364,7 @@ export default async function HomePage() {
         categories={categories} // optional if you want dynamic filter UI
       />
       <TournamentBracket />
-      <PlayerSpotlight />
+      <PlayerSpotlight players={players} />
       <StadiumMap />
 
       <MatchFixtures matches={matches} />
@@ -372,4 +376,8 @@ export default async function HomePage() {
       <NewsletterSignup />
     </main>
   );
+}
+
+export async function getWorldCupPlayers() {
+  return await serverClient.fetch(worldCupPlayersQuery);
 }

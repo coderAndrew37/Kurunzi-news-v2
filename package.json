@@ -7,7 +7,8 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "postbuild": "next-sitemap"
+    "postbuild": "next-sitemap",
+    "gen:types": "sanity codegen --ts src/sanity.types.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -54,6 +55,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@sanity/codegen": "^4.20.0",
     "@tailwindcss/postcss": "^4",
     "@types/gsap": "^1.20.2",
     "@types/node": "^20",

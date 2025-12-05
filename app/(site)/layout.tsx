@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
 import { Suspense } from "react";
 
 import BreakingNewsTicker from "../components/BreakingNewsTicker";
@@ -10,17 +9,6 @@ import { getPopularTags } from "../lib/getPopularTags";
 import Header from "../navbar/NavBar";
 import TopAdBanner from "../TopAdBanner";
 import { NavItem } from "../types/navigation";
-
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  display: "swap",
-});
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Kurunzi News",
@@ -48,9 +36,7 @@ export default async function SiteLayout({
   }
 
   return (
-    <div
-      className={`${inter.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
-    >
+    <div className="antialiased">
       <Suspense fallback={null}>
         <EnhancedPageTransition />
       </Suspense>

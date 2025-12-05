@@ -1,6 +1,7 @@
-// components/MatchGallery.tsx
 "use client";
 
+import { urlFor } from "@/app/lib/sanity.image";
+import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import gsap from "gsap";
 import {
   Calendar,
@@ -20,7 +21,7 @@ import { useEffect, useRef, useState } from "react";
 
 interface MatchImage {
   _id: string;
-  url: string;
+  image: SanityImageSource; // <-- IMPORTANT
   caption: string;
   type: "goal" | "celebration" | "tactical" | "fan" | "stadium";
   photographer: string;
@@ -295,6 +296,7 @@ export default function MatchGallery({ matches }: MatchGalleryProps) {
           <div className="flex items-center gap-4 mt-4 lg:mt-0">
             <div className="bg-gray-100 rounded-lg p-1 flex">
               <button
+                aria-label="grid button"
                 onClick={() => setViewMode("grid")}
                 className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${
                   viewMode === "grid"
@@ -306,6 +308,7 @@ export default function MatchGallery({ matches }: MatchGalleryProps) {
                 Grid
               </button>
               <button
+                aria-label="carousel button"
                 onClick={() => {
                   setViewMode("carousel");
                   setSelectedImageIndex(0);
@@ -328,6 +331,7 @@ export default function MatchGallery({ matches }: MatchGalleryProps) {
           <div className="flex flex-wrap gap-2 mb-4">
             {matches.map((match, index) => (
               <button
+                aria-label="match selector button"
                 key={match._id}
                 onClick={() => setSelectedMatchIndex(index)}
                 className={`px-4 py-3 rounded-lg font-medium transition-all duration-300 ${
@@ -412,6 +416,7 @@ export default function MatchGallery({ matches }: MatchGalleryProps) {
           <div className="flex flex-wrap gap-2">
             {imageTypes.map((type) => (
               <button
+                aria-label="image filter"
                 key={type.id}
                 onClick={() => setFilterType(type.id)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
@@ -464,12 +469,12 @@ export default function MatchGallery({ matches }: MatchGalleryProps) {
                   className="flex-shrink-0 w-80 md:w-96 group cursor-pointer"
                 >
                   <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-gradient-to-br from-gray-200 to-gray-300">
-                    {/* Placeholder for image */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
-                      <span className="text-white font-semibold text-lg">
-                        Match Photo {index + 1}
-                      </span>
-                    </div>
+                    <Image
+                      src={urlFor(image.image).width(800).height(600).url()}
+                      alt={image.caption}
+                      fill
+                      className="object-cover"
+                    />
 
                     {/* Image Type Badge */}
                     <div className="absolute top-4 left-4 z-10">
@@ -593,6 +598,7 @@ export default function MatchGallery({ matches }: MatchGalleryProps) {
             {/* Carousel Controls */}
             <div className="flex items-center justify-center gap-4 mt-6">
               <button
+                aria-label="Play/Pause Button"
                 onClick={() => setIsPlaying(!isPlaying)}
                 className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
               >
@@ -607,6 +613,7 @@ export default function MatchGallery({ matches }: MatchGalleryProps) {
             <div className="flex gap-2 mt-6 overflow-x-auto pb-2">
               {filteredImages.map((image, index) => (
                 <button
+                  aria-label="thumbnail strip"
                   key={image._id}
                   onClick={() => setSelectedImageIndex(index)}
                   className={`flex-shrink-0 w-20 h-16 rounded-lg overflow-hidden transition-all ${
@@ -673,7 +680,10 @@ export default function MatchGallery({ matches }: MatchGalleryProps) {
 
         {/* Download All */}
         <div className="mt-8 text-center">
-          <button className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
+          <button
+            aria-label="Download Button"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg"
+          >
             <Download className="w-5 h-5" />
             Download All Match Photos
           </button>
