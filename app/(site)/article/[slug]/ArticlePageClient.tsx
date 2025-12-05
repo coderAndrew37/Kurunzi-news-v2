@@ -11,9 +11,9 @@ import ArticleActions from "../_components/ArticleActions";
 import CommentsSection from "../_components/ArticleCommentSection";
 import ArticleImage from "../_components/ArticleImage";
 import Breadcrumbs from "../_components/BreadCrumbs";
+import EnhancedArticleContent from "../_components/EnhancedArticleContent";
 import LatestArticlesSidebar from "../_components/LatestArticlesSidebar";
 import TagsList from "../_components/TagList";
-import EnhancedArticleContent from "../_components/EnhancedArticleContent";
 export default function ArticlePageClient({
   article,
   latestArticles,

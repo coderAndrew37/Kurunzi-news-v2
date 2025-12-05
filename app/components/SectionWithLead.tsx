@@ -2,9 +2,9 @@
 
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { urlFor } from "../lib/sanity.image";
 import { Story } from "./types";
 import Image from "next/image";
+import { urlFor } from "../lib/getHeroStories";
 
 interface SectionWithLeadProps {
   sectionTitle: string;
@@ -23,7 +23,17 @@ export default function SectionWithLead({
   isCompact = false,
   sectionIndex = 0,
 }: SectionWithLeadProps) {
-  // Different layouts based on section importance
+  // === IMAGE HELPER ===
+  function getImageUrl(image?: Story["featuredImage"]) {
+    if (!image) return "/placeholder.jpg";
+    try {
+      return urlFor(image); // already returns string
+    } catch {
+      return "/placeholder.jpg";
+    }
+  }
+
+  // === FEATURED LAYOUT ===
   const renderFeaturedLayout = () => {
     const mainStory = stories[0];
     const secondaryStories = stories.slice(1, 4);
@@ -31,7 +41,7 @@ export default function SectionWithLead({
 
     return (
       <div className="border-t border-b border-gray-200 py-6">
-        {/* Section Header */}
+        {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-tight">
             <Link
@@ -49,9 +59,9 @@ export default function SectionWithLead({
           </Link>
         </div>
 
-        {/* Featured Layout - Similar to People's Daily */}
+        {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Featured Story */}
+          {/* Main Featured */}
           <div className="lg:col-span-2">
             {mainStory && (
               <Link href={`/${mainStory.slug}`} className="group block">
@@ -59,9 +69,9 @@ export default function SectionWithLead({
                   <Image
                     src={getImageUrl(mainStory.featuredImage)}
                     alt={mainStory.title}
-                    className="w-full h-full object-cover group-hover:scale-105
-                     transition-transform duration-300"
                     fill
+                    sizes="100%"
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-6">
@@ -87,7 +97,7 @@ export default function SectionWithLead({
 
           {/* Secondary Stories */}
           <div className="space-y-4">
-            {secondaryStories.map((story, index) => (
+            {secondaryStories.map((story) => (
               <div
                 key={story.id}
                 className="pb-4 border-b border-gray-100 last:border-0"
@@ -100,7 +110,7 @@ export default function SectionWithLead({
                     {story.excerpt}
                   </p>
                   <div className="flex items-center text-gray-500 text-xs">
-                    <span>{formatDate(mainStory.publishedAt)}</span>
+                    <span>{formatDate(story.publishedAt)}</span>
                     <span className="mx-2">•</span>
                     <span>{story.readTime} min</span>
                   </div>
@@ -123,15 +133,16 @@ export default function SectionWithLead({
                     {story.excerpt}
                   </p>
                   <div className="flex items-center text-gray-500 text-xs">
-                    <span>{formatDate(mainStory.publishedAt)}</span>
+                    <span>{formatDate(story.publishedAt)}</span>
                   </div>
                 </div>
-                <div className="ml-4 w-24 flex-shrink-0">
+                <div className="ml-4 w-24 h-16 relative flex-shrink-0">
                   <Image
                     src={getImageUrl(story.featuredImage)}
                     alt={story.title}
-                    className="w-full h-16 object-cover rounded"
                     fill
+                    sizes="96px"
+                    className="object-cover rounded"
                   />
                 </div>
               </Link>
@@ -142,13 +153,13 @@ export default function SectionWithLead({
     );
   };
 
+  // === STANDARD LAYOUT ===
   const renderStandardLayout = () => {
     const mainStory = stories[0];
     const otherStories = stories.slice(1, 7);
 
     return (
       <div className="border-t py-6">
-        {/* Section Header */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-gray-900 uppercase tracking-tight">
             <Link
@@ -166,9 +177,8 @@ export default function SectionWithLead({
           </Link>
         </div>
 
-        {/* Standard Grid Layout */}
+        {/* Main Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Main Story */}
           {mainStory && (
             <div className="md:col-span-2 lg:col-span-1">
               <Link href={`/${mainStory.slug}`} className="group block">
@@ -176,8 +186,9 @@ export default function SectionWithLead({
                   <Image
                     src={getImageUrl(mainStory.featuredImage)}
                     alt={mainStory.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     fill
+                    sizes="100%"
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
                 <h3 className="font-bold text-lg text-gray-900 group-hover:text-red-600 mb-2 line-clamp-2">
@@ -215,17 +226,19 @@ export default function SectionWithLead({
                         {story.excerpt}
                       </p>
                       <div className="flex items-center text-gray-500 text-xs">
-                        <span>{formatDate(mainStory.publishedAt)}</span>
+                        <span>{formatDate(story.publishedAt)}</span>
                         <span className="mx-2">•</span>
                         <span>{story.readTime} min</span>
                       </div>
                     </div>
-                    <div className="ml-4 w-20 flex-shrink-0">
+
+                    <div className="ml-4 w-20 h-14 relative flex-shrink-0">
                       <Image
                         src={getImageUrl(story.featuredImage)}
                         alt={story.title}
-                        className="w-full h-14 object-cover rounded"
                         fill
+                        sizes="80px"
+                        className="object-cover rounded"
                       />
                     </div>
                   </Link>
@@ -238,54 +251,49 @@ export default function SectionWithLead({
     );
   };
 
-  const renderCompactLayout = () => {
-    return (
-      <div className="py-4">
-        {/* Section Header */}
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-bold text-gray-900 uppercase tracking-tight">
-            <Link
-              href={`/${sectionSlug}`}
-              className="hover:text-red-600 transition-colors"
-            >
-              {sectionTitle}
-            </Link>
-          </h2>
+  // === COMPACT LAYOUT ===
+  const renderCompactLayout = () => (
+    <div className="py-4">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-bold text-gray-900 uppercase tracking-tight">
           <Link
             href={`/${sectionSlug}`}
-            className="text-sm text-red-600 hover:text-red-800"
+            className="hover:text-red-600 transition-colors"
           >
-            More
+            {sectionTitle}
           </Link>
-        </div>
-
-        {/* Compact List Layout */}
-        <div className="space-y-4">
-          {stories.slice(0, 6).map((story) => (
-            <Link
-              key={story.id}
-              href={`/${story.slug}`}
-              className="group block border-b pb-4 last:border-0"
-            >
-              <h3 className="font-semibold text-gray-900 group-hover:text-red-600 mb-1 line-clamp-2">
-                {story.title}
-              </h3>
-              <div className="flex items-center text-gray-500 text-xs">
-                <span>{formatDate(story.publishedAt)}</span>
-                <span className="mx-2">•</span>
-                <span>{story.readTime} min read</span>
-              </div>
-            </Link>
-          ))}
-        </div>
+        </h2>
+        <Link
+          href={`/${sectionSlug}`}
+          className="text-sm text-red-600 hover:text-red-800"
+        >
+          More
+        </Link>
       </div>
-    );
-  };
 
-  // Choose layout based on props
-  if (isCompact) {
-    return renderCompactLayout();
-  }
+      <div className="space-y-4">
+        {stories.slice(0, 6).map((story) => (
+          <Link
+            key={story.id}
+            href={`/${story.slug}`}
+            className="group block border-b pb-4 last:border-0"
+          >
+            <h3 className="font-semibold text-gray-900 group-hover:text-red-600 mb-1 line-clamp-2">
+              {story.title}
+            </h3>
+            <div className="flex items-center text-gray-500 text-xs">
+              <span>{formatDate(story.publishedAt)}</span>
+              <span className="mx-2">•</span>
+              <span>{story.readTime} min read</span>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+
+  // === RENDER SWITCH ===
+  if (isCompact) return renderCompactLayout();
 
   switch (layoutType) {
     case "featured":
@@ -297,17 +305,9 @@ export default function SectionWithLead({
   }
 }
 
+// === Helpers ===
 function formatDate(value?: string | null) {
-  if (!value) return ""; // Return empty string or "—"
+  if (!value) return "";
   const date = new Date(value);
   return isNaN(date.getTime()) ? "" : date.toLocaleDateString();
-}
-
-function getImageUrl(image?: Story["featuredImage"]) {
-  if (!image) return "/placeholder.jpg";
-  try {
-    return urlFor(image).url();
-  } catch {
-    return "/placeholder.jpg";
-  }
 }

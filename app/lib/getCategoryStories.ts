@@ -196,7 +196,7 @@ export const fetchAllCategories = async (): Promise<SanityCategory[]> => {
           title,
           subtitle,
           "slug": slug.current,
-          mainImage,
+          "mainImage": mainImage, 
           category->{
             _id,
             title,

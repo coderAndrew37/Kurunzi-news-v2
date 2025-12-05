@@ -1,11 +1,10 @@
 // app/page.tsx
 import { getHeroStories } from "@/app/lib/getHeroStories";
-import { serverClient } from "@/app/lib/sanity.server";
 import Hero from "../components/Hero";
+import NewsSections from "../components/NewsSection";
 import WeatherWidget from "../components/WeatherWidget";
 import { SanityCategory } from "../lib/api";
 import { fetchAllCategories } from "../lib/getCategoryStories";
-import NewsSections from "../components/NewsSection";
 
 export const revalidate = 60;
 
