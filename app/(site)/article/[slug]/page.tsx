@@ -104,7 +104,7 @@ export default async function ArticlePage({
   const trendingArticles = await getLatestArticles(5);
 
   // Fetch related articles based on category/tags
-  const relatedArticles = await getRelatedArticles(
+  const relatedArticles: Story[] = await getRelatedArticles(
     article.slug,
     article.category?.title ?? "",
     6
@@ -145,6 +145,19 @@ export default async function ArticlePage({
     )
     .then((articles) => articles.map(transformSanityArticleToStory));
 
+  const tagArticles =
+    article.tags && article.tags.length > 0
+      ? await serverClient
+          .fetch(
+            `*[_type == "article" && slug.current != $currentSlug && count((tags[@ in $tags])) > 0] | order(publishedAt desc)[0...6]`,
+            {
+              currentSlug: slug,
+              tags: article.tags,
+            }
+          )
+          .then((articles) => articles.map(transformSanityArticleToStory))
+      : [];
+
   return (
     <ArticlePageClient
       article={article}
@@ -152,6 +165,7 @@ export default async function ArticlePage({
       trendingArticles={trendingArticles}
       relatedArticles={relatedArticles}
       moreFromCategory={moreFromCategory}
+      tagArticles={tagArticles}
     />
   );
 }

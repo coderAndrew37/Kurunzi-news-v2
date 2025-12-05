@@ -31,6 +31,7 @@ interface ArticlePageClientProps {
   trendingArticles: Article[];
   relatedArticles: Article[];
   moreFromCategory: Article[];
+  tagArticles?: Article[];
 }
 
 export default function ArticlePageClient({
@@ -39,6 +40,7 @@ export default function ArticlePageClient({
   trendingArticles,
   relatedArticles,
   moreFromCategory,
+  tagArticles,
 }: ArticlePageClientProps) {
   useIncrementArticleView(article.slug);
 
@@ -228,7 +230,12 @@ export default function ArticlePageClient({
 
               {/* Article Content */}
               <div className="mb-12">
-                <EnhancedArticleContent article={article} />
+                <EnhancedArticleContent
+                  article={article}
+                  relatedArticles={relatedArticles}
+                  categoryArticles={moreFromCategory}
+                  tagArticles={tagArticles}
+                />
               </div>
 
               {/* Article Footer */}
@@ -304,7 +311,7 @@ export default function ArticlePageClient({
                       More from {article.category?.title}
                     </h2>
                     <Link
-                      href={`/${article.category?.slug}`}
+                      href={`/category/${article.category?.slug}`}
                       className="flex items-center text-red-600 hover:text-red-800 font-medium"
                     >
                       See All <ChevronRight className="ml-1 h-4 w-4" />

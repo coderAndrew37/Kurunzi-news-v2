@@ -111,7 +111,7 @@ export default function ArticleSidebar({
               More in {category.title}
             </h2>
             <Link
-              href={`/${category.slug}`}
+              href={`/category/${category.slug}`}
               className="flex items-center text-red-600 hover:text-red-800 text-sm font-medium"
             >
               More <ChevronRight className="ml-1 h-4 w-4" />
