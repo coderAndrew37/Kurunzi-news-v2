@@ -18,162 +18,9 @@ import StatisticsSection from "./components/StatisticsSection";
 import TournamentBracket from "./components/TournamentBracket";
 import VideoHighlights from "./components/VideoHighlights";
 import { heroQuery } from "./lib/heroQuery";
+import { teamsQuery } from "./lib/teamsQuery";
 import { worldCupMatchQuery } from "./lib/worldCupMatchQuery";
 import { worldCupPlayersQuery } from "./lib/worldCupPlayersQuery";
-
-const matches = [
-  {
-    _id: "1",
-    homeTeam: {
-      name: "Argentina",
-      code: "ARG",
-      flag: "/flags/argentina.svg",
-    },
-    awayTeam: {
-      name: "Brazil",
-      code: "BRA",
-      flag: "/flags/brazil.svg",
-    },
-    date: "2024-06-15",
-    time: "20:00",
-    venue: "MetLife Stadium, New York",
-    stage: "Final",
-    homeScore: 3,
-    awayScore: 2,
-    status: "finished",
-  },
-  {
-    _id: "2",
-    homeTeam: {
-      name: "France",
-      code: "FRA",
-      flag: "/flags/france.svg",
-    },
-    awayTeam: {
-      name: "England",
-      code: "ENG",
-      flag: "/flags/england.svg",
-    },
-    date: "2024-06-20",
-    time: "17:00",
-    venue: "AT&T Stadium, Dallas",
-    stage: "Semi-Final",
-    status: "scheduled",
-  },
-  {
-    _id: "3",
-    homeTeam: {
-      name: "Spain",
-      code: "ESP",
-      flag: "/flags/spain.svg",
-    },
-    awayTeam: {
-      name: "Germany",
-      code: "GER",
-      flag: "/flags/germany.svg",
-    },
-    date: "2024-06-18",
-    time: "14:30",
-    venue: "SoFi Stadium, Los Angeles",
-    stage: "Quarter-Final",
-    status: "scheduled",
-  },
-  {
-    _id: "4",
-    homeTeam: {
-      name: "Portugal",
-      code: "POR",
-      flag: "/flags/portugal.svg",
-    },
-    awayTeam: {
-      name: "Netherlands",
-      code: "NED",
-      flag: "/flags/netherlands.svg",
-    },
-    date: "2024-06-14",
-    time: "19:45",
-    venue: "Mercedes-Benz Stadium, Atlanta",
-    stage: "Group Stage",
-    homeScore: 1,
-    awayScore: 1,
-    status: "finished",
-  },
-];
-
-const teams = [
-  {
-    _id: "1",
-    name: "Argentina",
-    code: "ARG",
-    flag: "/flags/argentina.svg",
-    group: "A",
-    fifaRanking: 1,
-    previousBest: "Champions (2022, 1986, 1978)",
-  },
-  {
-    _id: "2",
-    name: "Brazil",
-    code: "BRA",
-    flag: "/flags/brazil.svg",
-    group: "A",
-    fifaRanking: 3,
-    previousBest: "Champions (2002, 1994, 1970, 1962, 1958)",
-  },
-  {
-    _id: "3",
-    name: "France",
-    code: "FRA",
-    flag: "/flags/france.svg",
-    group: "B",
-    fifaRanking: 2,
-    previousBest: "Champions (2018, 1998)",
-  },
-  {
-    _id: "4",
-    name: "England",
-    code: "ENG",
-    flag: "/flags/england.svg",
-    group: "B",
-    fifaRanking: 4,
-    previousBest: "Champions (1966)",
-  },
-  {
-    _id: "5",
-    name: "Spain",
-    code: "ESP",
-    flag: "/flags/spain.svg",
-    group: "C",
-    fifaRanking: 5,
-    previousBest: "Champions (2010)",
-  },
-  {
-    _id: "6",
-    name: "Germany",
-    code: "GER",
-    flag: "/flags/germany.svg",
-    group: "C",
-    fifaRanking: 6,
-    previousBest: "Champions (2014, 1990, 1974, 1954)",
-  },
-  {
-    _id: "7",
-    name: "Portugal",
-    code: "POR",
-    flag: "/flags/portugal.svg",
-    group: "D",
-    fifaRanking: 7,
-    previousBest: "Semi-Finals (2006, 1966)",
-  },
-  {
-    _id: "8",
-    name: "Netherlands",
-    code: "NED",
-    flag: "/flags/netherlands.svg",
-    group: "D",
-    fifaRanking: 8,
-    previousBest: "Runners-Up (2010, 1978, 1974)",
-  },
-];
 
 const videos = [
   {
@@ -337,14 +184,16 @@ const teamStats = [
 
 export default async function HomePage() {
   const heroArticles = await serverClient.fetch(heroQuery);
-  const [rawArticles, categories, matches] = await Promise.all([
+  const [rawArticles, categories, matches, teams] = await Promise.all([
     serverClient.fetch(allWorldCupArticlesQuery),
     serverClient.fetch(worldCupCategoriesQuery),
     serverClient.fetch(worldCupMatchQuery),
+    serverClient.fetch(teamsQuery),
   ]);
 
   const articles = rawArticles;
   const players = await getWorldCupPlayers();
+  const worldCupTeams = teams;
   return (
     <main className="min-h-screen bg-white">
       {/* <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"> */}
@@ -369,7 +218,7 @@ export default async function HomePage() {
 
       <MatchFixtures matches={matches} />
 
-      <TeamsShowcase teams={teams} />
+      <TeamsShowcase teams={worldCupTeams} />
       <VideoHighlights videos={videos} />
       <StatisticsSection topScorers={topScorers} teamStats={teamStats} />
       <SocialMediaFeed />
