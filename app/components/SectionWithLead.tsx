@@ -64,7 +64,7 @@ export default function SectionWithLead({
           {/* Main Featured */}
           <div className="lg:col-span-2">
             {mainStory && (
-              <Link href={`/${mainStory.slug}`} className="group block">
+              <Link href={`/article/${mainStory.slug}`} className="group block">
                 <div className="relative h-80 overflow-hidden rounded-lg">
                   <Image
                     src={getImageUrl(mainStory.featuredImage)}
@@ -102,7 +102,7 @@ export default function SectionWithLead({
                 key={story.id}
                 className="pb-4 border-b border-gray-100 last:border-0"
               >
-                <Link href={`/${story.slug}`} className="group">
+                <Link href={`/article/${story.slug}`} className="group">
                   <h4 className="font-bold text-lg text-gray-900 group-hover:text-red-600 mb-2 line-clamp-2">
                     {story.title}
                   </h4>
@@ -124,7 +124,10 @@ export default function SectionWithLead({
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           {listStories.map((story) => (
             <div key={story.id} className="border-t pt-4">
-              <Link href={`/${story.slug}`} className="group flex items-start">
+              <Link
+                href={`/article/${story.slug}`}
+                className="group flex items-start"
+              >
                 <div className="flex-1">
                   <h4 className="font-semibold text-gray-900 group-hover:text-red-600 mb-1 line-clamp-2">
                     {story.title}
@@ -181,7 +184,7 @@ export default function SectionWithLead({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {mainStory && (
             <div className="md:col-span-2 lg:col-span-1">
-              <Link href={`/${mainStory.slug}`} className="group block">
+              <Link href={`/article/${mainStory.slug}`} className="group block">
                 <div className="relative h-64 overflow-hidden rounded-lg mb-4">
                   <Image
                     src={getImageUrl(mainStory.featuredImage)}
@@ -215,7 +218,7 @@ export default function SectionWithLead({
                   className={index >= 2 ? "border-t pt-6" : ""}
                 >
                   <Link
-                    href={`/${story.slug}`}
+                    href={`/article/${story.slug}`}
                     className="group flex items-start"
                   >
                     <div className="flex-1">
@@ -275,7 +278,7 @@ export default function SectionWithLead({
         {stories.slice(0, 6).map((story) => (
           <Link
             key={story.id}
-            href={`/${story.slug}`}
+            href={`/article/${story.slug}`}
             className="group block border-b pb-4 last:border-0"
           >
             <h3 className="font-semibold text-gray-900 group-hover:text-red-600 mb-1 line-clamp-2">
