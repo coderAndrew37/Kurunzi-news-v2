@@ -2,13 +2,13 @@ import { Story } from "@/app/components/types";
 import { articleQuery, latestArticlesQuery } from "@/app/lib/getArticle";
 import { getLatestArticles } from "@/app/lib/getLatestArticles";
 import { getRelatedArticles } from "@/app/lib/getRelatedArticles";
-import { serverClient } from "@/app/lib/sanity.server"; // ⬅️ use the server-only client
+import { serverClient } from "@/app/lib/sanity.server";
 import { transformSanityArticleToStory } from "@/app/lib/sanity.utils";
 import { Metadata } from "next";
 import Link from "next/link";
 import ArticlePageClient from "./ArticlePageClient";
 
-export const revalidate = 300; // Revalidate every 5 minutes
+export const revalidate = 300;
 
 export async function generateMetadata({
   params,
@@ -17,7 +17,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
 
-  const rawArticle = await serverClient.fetch(articleQuery, { slug }); // ⬅️ server client
+  const rawArticle = await serverClient.fetch(articleQuery, { slug });
   if (!rawArticle) {
     return {
       title: "Article Not Found | Kurunzi News",
@@ -66,7 +66,7 @@ export default async function ArticlePage({
   const { slug } = await params;
 
   // Fetch article by slug
-  const rawArticle = await serverClient.fetch(articleQuery, { slug }); // ⬅️ server client
+  const rawArticle = await serverClient.fetch(articleQuery, { slug });
 
   if (!rawArticle) {
     return (
@@ -74,11 +74,11 @@ export default async function ArticlePage({
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-2">Article Not Found</h1>
           <p className="text-gray-600">
-            The article you&apos;re looking for doesn&apos;t exist.
+            The article you're looking for doesn't exist.
           </p>
           <Link
             href="/"
-            className="text-blue-600 hover:underline mt-4 inline-block"
+            className="text-red-600 hover:underline mt-4 inline-block font-medium"
           >
             Return to Homepage
           </Link>
@@ -90,64 +90,60 @@ export default async function ArticlePage({
   // Transform into Story type
   const article: Story = transformSanityArticleToStory(rawArticle);
 
-  // Fetch latest articles
+  // Fetch latest articles for sidebar
   const rawLatestArticles = await serverClient.fetch(latestArticlesQuery, {
     currentSlug: slug,
+    limit: 10, // Fetch more for various sidebar sections
   });
 
   const latestArticles: Story[] = rawLatestArticles.map(
     transformSanityArticleToStory
   );
 
-  // Fetch trending articles
-  const trendingArticles = await getLatestArticles(6);
+  // Fetch trending articles (most viewed)
+  const trendingArticles = await getLatestArticles(5);
 
-  // Fetch related articles based on category
-  const relatedArticlesRaw = await getRelatedArticles(
+  // Fetch related articles based on category/tags
+  const relatedArticles = await getRelatedArticles(
     article.slug,
-    article.category?.title ?? article.category?.slug ?? "",
-    4
-  );
+    article.category?.title ?? "",
+    6
+  ).then((articles) => articles.map(transformSanityArticleToStory));
 
-  // transform RelatedArticle[] → Story[]
-  const relatedArticles: Story[] = relatedArticlesRaw.map((r) => ({
-    id: r.id,
-    slug: r.slug,
-    title: r.title,
-    subtitle: null,
-    img: r.img ?? null,
-    featuredImage: r.featuredImage
-      ? {
-          url: r.featuredImage.url,
-          alt: r.featuredImage.alt ?? null,
-          caption: null,
-        }
-      : null,
-    category: r.category
-      ? typeof r.category === "string"
-        ? { title: r.category, slug: r.category }
-        : { title: r.category.title, slug: r.category.slug }
-      : null,
-    subcategory: null,
-    topic: null,
-    publishedAt: r.publishedAt ?? null,
-    createdAt: undefined,
-    updatedAt: undefined,
-    author: null,
-    content: null,
-    tags: [],
-    readTime: r.readTime ?? null,
-    excerpt: r.excerpt ?? null,
-    isFeatured: false,
-    isVideo: false,
-    duration: null,
-    relatedArticles: [],
-    sources: [],
-    location: null,
-    views: r.views ?? null,
-  }));
-
-  // console.log("Related articles:", relatedArticles);
+  // Fetch more from the same category
+  const moreFromCategory = await serverClient
+    .fetch(
+      `*[
+  _type == "article" &&
+  category->slug.current == $categorySlug &&
+  slug.current != $currentSlug
+]
+{
+  _id,
+  title,
+  subtitle,
+  excerpt,
+  publishedAt,
+  readTime,
+  "slug": slug.current,   // ✅ FIX HERE
+  mainImage,
+  img,
+  author->{name, image},
+  "category": category->{title, "slug": slug.current},
+  categories[]->{title, "slug": slug.current},
+  tags,
+  isFeatured,
+  isVideo,
+  duration
+}
+| order(publishedAt desc)[0...6]
+`,
+      {
+        categorySlug: article.category?.slug,
+        currentSlug: slug,
+      }
+    )
+    .then((articles) => articles.map(transformSanityArticleToStory));
 
   return (
     <ArticlePageClient
@@ -155,6 +151,7 @@ export default async function ArticlePage({
       latestArticles={latestArticles}
       trendingArticles={trendingArticles}
       relatedArticles={relatedArticles}
+      moreFromCategory={moreFromCategory}
     />
   );
 }

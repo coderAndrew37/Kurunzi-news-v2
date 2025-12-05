@@ -29,18 +29,16 @@ export default function Breadcrumbs({ article }: BreadcrumbsProps) {
   ].filter(Boolean);
 
   return (
-    <nav className="flex items-center flex-wrap gap-2 text-sm text-white mb-6">
+    <nav className="flex items-center flex-wrap gap-2 text-sm text-blue-500 mt-4 mb-6">
       {crumbs.map((crumb, idx) => {
         if (!crumb) return null;
         const isLast = idx === crumbs.length - 1;
 
         return (
           <div key={idx} className="flex items-center">
-            {idx > 0 && (
-              <ChevronRight className="h-4 w-4 mx-1 text-white-400" />
-            )}
+            {idx > 0 && <ChevronRight className="h-4 w-4 mx-1 text-blue-500" />}
             {isLast ? (
-              <span className="text-white-900 font-medium truncate">
+              <span className="text-blue-500 font-medium truncate">
                 {crumb.label}
               </span>
             ) : (

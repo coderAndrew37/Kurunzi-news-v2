@@ -92,3 +92,9 @@ export function transformSanityArticleToStory(raw: RawSanityArticle): Story {
     duration: raw.duration ?? null,
   };
 }
+
+export function formatDate(value?: string | null) {
+  if (!value) return "";
+  const date = new Date(value);
+  return isNaN(date.getTime()) ? "" : date.toLocaleDateString();
+}

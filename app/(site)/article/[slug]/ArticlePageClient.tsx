@@ -2,9 +2,17 @@
 import TopAdBanner from "@/app/TopAdBanner";
 import NewsletterSignup from "@/app/components/NewsletterSignup";
 import { Story as Article } from "@/app/components/types";
-import { formatTimeAgo } from "@/app/components/utils/formatDate";
 import { useIncrementArticleView } from "@/app/hooks/useIncrementArticleView";
-import { Calendar, Clock, MapPin, RefreshCw, Share2, User } from "lucide-react";
+import {
+  Calendar,
+  ChevronRight,
+  Clock,
+  Eye,
+  Facebook,
+  Mail,
+  Twitter,
+  MessageCircle,
+} from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import ArticleActions from "../_components/ArticleActions";
@@ -12,19 +20,26 @@ import CommentsSection from "../_components/ArticleCommentSection";
 import ArticleImage from "../_components/ArticleImage";
 import Breadcrumbs from "../_components/BreadCrumbs";
 import EnhancedArticleContent from "../_components/EnhancedArticleContent";
-import LatestArticlesSidebar from "../_components/LatestArticlesSidebar";
-import TagsList from "../_components/TagList";
+import { formatDate } from "@/app/lib/sanity.utils";
+import ArticleSidebar from "../_components/ArticlesSidebar";
+import Image from "next/image";
+import { urlFor } from "@/app/lib/getHeroStories";
+
+interface ArticlePageClientProps {
+  article: Article;
+  latestArticles: Article[];
+  trendingArticles: Article[];
+  relatedArticles: Article[];
+  moreFromCategory: Article[];
+}
+
 export default function ArticlePageClient({
   article,
   latestArticles,
   trendingArticles,
   relatedArticles,
-}: {
-  article: Article;
-  latestArticles?: Article[];
-  trendingArticles?: Article[];
-  relatedArticles?: Article[];
-}) {
+  moreFromCategory,
+}: ArticlePageClientProps) {
   useIncrementArticleView(article.slug);
 
   const [isBookmarked, setIsBookmarked] = useState(false);
@@ -43,7 +58,21 @@ export default function ArticlePageClient({
   };
 
   const publishedDate = new Date(article.publishedAt ?? "");
-  const updatedDate = article.updatedAt ? new Date(article.updatedAt) : null;
+
+  const shareUrl =
+    typeof window !== "undefined"
+      ? window.location.href
+      : `https://kurunzinews.com/article/${article.slug}`;
+
+  const shareText = `${article.title} - Kurunzi News`;
+
+  const socialShareLinks = {
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+    twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
+    linkedin: `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`,
+    whatsapp: `https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`,
+    email: `mailto:?subject=${encodeURIComponent(shareText)}&body=${encodeURIComponent(`${shareText}\n\n${shareUrl}`)}`,
+  };
 
   return (
     <>
@@ -53,252 +82,320 @@ export default function ArticlePageClient({
       />
 
       <div className="min-h-screen bg-white">
-        {/* Top Ad Banner */}
-        <div className="bg-white border-b border-gray-200">
-          <div className="container mx-auto px-4">
+        {/* Top Ad Banner - Similar to People's Daily */}
+        <div className="border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4">
             <TopAdBanner />
           </div>
         </div>
 
-        {/* HERO SECTION */}
-        <section className="relative pt-24 pb-12 bg-gradient-to-br from-blue-900 to-blue-700 text-white">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto">
-              {/* Breadcrumb */}
-              <div className="mb-6">
-                <Breadcrumbs article={article} />
-              </div>
+        <div className="lg:col-span-1">
+          <div className="sticky top-4">
+            <Breadcrumbs article={article} />
+          </div>
+        </div>
 
-              {/* Category */}
-              {article.category && (
-                <div className="mb-4">
-                  <span className="inline-block bg-white/20 px-4 py-2 rounded-full text-sm font-medium backdrop-blur-sm">
-                    {article.category.title}
-                  </span>
-                </div>
-              )}
-
-              {/* Title */}
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-                {article.title}
-              </h1>
-
-              {/* Subtitle */}
-              {article.subtitle && (
-                <p className="text-xl text-blue-100 mb-8 leading-relaxed">
-                  {article.subtitle}
-                </p>
-              )}
-
-              {/* Meta Information */}
-              <div className="flex flex-wrap items-center gap-6 text-blue-200">
-                {/* Author */}
-                {article.author && article.author.slug && (
+        {/* Main Content */}
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Center Column - Article Content */}
+            <div className="lg:col-span-2">
+              {/* Article Header */}
+              <div className="mb-8">
+                {/* Category Badge */}
+                {article.category && (
                   <Link
-                    href={`/authors/${article.author.slug}`}
-                    className="flex items-center space-x-2 hover:text-white transition-colors"
+                    href={`/${article.category.slug}`}
+                    className="inline-block bg-red-600 text-white px-4 py-1 text-sm font-bold uppercase tracking-wide mb-4 hover:bg-red-700 transition-colors"
                   >
-                    <User className="h-5 w-5" />
-                    <span className="font-medium">{article.author.name}</span>
+                    {article.category.title}
                   </Link>
                 )}
 
-                {/* Published Date */}
-                <div className="flex items-center space-x-2">
-                  <Calendar className="h-5 w-5" />
-                  <span>
-                    {publishedDate.toLocaleDateString("en-KE", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </span>
-                </div>
+                {/* Title */}
+                <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+                  {article.title}
+                </h1>
 
-                {/* Reading Time */}
-                {article.readTime && (
-                  <div className="flex items-center space-x-2">
-                    <Clock className="h-5 w-5" />
-                    <span>{article.readTime} min read</span>
-                  </div>
+                {/* Subtitle */}
+                {article.subtitle && (
+                  <p className="text-xl text-gray-600 mb-8 leading-relaxed font-light">
+                    {article.subtitle}
+                  </p>
                 )}
 
-                {/* Location */}
-                {article.location && (
-                  <div className="flex items-center space-x-2">
-                    <MapPin className="h-5 w-5" />
-                    <span>{article.location}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Updated Date */}
-              {updatedDate && (
-                <div className="flex items-center space-x-2 text-blue-200 mt-4">
-                  <RefreshCw className="h-4 w-4" />
-                  <span className="text-sm">
-                    Updated {formatTimeAgo(updatedDate)}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* MAIN CONTENT */}
-        <section className="py-12">
-          <div className="container mx-auto px-4">
-            <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-12">
-              {/* ARTICLE BODY */}
-              <div className="lg:col-span-3 max-w-3xl mx-auto">
-                {/* Featured Image */}
-                <div className="mb-12 rounded-2xl overflow-hidden">
-                  <ArticleImage article={article} />
-                </div>
-
-                {/* Share Buttons */}
-                <div className="flex items-center justify-between mb-12 p-6 bg-gray-50 rounded-2xl">
-                  <span className="text-lg font-semibold text-gray-700">
-                    Share this article:
-                  </span>
-                  <div className="flex items-center space-x-2">
-                    <Share2 className="h-5 w-5 text-gray-600" />
-                    <span className="text-gray-600">Share</span>
-                  </div>
-                </div>
-
-                {/* Enhanced Article Content with TOC */}
-                <div className="mb-12">
-                  <EnhancedArticleContent article={article} />
-                </div>
-
-                {/* Article Footer */}
-                <div className="border-t border-gray-200 pt-12">
-                  {/* Views */}
-                  {article.views && (
-                    <p className="text-sm font-semibold text-gray-700 mb-8">
-                      {article.views?.toLocaleString()} people read this
-                    </p>
-                  )}
-
-                  {/* Tags */}
-                  <div className="mb-8">
-                    <TagsList tags={article.tags} />
+                {/* Meta Information Row */}
+                <div className="flex flex-wrap items-center justify-between gap-4 py-4 border-t border-b border-gray-200">
+                  {/* Author & Date */}
+                  <div className="flex items-center space-x-6">
+                    {article.author && (
+                      <div className="flex items-center">
+                        {article.author.image && (
+                          <Image
+                            src={urlFor(article.author.image)}
+                            alt={article.author.name}
+                            className="w-10 h-10 rounded-full mr-3"
+                            fill
+                          />
+                        )}
+                        <div>
+                          <p className="font-semibold text-gray-900">
+                            {article.author.name}
+                          </p>
+                          <div className="flex items-center text-gray-500 text-sm">
+                            <Calendar className="h-4 w-4 mr-1" />
+                            <span>
+                              {publishedDate.toLocaleDateString("en-KE", {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })}
+                            </span>
+                            {article.readTime && (
+                              <>
+                                <span className="mx-2">•</span>
+                                <Clock className="h-4 w-4 mr-1" />
+                                <span>{article.readTime} min read</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Sources */}
-                  {article.sources && article.sources?.length > 0 && (
-                    <div className="mb-8 p-6 bg-blue-50 rounded-2xl border border-blue-200">
-                      <h3 className="font-semibold text-blue-900 mb-4 text-lg">
-                        Sources & References
-                      </h3>
-                      <ul className="space-y-3 text-blue-800">
-                        {article.sources.map((source, index) => (
-                          <li key={index} className="flex items-start">
-                            <span className="text-blue-600 mr-3 mt-1">•</span>
-                            <a
-                              href={source.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="underline hover:text-blue-900 transition-colors leading-relaxed"
-                            >
-                              {source.title}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                  {/* Share & Stats */}
+                  <div className="flex items-center space-x-4">
+                    {article.views && (
+                      <div className="flex items-center text-gray-600">
+                        <Eye className="h-4 w-4 mr-1" />
+                        <span className="text-sm">
+                          {article.views.toLocaleString()} views
+                        </span>
+                      </div>
+                    )}
 
-                  {/* Article Actions */}
-                  <ArticleActions
-                    isBookmarked={isBookmarked}
-                    setIsBookmarked={setIsBookmarked}
-                    showComments={showComments}
-                    setShowComments={setShowComments}
-                  />
-
-                  {/* Share Again at Bottom */}
-                  <div className="flex items-center justify-center mt-8 p-8 bg-gray-50 rounded-2xl">
-                    <div className="text-center">
-                      <p className="text-lg font-medium text-gray-700 mb-3">
-                        Found this article informative? Share it:
-                      </p>
-                      <div className="flex items-center space-x-2 justify-center">
-                        <Share2 className="h-5 w-5 text-gray-600" />
-                        <span className="text-gray-600">Share</span>
+                    {/* Social Share Buttons */}
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-gray-600 font-medium">
+                        Share:
+                      </span>
+                      <div className="flex space-x-2">
+                        <Link
+                          href={socialShareLinks.facebook}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors"
+                          aria-label="Share on Facebook"
+                        >
+                          <Facebook className="h-4 w-4" />
+                        </Link>
+                        <Link
+                          href={socialShareLinks.twitter}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 rounded-full bg-blue-100 text-blue-400 hover:bg-blue-400 hover:text-white transition-colors"
+                          aria-label="Share on Twitter"
+                        >
+                          <Twitter className="h-4 w-4" />
+                        </Link>
+                        <Link
+                          href={socialShareLinks.whatsapp}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 rounded-full bg-green-100 text-green-600 hover:bg-green-600 hover:text-white transition-colors"
+                          aria-label="Share on WhatsApp"
+                        >
+                          <MessageCircle className="h-4 w-4" />
+                        </Link>
+                        <Link
+                          href={socialShareLinks.email}
+                          className="p-2 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-600 hover:text-white transition-colors"
+                          aria-label="Share via Email"
+                        >
+                          <Mail className="h-4 w-4" />
+                        </Link>
                       </div>
                     </div>
                   </div>
                 </div>
-
-                {/* Comments Section */}
-                {showComments && (
-                  <div className="mt-12">
-                    <CommentsSection
-                      articleId={article.id}
-                      slug={article.slug}
-                    />
-                  </div>
-                )}
-
-                {/* Related Articles */}
-                {relatedArticles && relatedArticles.length > 0 && (
-                  <div className="mt-16">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-8">
-                      Continue Reading
-                    </h2>
-                    {/* <RelatedArticles
-                      currentSlug={article.slug}
-                      relatedArticles={relatedArticles}
-                    /> */}
-                  </div>
-                )}
-
-                {/* Newsletter Signup */}
-                <div className="mt-16">
-                  <NewsletterSignup />
-                </div>
               </div>
 
-              {/* SIDEBAR */}
-              <div className="lg:col-span-1 space-y-8">
-                {/* Latest Articles Sidebar */}
-                <LatestArticlesSidebar latestArticles={latestArticles ?? []} />
+              {/* Featured Image - People's Daily Style */}
+              <div className="mb-10">
+                <ArticleImage article={article} />
+              </div>
 
-                {/* Trending Articles Sidebar */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-4 pb-3 border-b border-gray-200">
-                    Trending Now
-                  </h2>
-                  <div className="space-y-4">
-                    {trendingArticles?.map((item, index) => (
-                      <Link
-                        key={item.id}
-                        href={`/article/${item.slug}`}
-                        className="flex items-start space-x-3 group hover:bg-gray-50 p-3 rounded-lg transition-colors"
+              {/* Article Content */}
+              <div className="mb-12">
+                <EnhancedArticleContent article={article} />
+              </div>
+
+              {/* Article Footer */}
+              <div className="py-8 border-t border-gray-200">
+                {/* Tags */}
+                {article.tags && article.tags.length > 0 && (
+                  <div className="mb-8">
+                    <div className="flex flex-wrap gap-2">
+                      {article.tags.map((tag) => (
+                        <Link
+                          key={tag}
+                          href={`/tag/${tag.toLowerCase().replace(/\s+/g, "-")}`}
+                          className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full hover:bg-gray-200 transition-colors"
+                        >
+                          {tag}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Social Share Again */}
+                <div className="mb-8 p-6 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-bold text-gray-900 text-lg mb-1">
+                        Share this article
+                      </h3>
+                      <p className="text-gray-600 text-sm">
+                        Help spread the word about this story
+                      </p>
+                    </div>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => navigator.clipboard.writeText(shareUrl)}
+                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors"
                       >
-                        <span className="flex-shrink-0 w-6 h-6 bg-red-600 text-white rounded-full text-sm font-bold flex items-center justify-center mt-1">
-                          {index + 1}
-                        </span>
-                        <h3 className="font-medium text-gray-900 group-hover:text-red-600 line-clamp-3 text-sm leading-relaxed">
-                          {item.title}
+                        Copy Link
+                      </button>
+                      <button
+                        onClick={() =>
+                          window.open(socialShareLinks.facebook, "_blank")
+                        }
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                      >
+                        Share on Facebook
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Article Actions */}
+                <ArticleActions
+                  isBookmarked={isBookmarked}
+                  setIsBookmarked={setIsBookmarked}
+                  showComments={showComments}
+                  setShowComments={setShowComments}
+                />
+              </div>
+
+              {/* Comments Section */}
+              {showComments && (
+                <div className="mt-12">
+                  <CommentsSection articleId={article.id} slug={article.slug} />
+                </div>
+              )}
+
+              {/* More from this Category */}
+              {moreFromCategory.length > 0 && (
+                <div className="mt-16 pt-8 border-t border-gray-200">
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      More from {article.category?.title}
+                    </h2>
+                    <Link
+                      href={`/${article.category?.slug}`}
+                      className="flex items-center text-red-600 hover:text-red-800 font-medium"
+                    >
+                      See All <ChevronRight className="ml-1 h-4 w-4" />
+                    </Link>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {moreFromCategory.slice(0, 3).map((story) => (
+                      <Link
+                        key={story.id}
+                        href={`/article/${story.slug}`}
+                        className="group"
+                      >
+                        <div className="relative h-48 overflow-hidden rounded-lg mb-3">
+                          <img
+                            src={story.img || "/placeholder.jpg"}
+                            alt={story.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                        <h3 className="font-bold text-gray-900 group-hover:text-red-600 mb-2 line-clamp-2">
+                          {story.title}
                         </h3>
+                        <div className="flex items-center text-gray-500 text-sm">
+                          <Clock className="h-3 w-3 mr-1" />
+                          <span>{story.readTime} min read</span>
+                        </div>
                       </Link>
                     ))}
                   </div>
                 </div>
+              )}
 
-                {/* Sidebar Ad */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
-                  <div className="w-full h-60 bg-gray-200 flex items-center justify-center rounded-lg">
-                    <span className="text-gray-500">Sidebar Ad</span>
+              {/* Related Articles */}
+              {relatedArticles.length > 0 && (
+                <div className="mt-16 pt-8 border-t border-gray-200">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-8">
+                    Related Articles
+                  </h2>
+                  <div className="space-y-6">
+                    {relatedArticles.slice(0, 4).map((story) => (
+                      <div
+                        key={story.id}
+                        className="border-b pb-6 last:border-0"
+                      >
+                        <Link
+                          href={`/article/${story.slug}`}
+                          className="group flex items-start"
+                        >
+                          <div className="flex-1">
+                            <h3 className="font-bold text-lg text-gray-900 group-hover:text-red-600 mb-2 line-clamp-2">
+                              {story.title}
+                            </h3>
+                            <p className="text-gray-600 text-sm line-clamp-2 mb-3">
+                              {story.excerpt}
+                            </p>
+                            <div className="flex items-center text-gray-500 text-xs">
+                              <span>{formatDate(story.publishedAt)}</span>
+                              <span className="mx-2">•</span>
+                              <span>{story.readTime} min read</span>
+                            </div>
+                          </div>
+                          <div className="ml-4 w-24 flex-shrink-0">
+                            <img
+                              src={story.img || "/placeholder.jpg"}
+                              alt={story.title}
+                              className="w-full h-16 object-cover rounded"
+                            />
+                          </div>
+                        </Link>
+                      </div>
+                    ))}
                   </div>
                 </div>
+              )}
+
+              {/* Newsletter Signup */}
+              <div className="mt-16">
+                <NewsletterSignup />
               </div>
             </div>
+
+            {/* Right Column - Sidebar */}
+            <div className="lg:col-span-1">
+              <ArticleSidebar
+                latestArticles={latestArticles}
+                trendingArticles={trendingArticles}
+                category={article.category}
+              />
+            </div>
           </div>
-        </section>
+        </div>
       </div>
     </>
   );

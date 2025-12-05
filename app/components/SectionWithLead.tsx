@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Story } from "./types";
 import Image from "next/image";
 import { urlFor } from "../lib/getHeroStories";
+import { formatDate } from "../lib/sanity.utils";
 
 interface SectionWithLeadProps {
   sectionTitle: string;
@@ -306,11 +307,4 @@ export default function SectionWithLead({
     default:
       return renderStandardLayout();
   }
-}
-
-// === Helpers ===
-function formatDate(value?: string | null) {
-  if (!value) return "";
-  const date = new Date(value);
-  return isNaN(date.getTime()) ? "" : date.toLocaleDateString();
 }

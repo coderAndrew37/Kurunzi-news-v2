@@ -42,7 +42,7 @@ export interface Story {
 }
 
 export interface RelatedArticle {
-  id: string;
+  _id: string;
   slug: string;
   title: string;
   excerpt?: string | null;
