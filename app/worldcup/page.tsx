@@ -220,7 +220,7 @@ export default async function HomePage() {
 
       <TeamsShowcase teams={worldCupTeams} />
       <VideoHighlights videos={videos} />
-      <StatisticsSection topScorers={topScorers} teamStats={teamStats} />
+      <StatisticsSection />
       <SocialMediaFeed />
       <NewsletterSignup />
     </main>

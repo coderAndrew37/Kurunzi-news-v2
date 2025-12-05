@@ -1,65 +1,79 @@
+// app/page.tsx
 import { getHeroStories } from "@/app/lib/getHeroStories";
 import { serverClient } from "@/app/lib/sanity.server";
-import { categoriesWithStoriesPaginatedQuery } from "@/app/lib/getCategoryStories";
 import Hero from "../components/Hero";
 import WeatherWidget from "../components/WeatherWidget";
-import InfiniteCategories from "../components/InfiniteCategories";
 import { SanityCategory } from "../lib/api";
+import { fetchAllCategories } from "../lib/getCategoryStories";
+import NewsSections from "../components/NewsSection";
 
 export const revalidate = 60;
 
+// Priority order for sections (similar to People's Daily)
+const SECTION_ORDER = [
+  "politics",
+  "business",
+  "sports",
+  "entertainment",
+  "technology",
+  "health",
+  "lifestyle",
+  "opinion",
+];
+
+// Sort categories based on priority order
+function sortCategories(categories: SanityCategory[]): SanityCategory[] {
+  return [...categories].sort((a, b) => {
+    const aIndex = SECTION_ORDER.indexOf(a.slug);
+    const bIndex = SECTION_ORDER.indexOf(b.slug);
+
+    // If both are in priority list, sort by priority order
+    if (aIndex !== -1 && bIndex !== -1) {
+      return aIndex - bIndex;
+    }
+    // If only one is in priority list, prioritize it
+    if (aIndex !== -1) return -1;
+    if (bIndex !== -1) return 1;
+
+    // Otherwise sort alphabetically
+    return a.title.localeCompare(b.title);
+  });
+}
+
 export default async function Home() {
   const heroStories = await getHeroStories();
+  const allCategories = await fetchAllCategories();
 
-  // Fetch the first page of categories
-  const initialCategories = await serverClient.fetch(
-    categoriesWithStoriesPaginatedQuery,
-    { start: 0, end: 3 }
+  // Filter out categories with no stories
+  const categoriesWithStories = allCategories.filter(
+    (cat: SanityCategory) => cat.stories && cat.stories.length > 0
   );
 
-  // ✅ Fetch priority categories explicitly to ensure they’re always present
-  const priorityCategories = await serverClient.fetch(
-    `*[_type == "category" && slug.current in ["kurunzi-exclusive", "health", "business"]]{
-      _id,
-      title,
-      "slug": slug.current,
-      description,
-      "stories": *[_type == "article" && references(^._id)] 
-        | order(publishedAt desc)[0...20] {
-          "_id": _id,
-          title,
-          subtitle,
-          "slug": slug.current,
-          mainImage,
-          category->{_id, title, "slug": slug.current},
-          author->{name, image},
-          publishedAt,
-          excerpt,
-          readTime,
-          isVideo,
-          duration
-        }
-    }`
-  );
-
-  // ✅ Merge and de-duplicate by ID
-  const mergedCategories: SanityCategory[] = [
-    ...priorityCategories,
-    ...initialCategories.filter(
-      (c: SanityCategory) =>
-        !priorityCategories.some((p: SanityCategory) => p._id === c._id)
-    ),
-  ];
+  // Sort categories
+  const sortedCategories = sortCategories(categoriesWithStories);
 
   return (
-    <div className="flex flex-col">
-      <div className="flex justify-end px-4">
-        <WeatherWidget />
+    <div className="min-h-screen bg-white">
+      {/* Top Weather Widget */}
+      <div className="bg-gray-50 border-b">
+        <div className="max-w-7xl mx-auto px-4 py-2">
+          <div className="flex justify-end">
+            <WeatherWidget />
+          </div>
+        </div>
       </div>
 
-      {heroStories.length > 0 && <Hero stories={heroStories} />}
+      {/* Hero Section - Similar to People's Daily */}
+      {heroStories.length > 0 && (
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <Hero stories={heroStories} />
+        </div>
+      )}
 
-      <InfiniteCategories initialCategories={mergedCategories} />
+      {/* Main News Sections */}
+      <div className="max-w-7xl mx-auto px-4 py-4">
+        <NewsSections categories={sortedCategories} />
+      </div>
     </div>
   );
 }
