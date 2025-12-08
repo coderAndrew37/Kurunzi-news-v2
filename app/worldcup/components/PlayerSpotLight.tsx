@@ -29,6 +29,8 @@ interface PlayerSpotlightProps {
 }
 
 export default function PlayerSpotlight({ players }: PlayerSpotlightProps) {
+  const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
+
   // Prevent crash if players is empty
   if (!players || players.length === 0) {
     return (
@@ -37,8 +39,6 @@ export default function PlayerSpotlight({ players }: PlayerSpotlightProps) {
       </section>
     );
   }
-
-  const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
 
   const currentPlayer = players[currentPlayerIndex];
 

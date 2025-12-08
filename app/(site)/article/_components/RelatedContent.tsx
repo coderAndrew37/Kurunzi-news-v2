@@ -30,7 +30,7 @@ export default function RelatedContent({
 
   useEffect(() => {
     const filtered = articles.filter((a) => a.id !== currentArticle.id);
-    let sorted = [...filtered];
+    const sorted = [...filtered];
 
     switch (type) {
       case "trending":

@@ -1,11 +1,10 @@
 "use client";
 
 import { ChevronRight } from "lucide-react";
-import Link from "next/link";
-import { Story } from "./types";
 import Image from "next/image";
-import { urlFor } from "../lib/getHeroStories";
+import Link from "next/link";
 import { formatDate } from "../lib/sanity.utils";
+import { Story } from "./types";
 
 interface SectionWithLeadProps {
   sectionTitle: string;

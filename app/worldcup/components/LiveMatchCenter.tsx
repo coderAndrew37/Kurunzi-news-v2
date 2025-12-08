@@ -1,7 +1,7 @@
 // components/LiveMatchCenter.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 interface LiveMatch {
   _id: string;
@@ -76,7 +76,7 @@ export default function LiveMatchCenter() {
               {/* Match Status */}
               <div className="flex justify-between items-center mb-4">
                 <span className="bg-red-600 px-3 py-1 rounded-full text-xs font-bold uppercase">
-                  LIVE • {match.minute}'
+                  LIVE • {match.minute}&apos;
                 </span>
                 <span className="text-sm text-gray-300">
                   {match.group} • {match.venue}
@@ -143,7 +143,7 @@ export default function LiveMatchCenter() {
                         )}
                         <span className="font-medium">{event.player}</span>
                       </div>
-                      <span className="font-bold">{event.minute}'</span>
+                      <span className="font-bold">{event.minute}&apos;</span>
                     </div>
                   ))}
                 </div>

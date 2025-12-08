@@ -48,7 +48,7 @@ export default function NewsletterSignup({
             </div>
             <h3 className="text-2xl font-bold mb-2">Welcome to the Team!</h3>
             <p className="text-blue-100">
-              Thank you for subscribing. You'll receive your first update
+              Thank you for subscribing. You&apos;ll receive your first update
               shortly.
             </p>
           </div>

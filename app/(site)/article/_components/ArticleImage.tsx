@@ -1,6 +1,5 @@
-// app/article/_components/ArticleImage.tsx
 "use client";
-
+import Image from "next/image";
 import { Story as Article } from "@/app/components/types";
 
 interface ArticleImageProps {
@@ -16,7 +15,7 @@ export default function ArticleImage({ article }: ArticleImageProps) {
   return (
     <figure className="mb-8">
       <div className="relative w-full h-[400px] md:h-[500px] rounded-lg overflow-hidden bg-gray-100">
-        <img
+        <Image
           src={imageUrl || "/placeholder.jpg"}
           alt={altText}
           className="w-full h-full object-cover"

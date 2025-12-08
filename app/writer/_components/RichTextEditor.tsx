@@ -1,33 +1,29 @@
 // app/writer/_components/RichTextEditor.tsx
 "use client";
 
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
+import CharacterCount from "@tiptap/extension-character-count";
+import Image from "@tiptap/extension-image";
+import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import Underline from "@tiptap/extension-underline";
-import Link from "@tiptap/extension-link";
-import Image from "@tiptap/extension-image";
-import CharacterCount from "@tiptap/extension-character-count";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 import {
   Bold,
-  Italic,
-  Underline as UnderlineIcon,
+  Code,
   Heading2,
   Heading3,
+  Image as ImageIcon,
+  Italic,
+  Link as LinkIcon,
   List,
   ListOrdered,
   Quote,
-  Link as LinkIcon,
-  Image as ImageIcon,
-  Undo,
   Redo,
-  Type,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  Code,
+  Underline as UnderlineIcon,
+  Undo,
 } from "lucide-react";
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 
 interface RichTextEditorProps {
@@ -259,6 +255,7 @@ export default function RichTextEditor({
                 accept="image/*"
                 onChange={handleImageUpload}
                 className="hidden"
+                aria-label="Upload Image"
               />
             </label>
           </div>

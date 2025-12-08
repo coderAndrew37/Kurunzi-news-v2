@@ -1,20 +1,18 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
+import { format } from "date-fns";
 import {
-  FileText,
-  Send,
+  BarChart,
+  Calendar,
   CheckCircle,
   Clock,
-  TrendingUp,
-  Calendar,
-  BarChart,
+  FileText,
+  Send,
 } from "lucide-react";
 import Link from "next/link";
-import { format } from "date-fns";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-
 interface Article {
   _id: string;
   title: string;
@@ -104,7 +102,7 @@ export default function WriterDashboard() {
           Welcome back, {user?.firstName}!
         </h1>
         <p className="text-gray-600 mt-2">
-          Here's what's happening with your articles today
+          Here&apos;s what&apos;s happening with your articles today
         </p>
       </div>
 

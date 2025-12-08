@@ -30,8 +30,8 @@ export default async function TeamsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-5xl font-black mb-4">Qualified Teams</h1>
           <p className="text-xl text-blue-100 max-w-3xl">
-            Meet the 48 teams competing for football's ultimate prize across
-            USA, Canada, and Mexico
+            Meet the 48 teams competing for football&apos;s ultimate prize
+            across USA, Canada, and Mexico
           </p>
         </div>
       </div>

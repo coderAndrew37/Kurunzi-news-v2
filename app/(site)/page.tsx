@@ -3,7 +3,7 @@ import { getHeroStories } from "@/app/lib/getHeroStories";
 import Hero from "../components/Hero";
 import NewsSections from "../components/NewsSection";
 import WeatherWidget from "../components/WeatherWidget";
-import { AppCategory, SanityCategory } from "../lib/api";
+import { AppCategory } from "../lib/api";
 import { fetchAllCategories } from "../lib/getCategoryStories";
 
 export const revalidate = 60;

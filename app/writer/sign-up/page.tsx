@@ -1,157 +1,240 @@
+"use client";
+
 import React, { useState } from "react";
 import { useSignUp } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { toast } from "react-hot-toast";
 
-const SignUpPage = () => {
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+
+import { motion, AnimatePresence } from "framer-motion";
+
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { toast } from "react-hot-toast";
+import Link from "next/link";
+
+//
+// ✅ ZOD VALIDATION SCHEMAS
+//
+const SignUpSchema = z.object({
+  emailAddress: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+const VerifySchema = z.object({
+  code: z.string().min(6, "Enter the 6-digit code"),
+});
+
+export default function SignUpPage() {
   const { signUp, isLoaded, setActive } = useSignUp();
   const router = useRouter();
-  const [emailAddress, setEmailAddress] = useState("");
-  const [password, setPassword] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [pendingVerification, setPendingVerification] = useState(false);
-  const [verificationCode, setVerificationCode] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
-  if (!isLoaded) {
-    return <div>Loading...</div>;
-  }
+  //
+  // FORM 1: SIGN UP
+  //
+  const signUpForm = useForm<z.infer<typeof SignUpSchema>>({
+    resolver: zodResolver(SignUpSchema),
+  });
 
-  async function submit(event: React.FormEvent) {
-    event.preventDefault();
-    if (!isLoaded) {
-      return;
-    }
+  //
+  // FORM 2: VERIFY
+  //
+  const verifyForm = useForm<z.infer<typeof VerifySchema>>({
+    resolver: zodResolver(VerifySchema),
+  });
 
-    setIsSubmitting(true);
-    setError(null);
+  if (!isLoaded) return <div>Loading...</div>;
+
+  // -----------------------------
+  // SUBMIT SIGN-UP
+  // -----------------------------
+  async function onSignUpSubmit(values: z.infer<typeof SignUpSchema>) {
     try {
-      await signUp.create({
-        emailAddress,
-        password,
+      await signUp?.create({
+        emailAddress: values.emailAddress,
+        password: values.password,
       });
-      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+
+      await signUp?.prepareEmailAddressVerification({
+        strategy: "email_code",
+      });
+
+      toast.success("Verification code sent");
       setPendingVerification(true);
     } catch (err: any) {
-      setError(err.errors?.[0]?.longMessage || "Something went wrong");
-      setIsSubmitting(false);
+      toast.error(err.errors?.[0]?.longMessage || "Something went wrong");
     }
   }
 
-  async function verify(event: React.FormEvent) {
-    event.preventDefault();
-    if (!isLoaded) {
-      return;
-    }
-    setIsSubmitting(true);
-    setError(null);
+  // -----------------------------
+  // SUBMIT EMAIL VERIFICATION
+  // -----------------------------
+  async function onVerifySubmit(values: z.infer<typeof VerifySchema>) {
     try {
-      const completeSignUp = await signUp.attemptEmailAddressVerification({
-        code: verificationCode,
+      const result = await signUp?.attemptEmailAddressVerification({
+        code: values.code,
       });
 
-      if (completeSignUp?.status !== "complete") {
-        throw new Error("Sign up could not be completed.");
+      if (result?.status !== "complete") {
+        throw new Error("Verification failed");
+      }
+      if (!setActive) {
+        throw new Error("setActive is not available.");
       }
 
-      if (completeSignUp?.status === "complete") {
-        toast.success("Email verified successfully!");
-        await setActive({ session: completeSignUp.createdSessionId! });
-        router.push("/writer/dashboard");
-        return;
-      }
+      await setActive({ session: result.createdSessionId });
 
-      if (!completeSignUp.createdSessionId) {
-        throw new Error("No session created.");
-      }
+      toast.success("Welcome!");
 
-      await setActive({ session: completeSignUp.createdSessionId });
-      toast.success("Sign up successful!");
       router.push("/writer/dashboard");
     } catch (err: any) {
-      setError(err.errors?.[0]?.longMessage || "Something went wrong");
-      setIsSubmitting(false);
+      toast.error(err.errors?.[0]?.longMessage || "Invalid code");
     }
   }
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-      {!pendingVerification ? (
-        <form onSubmit={submit} className="space-y-6">
-          <h2 className="text-2xl font-bold text-center">Sign Up</h2>
-          {error && <p className="text-red-500">{error}</p>}
-          <div>
-            <label className="block mb-1 font-medium">Email Address</label>
-            <Input
-              type="email"
-              value={emailAddress}
-              onChange={(e) => setEmailAddress(e.target.value)}
-              required
-              className="w-full"
-            />
-          </div>
-          <div>
-            <label className="block mb-1 font-medium">Password</label>
-            <Input
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full"
-            />
-            <div className="mt-2">
-              <input
-                aria-label="Show password"
-                type="checkbox"
-                checked={showPassword}
-                onChange={() => setShowPassword(!showPassword)}
-              />{" "}
-              <label className="ml-2 text-sm">Show Password</label>
-            </div>
-          </div>
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-blue-600 text-white"
+    <div className="max-w-md mx-auto mt-12 p-6 bg-white rounded-xl shadow-lg relative overflow-hidden">
+      {/* Smooth animated transitions */}
+      <AnimatePresence mode="wait">
+        {!pendingVerification ? (
+          // ===========================================
+          // ✨ SIGN UP FORM
+          // ===========================================
+          <motion.div
+            key="signup"
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -40 }}
+            transition={{ duration: 0.3 }}
           >
-            {isSubmitting ? "Signing Up..." : "Sign Up"}
-          </Button>
-          <p className="text-sm text-center">
-            Already have an account?{" "}
-            <Link href="/writer/sign-in" className="text-blue-600">
-              Sign In
-            </Link>
-          </p>
-        </form>
-      ) : (
-        <form onSubmit={verify} className="space-y-6">
-          <h2 className="text-2xl font-bold text-center">Verify Your Email</h2>
-          {error && <p className="text-red-500">{error}</p>}
-          <div>
-            <label className="block mb-1 font-medium">Verification Code</label>
-            <Input
-              type="text"
-              value={verificationCode}
-              onChange={(e) => setVerificationCode(e.target.value)}
-              required
-              className="w-full"
-            />
-          </div>
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-blue-600 text-white"
+            <h2 className="text-3xl font-bold text-center mb-6">
+              Create Account
+            </h2>
+
+            <form
+              onSubmit={signUpForm.handleSubmit(onSignUpSubmit)}
+              className="space-y-5"
+            >
+              {/* Email */}
+              <div>
+                <label className="font-medium">Email Address</label>
+                <Input
+                  type="email"
+                  {...signUpForm.register("emailAddress")}
+                  className="mt-1"
+                  placeholder="you@example.com"
+                />
+                {signUpForm.formState.errors.emailAddress && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {signUpForm.formState.errors.emailAddress.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className="font-medium">Password</label>
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  {...signUpForm.register("password")}
+                  className="mt-1"
+                  placeholder="••••••••"
+                />
+                {signUpForm.formState.errors.password && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {signUpForm.formState.errors.password.message}
+                  </p>
+                )}
+                <div className="mt-2">
+                  <label className="text-sm flex items-center">
+                    <input
+                      type="checkbox"
+                      className="mr-2"
+                      checked={showPassword}
+                      onChange={() => setShowPassword(!showPassword)}
+                    />
+                    Show password
+                  </label>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={signUpForm.formState.isSubmitting}
+              >
+                {signUpForm.formState.isSubmitting
+                  ? "Creating..."
+                  : "Create Account"}
+              </Button>
+
+              <p className="text-sm text-center mt-3">
+                Already registered?{" "}
+                <Link
+                  href="/writer/sign-in"
+                  className="text-blue-600 hover:underline"
+                >
+                  Sign In
+                </Link>
+              </p>
+            </form>
+          </motion.div>
+        ) : (
+          // ===========================================
+          // ✨ EMAIL VERIFICATION FORM
+          // ===========================================
+          <motion.div
+            key="verify"
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -40 }}
+            transition={{ duration: 0.3 }}
           >
-            {isSubmitting ? "Verifying..." : "Verify"}
-          </Button>
-        </form>
-      )}
+            <h2 className="text-3xl font-bold text-center mb-6">
+              Verify Email
+            </h2>
+
+            <form
+              onSubmit={verifyForm.handleSubmit(onVerifySubmit)}
+              className="space-y-5"
+            >
+              <div>
+                <label className="font-medium">Verification Code</label>
+                <Input
+                  type="text"
+                  {...verifyForm.register("code")}
+                  className="mt-1 tracking-widest text-center"
+                  placeholder="123456"
+                />
+                {verifyForm.formState.errors.code && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {verifyForm.formState.errors.code.message}
+                  </p>
+                )}
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={verifyForm.formState.isSubmitting}
+              >
+                {verifyForm.formState.isSubmitting
+                  ? "Verifying..."
+                  : "Verify Email"}
+              </Button>
+
+              <p className="text-sm text-center mt-3 text-gray-500">
+                Didn’t receive a code? Check spam or wait 1 minute.
+              </p>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
-};
-
-export default SignUpPage;
+}

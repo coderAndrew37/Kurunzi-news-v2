@@ -1,4 +1,3 @@
-import { RawSanityArticle } from "../components/types";
 import { serverClient } from "./sanity.server";
 
 /**

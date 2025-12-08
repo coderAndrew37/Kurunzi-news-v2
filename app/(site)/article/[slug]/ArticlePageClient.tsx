@@ -325,7 +325,7 @@ export default function ArticlePageClient({
                         className="group"
                       >
                         <div className="relative h-48 overflow-hidden rounded-lg mb-3">
-                          <img
+                          <Image
                             src={story.img || "/placeholder.jpg"}
                             alt={story.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
@@ -374,7 +374,7 @@ export default function ArticlePageClient({
                             </div>
                           </div>
                           <div className="ml-4 w-24 flex-shrink-0">
-                            <img
+                            <Image
                               src={story.img || "/placeholder.jpg"}
                               alt={story.title}
                               className="w-full h-16 object-cover rounded"

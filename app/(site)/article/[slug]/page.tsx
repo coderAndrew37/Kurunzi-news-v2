@@ -74,7 +74,7 @@ export default async function ArticlePage({
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-2">Article Not Found</h1>
           <p className="text-gray-600">
-            The article you're looking for doesn't exist.
+            The article you&apos;re looking for doesn&apos;t exist.
           </p>
           <Link
             href="/"

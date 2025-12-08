@@ -5,6 +5,7 @@ import { Story } from "@/app/components/types";
 import { formatDate } from "@/app/lib/sanity.utils";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface ArticleSidebarProps {
   latestArticles: Story[];
@@ -130,7 +131,7 @@ export default function ArticleSidebar({
                   <div className="flex items-start space-x-3">
                     <div className="flex-shrink-0 w-20">
                       <div className="aspect-square overflow-hidden rounded">
-                        <img
+                        <Image
                           src={article.img || "/placeholder.jpg"}
                           alt={article.title}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"

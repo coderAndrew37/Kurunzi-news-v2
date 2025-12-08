@@ -1,5 +1,6 @@
 // app/writer/articles/new/page.tsx
 "use client";
+import Image from "next/image";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -154,12 +155,14 @@ export default function NewArticlePage() {
           </div>
           <div className="flex items-center space-x-3">
             <button
+              aria-label="close button"
               onClick={() => router.back()}
               className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
             >
               <X className="h-5 w-5" />
             </button>
             <button
+              aria-label="preview button"
               onClick={() => {
                 /* Preview logic */
               }}
@@ -333,6 +336,7 @@ export default function NewArticlePage() {
             </div>
 
             <select
+              aria-label="category selector"
               value={article.category}
               onChange={(e) =>
                 setArticle({ ...article, category: e.target.value })
@@ -402,12 +406,13 @@ export default function NewArticlePage() {
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
               {article.featuredImage ? (
                 <div className="relative h-40">
-                  <img
+                  <Image
                     src={article.featuredImage}
                     alt="Featured"
                     className="w-full h-full object-cover rounded"
                   />
                   <button
+                    aria-label="Featured Image close button"
                     onClick={() =>
                       setArticle({ ...article, featuredImage: "" })
                     }

@@ -1,10 +1,11 @@
 "use client";
 
 import { Story } from "@/app/components/types";
-import { Clock, ChevronRight } from "lucide-react";
+import { formatDate } from "@/app/lib/sanity.utils";
+import { ChevronRight, Clock } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { formatDate } from "@/app/lib/sanity.utils";
 
 interface InlineRelatedArticlesProps {
   articles: Story[];
@@ -18,7 +19,6 @@ export default function InlineRelatedArticles({
   articles,
   title = "Related Stories",
   layout = "horizontal",
-  position = 0,
   showCount = 3,
 }: InlineRelatedArticlesProps) {
   const [isVisible, setIsVisible] = useState(false);
@@ -54,7 +54,7 @@ export default function InlineRelatedArticles({
               className="group block"
             >
               <div className="relative h-48 overflow-hidden rounded-lg mb-3">
-                <img
+                <Image
                   src={article.img || "/placeholder.jpg"}
                   alt={article.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
@@ -100,7 +100,7 @@ export default function InlineRelatedArticles({
               </div>
               <div className="ml-4 w-20 flex-shrink-0">
                 <div className="relative h-16 overflow-hidden rounded">
-                  <img
+                  <Image
                     src={article.img || "/placeholder.jpg"}
                     alt={article.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"

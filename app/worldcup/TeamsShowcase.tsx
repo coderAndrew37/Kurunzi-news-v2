@@ -30,8 +30,8 @@ export default function TeamsShowcase({
         <div className="text-center mb-12">
           <h2 className="text-4xl font-black text-gray-900 mb-4">{title}</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            48 teams from around the world competing for football's ultimate
-            prize
+            48 teams from around the world competing for football&apos;s
+            ultimate prize
           </p>
           <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-red-600 mx-auto mt-4"></div>
         </div>

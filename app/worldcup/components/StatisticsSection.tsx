@@ -1,8 +1,7 @@
 // components/StatisticsSection.tsx
 "use client";
 
-import { useState, useEffect } from "react";
-import Image from "next/image";
+import { useState } from "react";
 
 interface PlayerStats {
   _id: string;
