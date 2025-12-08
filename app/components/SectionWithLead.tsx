@@ -27,11 +27,7 @@ export default function SectionWithLead({
   // === IMAGE HELPER ===
   function getImageUrl(image?: Story["featuredImage"]) {
     if (!image) return "/placeholder.jpg";
-    try {
-      return urlFor(image); // already returns string
-    } catch {
-      return "/placeholder.jpg";
-    }
+    return image.url;
   }
 
   // === FEATURED LAYOUT ===
@@ -100,7 +96,7 @@ export default function SectionWithLead({
           <div className="space-y-4">
             {secondaryStories.map((story) => (
               <div
-                key={story.id}
+                key={`${story.id}-${story.slug}`}
                 className="pb-4 border-b border-gray-100 last:border-0"
               >
                 <Link href={`/article/${story.slug}`} className="group">
@@ -124,7 +120,7 @@ export default function SectionWithLead({
         {/* List Stories */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           {listStories.map((story) => (
-            <div key={story.id} className="border-t pt-4">
+            <div key={`${story.id}-${story.slug}`} className="border-t pt-4">
               <Link
                 href={`/article/${story.slug}`}
                 className="group flex items-start"
@@ -215,7 +211,7 @@ export default function SectionWithLead({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {otherStories.map((story, index) => (
                 <div
-                  key={story.id}
+                  key={`${story.id}-${story.slug}`}
                   className={index >= 2 ? "border-t pt-6" : ""}
                 >
                   <Link
@@ -278,7 +274,7 @@ export default function SectionWithLead({
       <div className="space-y-4">
         {stories.slice(0, 6).map((story) => (
           <Link
-            key={story.id}
+            key={`${story.id}-${story.slug}`}
             href={`/article/${story.slug}`}
             className="group block border-b pb-4 last:border-0"
           >

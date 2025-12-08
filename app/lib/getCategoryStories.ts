@@ -1,6 +1,7 @@
 import { groq } from "next-sanity";
-import { SanityCategory } from "./api";
+import { AppCategory, SanityCategory } from "./api";
 import { serverClient } from "./sanity.server";
+import { transformSanityArticleToStory } from "./sanity.utils";
 
 // Fetch all stories for a category
 export const categoryStoriesQuery = groq`
@@ -182,7 +183,7 @@ export const topicStoriesQuery = groq`
 `;
 
 // Add this to your api.ts or create a new one
-export const fetchAllCategories = async (): Promise<SanityCategory[]> => {
+export const fetchAllCategories = async (): Promise<AppCategory[]> => {
   const query = groq`
     *[_type == "category"] {
       _id,
@@ -196,7 +197,8 @@ export const fetchAllCategories = async (): Promise<SanityCategory[]> => {
           title,
           subtitle,
           "slug": slug.current,
-          "mainImage": mainImage, 
+         mainImage
+,
           category->{
             _id,
             title,
@@ -226,5 +228,9 @@ export const fetchAllCategories = async (): Promise<SanityCategory[]> => {
   `;
 
   const categories = await serverClient.fetch<SanityCategory[]>(query);
-  return categories;
+
+  return categories.map((cat) => ({
+    ...cat,
+    stories: cat.stories?.map(transformSanityArticleToStory) ?? [],
+  }));
 };

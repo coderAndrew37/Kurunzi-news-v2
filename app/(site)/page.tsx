@@ -3,7 +3,7 @@ import { getHeroStories } from "@/app/lib/getHeroStories";
 import Hero from "../components/Hero";
 import NewsSections from "../components/NewsSection";
 import WeatherWidget from "../components/WeatherWidget";
-import { SanityCategory } from "../lib/api";
+import { AppCategory, SanityCategory } from "../lib/api";
 import { fetchAllCategories } from "../lib/getCategoryStories";
 
 export const revalidate = 60;
@@ -21,7 +21,7 @@ const SECTION_ORDER = [
 ];
 
 // Sort categories based on priority order
-function sortCategories(categories: SanityCategory[]): SanityCategory[] {
+function sortCategories(categories: AppCategory[]): AppCategory[] {
   return [...categories].sort((a, b) => {
     const aIndex = SECTION_ORDER.indexOf(a.slug);
     const bIndex = SECTION_ORDER.indexOf(b.slug);
@@ -41,11 +41,10 @@ function sortCategories(categories: SanityCategory[]): SanityCategory[] {
 
 export default async function Home() {
   const heroStories = await getHeroStories();
-  const allCategories = await fetchAllCategories();
+  const allCategories = await fetchAllCategories(); // AppCategory[]
 
-  // Filter out categories with no stories
   const categoriesWithStories = allCategories.filter(
-    (cat: SanityCategory) => cat.stories && cat.stories.length > 0
+    (cat) => cat.stories && cat.stories.length > 0
   );
 
   // Sort categories
