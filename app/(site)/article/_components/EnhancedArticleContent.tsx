@@ -3,7 +3,11 @@
 
 import { Story as Article, Story } from "@/app/components/types";
 import { urlFor } from "@/app/lib/sanity.image";
-import { PortableText, PortableTextComponents } from "@portabletext/react";
+import {
+  PortableText,
+  PortableTextBlock,
+  PortableTextComponents,
+} from "@portabletext/react";
 import Image from "next/image";
 import Link from "next/link";
 import { JSX, useEffect, useRef, useState } from "react";
@@ -24,7 +28,8 @@ export default function EnhancedArticleContent({
   tagArticles = [],
 }: EnhancedArticleContentProps) {
   const contentRef = useRef<HTMLDivElement>(null);
-  const [contentBlocks, setContentBlocks] = useState<any[]>([]);
+  const [contentBlocks, setContentBlocks] = useState<PortableTextBlock[]>([]);
+
   const [insertionPoints, setInsertionPoints] = useState<number[]>([]);
 
   // Parse content and determine where to insert related content

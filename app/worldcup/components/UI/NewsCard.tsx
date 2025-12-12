@@ -10,7 +10,15 @@ export interface NewsCardProps {
   excerpt: string;
   category: string;
   date: string;
-  image?: SanityMainImage;
+
+  image?:
+    | SanityMainImage
+    | {
+        url: string;
+        alt?: string | null;
+        caption?: string | null;
+      };
+
   readTime?: number;
   variant?: "default" | "featured" | "compact" | "headline";
   className?: string;
@@ -246,14 +254,17 @@ export default function NewsCard({
   );
 }
 
-function hasSanityAsset(image: unknown): image is { asset: { _ref: string } } {
-  return (
-    typeof image === "object" &&
-    image !== null &&
-    "asset" in image &&
-    typeof (image as any).asset === "object" &&
-    (image as any).asset !== null &&
-    "_ref" in (image as any).asset &&
-    typeof (image as any).asset._ref === "string"
-  );
+function hasSanityAsset(image: unknown): image is SanityMainImage {
+  if (typeof image === "object" && image !== null && "asset" in image) {
+    const asset = (image as Record<string, unknown>).asset;
+
+    return (
+      typeof asset === "object" &&
+      asset !== null &&
+      "_ref" in asset &&
+      typeof (asset as Record<string, unknown>)["_ref"] === "string"
+    );
+  }
+
+  return false;
 }

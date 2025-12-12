@@ -21,14 +21,21 @@ export function urlFor(source: SanityImageSource) {
 }
 
 export function isSanityImage(value: unknown): value is SanityImageSource {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "_type" in value &&
-    (value as any)._type === "image" &&
-    "asset" in value &&
-    typeof (value as any).asset === "object" &&
-    (value as any).asset !== null &&
-    "_ref" in (value as any).asset
-  );
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    !("_type" in value) ||
+    !("asset" in value)
+  ) {
+    return false;
+  }
+
+  const obj = value as Record<string, unknown>;
+  if (obj._type !== "image") return false;
+
+  const asset = obj.asset;
+  if (typeof asset !== "object" || asset === null) return false;
+
+  const assetObj = asset as Record<string, unknown>;
+  return typeof assetObj._ref === "string";
 }

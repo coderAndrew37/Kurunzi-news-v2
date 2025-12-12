@@ -1,21 +1,39 @@
-// app/writer/articles/new/page.tsx
 "use client";
 import Image from "next/image";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import {
+  AlertCircle,
+  Eye,
+  Hash,
+  Image as ImageIcon,
   Save,
   Send,
   X,
-  Eye,
-  Clock,
-  Hash,
-  Image as ImageIcon,
-  AlertCircle,
 } from "lucide-react";
-import RichTextEditor from "../../_components/RichTextEditor";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import toast from "react-hot-toast";
+import RichTextEditor from "../../_components/RichTextEditor";
+
+interface RichTextBlock {
+  content?: { text: string }[];
+}
+
+interface RichTextContent {
+  content?: RichTextBlock[];
+}
+
+interface Article {
+  title: string;
+  subtitle: string;
+  body: RichTextContent | null;
+  excerpt: string;
+  category: string;
+  tags: string[];
+  readTime: number;
+  featuredImage: string;
+  status: "draft" | "submitted";
+}
 
 // Mock categories - replace with actual data from Sanity
 const CATEGORIES = [
@@ -32,16 +50,16 @@ export default function NewArticlePage() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
 
-  const [article, setArticle] = useState({
+  const [article, setArticle] = useState<Article>({
     title: "",
     subtitle: "",
     body: null,
     excerpt: "",
     category: "",
-    tags: [] as string[],
+    tags: [],
     readTime: 0,
     featuredImage: "",
-    status: "draft" as "draft" | "submitted",
+    status: "draft",
   });
 
   const [newTag, setNewTag] = useState("");
@@ -126,18 +144,15 @@ export default function NewArticlePage() {
     }
   };
 
-  const handleBodyChange = (content: any) => {
+  const handleBodyChange = (content: RichTextContent | null) => {
     setArticle({ ...article, body: content });
 
     // Calculate word count from content
-    if (content && content.content) {
+    if (content?.content) {
       const text = content.content
-        .map(
-          (block: any) =>
-            block.content?.map((span: any) => span.text).join(" ") || ""
-        )
+        .map((block) => block.content?.map((span) => span.text).join(" ") || "")
         .join(" ");
-      const words = text.trim().split(/\s+/).length;
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
       setWordCount(words);
     }
   };

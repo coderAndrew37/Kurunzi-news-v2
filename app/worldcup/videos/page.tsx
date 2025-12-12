@@ -126,9 +126,9 @@ const videos: Video[] = [
 
 export default function VideosPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<"newest" | "popular" | "featured">(
-    "newest"
-  );
+  type SortOption = "newest" | "popular" | "featured";
+
+  const [sortBy, setSortBy] = useState<SortOption>("newest");
 
   const categories = [
     { id: "all", name: "All Videos", count: videos.length },
@@ -289,7 +289,7 @@ export default function VideosPage() {
               <select
                 aria-label="Filter videos"
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
+                onChange={(e) => setSortBy(e.target.value as SortOption)}
                 className="bg-gray-100 border-0 rounded-lg px-4 py-2 font-semibold text-gray-700 focus:ring-2 focus:ring-blue-500"
               >
                 <option value="newest">Newest First</option>

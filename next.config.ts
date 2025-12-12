@@ -50,6 +50,12 @@ const baseConfig: NextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://plausible.io *.vercel-insights.com *.googletagmanager.com;",
               "style-src 'self' 'unsafe-inline';",
               "font-src 'self' data:;",
+              // 👇 THIS IS THE FIX
+              "connect-src 'self' https://*.supabase.co;",
+
+              // Optional extras (you can remove if not needed)
+              "frame-src 'self';",
+              "object-src 'none';",
             ].join(" "),
           },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },

@@ -1,46 +1,50 @@
-import {
-  ClerkProvider,
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from "@clerk/nextjs";
-import { Toaster } from "react-hot-toast";
-import WriterHeader from "./_components/WriterHeader";
-import WriterSidebar from "./_components/WriterSidebar";
+// /app/writer/layout.tsx
+import React from "react";
+import { redirect } from "next/navigation";
+// Import the secure authorization utility
+import { getServerUserRoles, hasRequiredRole } from "@/lib/auth-utils";
 
-export default function WriterLayout({
+export const metadata = {
+  title: "Writer Panel - Newsroom",
+};
+
+export default async function WriterLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
+  const userContext = await getServerUserRoles();
+
+  // Authorization Check: Must be authenticated AND have the 'writer' role.
+  // Since Admins have the 'writer' role in their array, they are authorized here too.
+  const isAuthorized =
+    userContext.isAuthenticated && hasRequiredRole(userContext.roles, "writer");
+
+  if (!isAuthorized) {
+    // Redirect to the writer-specific sign-in if not authorized
+    redirect("/auth/writer/sign-in");
+  }
+
+  // You can use the userContext.userId to fetch profile data for the header if needed
+  const writerId = userContext.userId;
+
   return (
-    <ClerkProvider>
-      <div className="min-h-screen bg-gray-50">
-        <WriterHeader />
-        <div className="flex">
-          <WriterSidebar />
-          <main className="flex-1 p-6">
-            {" "}
-            <header className="flex justify-end items-center p-4 gap-4 h-16">
-              <SignedOut>
-                <SignInButton />
-                <SignUpButton>
-                  <button className="bg-[#6c47ff] text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer">
-                    Sign Up
-                  </button>
-                </SignUpButton>
-              </SignedOut>
-              <SignedIn>
-                <UserButton />
-              </SignedIn>
-            </header>
-            {children}
-          </main>
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white shadow p-4 border-b border-gray-200">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <h1 className="text-xl font-semibold text-gray-800">
+            Newsroom Writer Dashboard
+          </h1>
+          <p className="text-sm text-gray-600">User ID: {writerId}</p>
+          {/* Add sign-out button component here */}
         </div>
-        <Toaster position="top-right" />
-      </div>
-    </ClerkProvider>
+      </header>
+             {" "}
+      <main className="flex-1 p-6">
+                  <div className="max-w-4xl mx-auto">{children}</div>     
+         {" "}
+      </main>
+         {" "}
+    </div>
   );
 }

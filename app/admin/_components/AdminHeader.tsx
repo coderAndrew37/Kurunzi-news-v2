@@ -1,18 +1,24 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
-import { UserButton, SignOutButton } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import type { AdminInfo } from "@/app/components/types";
+import { createBrowserSupabase } from "@/lib/supabase-browser";
 
 interface Props {
-  admin: any;
+  admin: AdminInfo;
 }
 
 export default function AdminHeader({ admin }: Props) {
-  const displayName =
-    admin?.firstName || admin?.lastName
-      ? `${admin.firstName ?? ""} ${admin.lastName ?? ""}`.trim()
-      : (admin?.emailAddresses?.[0]?.emailAddress ?? "Admin");
+  const router = useRouter();
+  const supabase = createBrowserSupabase();
+
+  const displayName = admin.name || admin.email || "Admin";
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    router.push("/auth/admin/sign-in");
+  }
 
   return (
     <header className="w-full border-b bg-white">
@@ -40,15 +46,12 @@ export default function AdminHeader({ admin }: Props) {
             Signed in as {displayName}
           </div>
 
-          <div className="flex items-center gap-2">
-            <UserButton />
-            {/* SignOutButton is optional but useful for an explicit sign out action */}
-            <SignOutButton>
-              <button className="hidden sm:inline-block px-3 py-1 rounded bg-slate-100 text-sm">
-                Sign out
-              </button>
-            </SignOutButton>
-          </div>
+          <button
+            onClick={handleSignOut}
+            className="px-3 py-1 rounded bg-slate-100 text-sm"
+          >
+            Sign out
+          </button>
         </div>
       </div>
     </header>

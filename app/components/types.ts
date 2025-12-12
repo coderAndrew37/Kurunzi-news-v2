@@ -229,3 +229,9 @@ export interface CommentProps {
   articleId: string;
   onReply?: (parentId: string, text: string) => void;
 }
+
+export interface AdminInfo {
+  id: string;
+  email: string;
+  name: string;
+}

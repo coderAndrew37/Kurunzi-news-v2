@@ -1,17 +1,35 @@
-import React from "react";
-import { requireAdmin } from "./lib/auth";
+"use client";
 
-export default async function AdminDashboard() {
-  const admin = await requireAdmin();
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { createBrowserSupabase } from "@/lib/supabase-browser";
+
+export default function AdminDashboard() {
+  const [admin, setAdmin] = useState<any>(null);
+  const router = useRouter();
+  const supabase = createBrowserSupabase();
+
+  useEffect(() => {
+    async function load() {
+      const { data } = await supabase.auth.getUser();
+
+      if (!data.user) {
+        router.replace("/auth/admin/sign-in");
+      } else {
+        setAdmin(data.user);
+      }
+    }
+
+    load();
+  }, []);
+
+  if (!admin) return null; // loading state or spinner
 
   return (
     <section>
       <h1 className="text-2xl font-semibold mb-2">Admin Dashboard</h1>
       <p className="text-sm text-slate-600 mb-6">
-        Welcome,{" "}
-        {admin?.firstName ??
-          (admin?.emailAddresses?.[0]?.emailAddress || "Admin")}
-        .
+        Welcome, {admin.user_metadata?.firstName || admin.email || "Admin"}.
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

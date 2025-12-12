@@ -26,9 +26,11 @@ import {
 import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 
+import { JSONContent } from "@tiptap/react";
+
 interface RichTextEditorProps {
-  content: any;
-  onChange: (content: any) => void;
+  content: JSONContent | null;
+  onChange: (content: JSONContent | null) => void;
   placeholder?: string;
   wordLimit?: number;
 }
@@ -45,35 +47,23 @@ export default function RichTextEditor({
 
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({
-        heading: {
-          levels: [2, 3],
-        },
-      }),
-      Placeholder.configure({
-        placeholder,
-      }),
+      StarterKit.configure({ heading: { levels: [2, 3] } }),
+      Placeholder.configure({ placeholder }),
       Underline,
       Link.configure({
         openOnClick: false,
-        HTMLAttributes: {
-          class: "text-red-600 underline hover:text-red-800",
-        },
+        HTMLAttributes: { class: "text-red-600 underline hover:text-red-800" },
       }),
       Image.configure({
         inline: true,
         allowBase64: true,
-        HTMLAttributes: {
-          class: "rounded-lg max-w-full h-auto my-4",
-        },
+        HTMLAttributes: { class: "rounded-lg max-w-full h-auto my-4" },
       }),
-      CharacterCount.configure({
-        limit: wordLimit * 6, // Rough estimate: words * 6 characters
-      }),
+      CharacterCount.configure({ limit: wordLimit * 6 }),
     ],
-    content: content || "",
+    content: content || null, // Accept null
     onUpdate: ({ editor }) => {
-      onChange(editor.getJSON());
+      onChange(editor.getJSON() || null);
     },
     editorProps: {
       attributes: {

@@ -77,15 +77,19 @@ export interface WorldCupHeroArticle {
   title: string;
   slug: string; // MUST be string
   excerpt: string;
-  featuredImage?: any;
+
+  featuredImage?: SanityMainImage | null;
+
   publishedAt: string;
   readTime: number;
   isBreaking?: boolean;
+
   category?: {
     title: string;
     slug: string;
     color?: string;
   };
+
   author: {
     name: string;
     slug: string;
