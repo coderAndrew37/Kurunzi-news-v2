@@ -1,6 +1,5 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
 import { format } from "date-fns";
 import {
   BarChart,
@@ -13,6 +12,8 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { createBrowserSupabase } from "@/lib/supabase-browser";
+
 interface Article {
   _id: string;
   title: string;
@@ -23,7 +24,8 @@ interface Article {
 }
 
 export default function WriterDashboard() {
-  const { user } = useUser();
+  const supabase = createBrowserSupabase();
+  const [user, setUser] = useState<any>(null);
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -35,58 +37,25 @@ export default function WriterDashboard() {
   });
 
   useEffect(() => {
-    fetchWriterData();
+    const supabase = createBrowserSupabase();
+
+    // Get initial session
+    supabase.auth.getSession().then(({ data }) => {
+      setUser(data.session?.user ?? null);
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const fetchWriterData = async () => {
-    try {
-      // Simulate API call - replace with your actual API
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Mock data - replace with actual data from Sanity
-      const mockArticles: Article[] = [
-        {
-          _id: "1",
-          title: "The Future of AI in Journalism",
-          status: "draft",
-          createdAt: new Date().toISOString(),
-          category: "Technology",
-          wordCount: 1250,
-        },
-        {
-          _id: "2",
-          title: "Climate Change Report 2024",
-          status: "submitted",
-          createdAt: new Date(Date.now() - 86400000).toISOString(),
-          category: "Environment",
-          wordCount: 2100,
-        },
-        {
-          _id: "3",
-          title: "Interview with Tech CEO",
-          status: "published",
-          createdAt: new Date(Date.now() - 172800000).toISOString(),
-          category: "Business",
-          wordCount: 1800,
-        },
-      ];
-
-      setArticles(mockArticles);
-      setStats({
-        total: 24,
-        drafts: 5,
-        submitted: 3,
-        published: 16,
-        thisMonth: 8,
-      });
-    } catch (error) {
-      toast.error("Failed to load dashboard data");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
+  if (loading || !user) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
@@ -96,16 +65,14 @@ export default function WriterDashboard() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      {/* Welcome Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">
-          Welcome back, {user?.firstName}!
+          Welcome back, {user?.email}!
         </h1>
         <p className="text-gray-600 mt-2">
           Here&apos;s what&apos;s happening with your articles today
         </p>
       </div>
-
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white rounded-xl border border-gray-200 p-6">

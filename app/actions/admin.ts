@@ -1,9 +1,8 @@
 "use server";
 
-import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { getServerUserRoles, hasRequiredRole } from "@/lib/auth-utils";
-import { cookies } from "next/headers";
 import { createServerSupabase } from "@/lib/supabase-server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 
 // High-privilege client using the Service Role Key
 const supabaseAdmin = createAdminClient(
