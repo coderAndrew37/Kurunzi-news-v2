@@ -1,5 +1,6 @@
 "use client";
 
+import { createBrowserSupabase } from "@/lib/supabase-browser";
 import { format } from "date-fns";
 import {
   BarChart,
@@ -11,8 +12,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
-import { createBrowserSupabase } from "@/lib/supabase-browser";
 
 interface Article {
   _id: string;

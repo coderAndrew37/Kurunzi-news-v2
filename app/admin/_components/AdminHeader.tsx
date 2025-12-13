@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import type { AdminInfo } from "@/app/components/types";
 import { createBrowserSupabase } from "@/lib/supabase-browser";
 
@@ -10,25 +9,27 @@ interface Props {
 }
 
 export default function AdminHeader({ admin }: Props) {
-  const router = useRouter();
   const supabase = createBrowserSupabase();
 
   const displayName = admin.name || admin.email || "Admin";
 
   async function handleSignOut() {
     await supabase.auth.signOut();
-    router.push("/auth/admin/sign-in");
+
+    // Hard redirect to fully reset auth state
+    window.location.href = "/auth/admin/sign-in";
   }
 
   return (
     <header className="w-full border-b bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        {/* Left side */}
+        <div className="flex items-center gap-6">
           <Link href="/admin" className="text-lg font-bold">
             Newsroom Admin
           </Link>
 
-          <nav className="hidden sm:flex items-center gap-3 text-sm text-slate-600">
+          <nav className="hidden sm:flex items-center gap-4 text-sm text-slate-600">
             <Link href="/admin/invite-writer" className="hover:underline">
               Invite
             </Link>
@@ -41,14 +42,15 @@ export default function AdminHeader({ admin }: Props) {
           </nav>
         </div>
 
+        {/* Right side */}
         <div className="flex items-center gap-4">
-          <div className="hidden sm:block text-sm text-slate-700">
-            Signed in as {displayName}
-          </div>
+          <span className="hidden sm:block text-sm text-slate-700">
+            Signed in as <strong>{displayName}</strong>
+          </span>
 
           <button
             onClick={handleSignOut}
-            className="px-3 py-1 rounded bg-slate-100 text-sm"
+            className="rounded-md bg-slate-100 px-3 py-1.5 text-sm font-medium hover:bg-slate-200 transition"
           >
             Sign out
           </button>

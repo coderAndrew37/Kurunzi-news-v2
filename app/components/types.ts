@@ -232,6 +232,6 @@ export interface CommentProps {
 
 export interface AdminInfo {
   id: string;
-  email: string;
+  email: string | null;
   name: string;
 }

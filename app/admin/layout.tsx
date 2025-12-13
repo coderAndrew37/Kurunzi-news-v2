@@ -19,19 +19,21 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // 1. Read the user and roles securely on the server
+  // ✅ DEV: do not block with server auth
+  if (process.env.NODE_ENV !== "production") {
+    return <>{children}</>;
+  }
+
+  // ✅ PROD: enforce securely
   const userContext = await getServerUserRoles();
 
-  // 2. Check permissions
   const isAuthorized =
     userContext.isAuthenticated && hasRequiredRole(userContext.roles, "admin");
 
-  // 3. Block unauthorized access
   if (!isAuthorized) {
     redirect("/auth/admin/sign-in");
   }
 
-  // 4. Info to send to Header (client)
   const admin = {
     id: userContext.userId!,
     userId: userContext.userId!,
@@ -45,7 +47,6 @@ export default async function AdminLayout({
 
       <div className="flex">
         <AdminSidebar />
-
         <main className="flex-1 p-6">
           <div className="max-w-7xl mx-auto">
             <Toaster position="top-right" />
