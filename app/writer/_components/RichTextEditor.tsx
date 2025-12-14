@@ -33,6 +33,7 @@ interface RichTextEditorProps {
   onChange: (content: JSONContent | null) => void;
   placeholder?: string;
   wordLimit?: number;
+  readOnly?: boolean;
 }
 
 export default function RichTextEditor({
@@ -40,12 +41,15 @@ export default function RichTextEditor({
   onChange,
   placeholder = "Start writing your story...",
   wordLimit = 5000,
+  readOnly = false,
 }: RichTextEditorProps) {
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
   const [imageUrl, setImageUrl] = useState("");
 
   const editor = useEditor({
+    immediatelyRender: false,
+    editable: !readOnly,
     extensions: [
       StarterKit.configure({ heading: { levels: [2, 3] } }),
       Placeholder.configure({ placeholder }),
@@ -61,15 +65,11 @@ export default function RichTextEditor({
       }),
       CharacterCount.configure({ limit: wordLimit * 6 }),
     ],
-    content: content || null, // Accept null
+    content: content ?? null,
     onUpdate: ({ editor }) => {
-      onChange(editor.getJSON() || null);
-    },
-    editorProps: {
-      attributes: {
-        class: "prose prose-lg max-w-none min-h-[400px] p-4 focus:outline-none",
-        spellcheck: "true",
-      },
+      if (!readOnly) {
+        onChange(editor.getJSON() || null);
+      }
     },
   });
 

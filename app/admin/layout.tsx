@@ -19,27 +19,31 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // ✅ DEV: do not block with server auth
-  if (process.env.NODE_ENV !== "production") {
-    return <>{children}</>;
+  let admin: {
+    id: string;
+    userId: string;
+    name: string | null;
+    email: string | null;
+  } | null = null;
+
+  if (process.env.NODE_ENV === "production") {
+    const userContext = await getServerUserRoles();
+
+    const isAuthorized =
+      userContext.isAuthenticated &&
+      hasRequiredRole(userContext.roles, "admin");
+
+    if (!isAuthorized) {
+      redirect("/auth/admin/sign-in");
+    }
+
+    admin = {
+      id: userContext.userId!,
+      userId: userContext.userId!,
+      name: userContext.user?.user_metadata?.name ?? null,
+      email: userContext.user?.email ?? null,
+    };
   }
-
-  // ✅ PROD: enforce securely
-  const userContext = await getServerUserRoles();
-
-  const isAuthorized =
-    userContext.isAuthenticated && hasRequiredRole(userContext.roles, "admin");
-
-  if (!isAuthorized) {
-    redirect("/auth/admin/sign-in");
-  }
-
-  const admin = {
-    id: userContext.userId!,
-    userId: userContext.userId!,
-    name: userContext.user?.user_metadata?.name ?? null,
-    email: userContext.user?.email ?? null,
-  };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -47,6 +51,7 @@ export default async function AdminLayout({
 
       <div className="flex">
         <AdminSidebar />
+
         <main className="flex-1 p-6">
           <div className="max-w-7xl mx-auto">
             <Toaster position="top-right" />

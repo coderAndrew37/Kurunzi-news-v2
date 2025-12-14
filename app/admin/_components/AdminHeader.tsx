@@ -5,25 +5,22 @@ import type { AdminInfo } from "@/app/components/types";
 import { createBrowserSupabase } from "@/lib/supabase-browser";
 
 interface Props {
-  admin: AdminInfo;
+  admin: AdminInfo | null;
 }
 
 export default function AdminHeader({ admin }: Props) {
   const supabase = createBrowserSupabase();
 
-  const displayName = admin.name || admin.email || "Admin";
+  const displayName = admin?.name || admin?.email || "Admin";
 
   async function handleSignOut() {
     await supabase.auth.signOut();
-
-    // Hard redirect to fully reset auth state
     window.location.href = "/auth/admin/sign-in";
   }
 
   return (
     <header className="w-full border-b bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Left side */}
         <div className="flex items-center gap-6">
           <Link href="/admin" className="text-lg font-bold">
             Newsroom Admin
@@ -42,7 +39,6 @@ export default function AdminHeader({ admin }: Props) {
           </nav>
         </div>
 
-        {/* Right side */}
         <div className="flex items-center gap-4">
           <span className="hidden sm:block text-sm text-slate-700">
             Signed in as <strong>{displayName}</strong>
