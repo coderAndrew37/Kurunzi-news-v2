@@ -54,6 +54,59 @@ export default function WriterDashboard() {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (!user) return;
+
+    async function loadDashboardData() {
+      const { data, error } = await supabase
+        .from("draft_articles")
+        .select("id, title, status, created_at, word_count")
+        .eq("author_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Failed to load dashboard data:", error);
+        return;
+      }
+
+      const now = new Date();
+
+      const mappedArticles: Article[] =
+        data?.map((a) => ({
+          _id: a.id,
+          title: a.title,
+          status: a.status,
+          createdAt: a.created_at,
+          wordCount: a.word_count ?? undefined,
+        })) ?? [];
+
+      const total = mappedArticles.length;
+      const drafts = mappedArticles.filter((a) => a.status === "draft").length;
+      const submitted = mappedArticles.filter(
+        (a) => a.status === "submitted"
+      ).length;
+
+      const thisMonth = mappedArticles.filter((a) => {
+        const created = new Date(a.createdAt);
+        return (
+          created.getMonth() === now.getMonth() &&
+          created.getFullYear() === now.getFullYear()
+        );
+      }).length;
+
+      setArticles(mappedArticles.slice(0, 5)); // Recent only
+      setStats({
+        total,
+        drafts,
+        submitted,
+        published: 0, // not wired yet
+        thisMonth,
+      });
+    }
+
+    loadDashboardData();
+  }, [user, supabase]);
+
   if (loading || !user) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
