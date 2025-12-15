@@ -1,6 +1,5 @@
 "use client";
 
-import { sanityClient } from "@/app/lib/sanity.client";
 import RichTextEditor from "@/app/writer/_components/RichTextEditor";
 import { createBrowserSupabase } from "@/lib/supabase-browser";
 import { AlertCircle, Eye, Send, X } from "lucide-react";
@@ -8,6 +7,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import type { JSONContent } from "@tiptap/react";
+import { getCategories } from "./actions";
 
 /* ------------------------------------------------------------------ */
 /* Types */
@@ -35,7 +35,7 @@ interface ArticleState {
 
 export default function EditArticlePage() {
   const router = useRouter();
-  const params = useParams<{ id: string }>();
+  const { id } = useParams<{ id: string }>();
   const supabase = createBrowserSupabase();
 
   const autosaveTimer = useRef<NodeJS.Timeout | null>(null);
@@ -61,22 +61,33 @@ export default function EditArticlePage() {
   const isLocked = article.status !== "draft";
 
   /* ------------------------------------------------------------------ */
-  /* Load draft + categories */
+  /* Load draft + categories (ONCE) */
   /* ------------------------------------------------------------------ */
 
   useEffect(() => {
-    async function loadData() {
-      const [{ data: draft }, { data: cats }] = await Promise.all([
-        supabase
-          .from("draft_articles")
-          .select("*")
-          .eq("id", params.id)
-          .single(),
-        sanityClient.fetch(`*[_type == "category"]{_id, title}`),
+    let cancelled = false;
+
+    async function load() {
+      // 1. Auth check
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        router.push("/auth/writer/sign-in");
+        return;
+      }
+
+      // 2. Fetch draft + categories
+      const [{ data: draft, error }, cats] = await Promise.all([
+        supabase.from("draft_articles").select("*").eq("id", id).single(),
+        getCategories(), // ✅ SERVER FETCH
       ]);
 
-      if (!draft) {
-        toast.error("Draft not found");
+      if (cancelled) return;
+
+      if (error || !draft) {
+        toast.error("Unable to load draft");
         router.push("/writer/dashboard");
         return;
       }
@@ -97,19 +108,21 @@ export default function EditArticlePage() {
       setInitialLoading(false);
     }
 
-    loadData();
-  }, [params.id, router, supabase]);
+    load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id, router, supabase]);
 
   /* ------------------------------------------------------------------ */
-  /* Autosave (draft only) */
+  /* Autosave */
   /* ------------------------------------------------------------------ */
 
   useEffect(() => {
     if (initialLoading || isLocked) return;
 
-    if (autosaveTimer.current) {
-      clearTimeout(autosaveTimer.current);
-    }
+    if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
 
     autosaveTimer.current = setTimeout(async () => {
       setAutosaving(true);
@@ -126,17 +139,15 @@ export default function EditArticlePage() {
           read_time: Math.max(1, Math.ceil(wordCount / 200)),
           updated_at: new Date().toISOString(),
         })
-        .eq("id", params.id);
+        .eq("id", id);
 
       setAutosaving(false);
     }, 2000);
 
     return () => {
-      if (autosaveTimer.current) {
-        clearTimeout(autosaveTimer.current);
-      }
+      if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
     };
-  }, [article, wordCount, initialLoading, isLocked, params.id, supabase]);
+  }, [article, wordCount, initialLoading, isLocked, id, supabase]);
 
   /* ------------------------------------------------------------------ */
   /* Helpers */
@@ -149,9 +160,7 @@ export default function EditArticlePage() {
 
     const text =
       content?.content
-        ?.map((node) =>
-          node.content?.map((child) => child.text ?? "").join(" ")
-        )
+        ?.flatMap((n) => n.content?.map((c) => c.text ?? "") ?? [])
         .join(" ") ?? "";
 
     setWordCount(text.trim() ? text.trim().split(/\s+/).length : 0);
@@ -168,7 +177,7 @@ export default function EditArticlePage() {
 
   const handleSubmit = async () => {
     const validationErrors = validateArticle();
-    if (validationErrors.length > 0) {
+    if (validationErrors.length) {
       setErrors(validationErrors);
       toast.error("Fix errors before submitting");
       return;
@@ -181,16 +190,13 @@ export default function EditArticlePage() {
       .update({
         status: "submitted",
         submitted_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       })
-      .eq("id", params.id);
+      .eq("id", id);
 
     toast.success("Article submitted for review");
     router.push("/writer/dashboard");
   };
 
-  /* ------------------------------------------------------------------ */
-  /* UI */
   /* ------------------------------------------------------------------ */
 
   if (initialLoading) {
@@ -203,7 +209,7 @@ export default function EditArticlePage() {
       <div className="flex justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold">Edit Article</h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-gray-600">
             Status: <strong>{article.status}</strong>
             {autosaving && " · Saving…"}
           </p>
@@ -211,24 +217,19 @@ export default function EditArticlePage() {
 
         <div className="flex gap-2">
           <button
-            aria-label="Close Button"
+            aria-label="close button"
             onClick={() => router.back()}
-            className="border px-3 py-2 rounded"
+            className="border p-2 rounded"
           >
             <X />
           </button>
-          <button aria-label="Open Button" className="border px-3 py-2 rounded">
+          <button aria-label="button" className="border p-2 rounded">
             <Eye />
           </button>
         </div>
       </div>
 
-      {isLocked && (
-        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded">
-          This article is locked and can no longer be edited.
-        </div>
-      )}
-
+      {/* Errors */}
       {errors.length > 0 && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded">
           <AlertCircle className="inline mr-2 text-red-600" />
@@ -238,11 +239,10 @@ export default function EditArticlePage() {
 
       {/* Editor */}
       <input
-        disabled={isLocked}
         value={article.title}
         onChange={(e) => setArticle({ ...article, title: e.target.value })}
-        placeholder="Title"
         className="w-full mb-4 px-4 py-3 border rounded text-xl"
+        placeholder="Title"
       />
 
       <RichTextEditor
@@ -251,11 +251,10 @@ export default function EditArticlePage() {
         readOnly={isLocked}
       />
 
-      {/* Sidebar */}
+      {/* Footer */}
       <div className="mt-6 flex justify-between">
         <select
-          aria-label="category selection"
-          disabled={isLocked}
+          aria-label="category selector"
           value={article.category}
           onChange={(e) => setArticle({ ...article, category: e.target.value })}
           className="border px-3 py-2 rounded"
@@ -269,8 +268,7 @@ export default function EditArticlePage() {
         </select>
 
         <button
-          aria-label="submit button"
-          disabled={isLocked || loading}
+          disabled={loading || isLocked}
           onClick={handleSubmit}
           className="bg-red-600 text-white px-6 py-2 rounded"
         >

@@ -11,6 +11,7 @@ export default function NewArticlePage() {
 
   useEffect(() => {
     async function createDraft() {
+      // 1. Get auth user
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -20,10 +21,24 @@ export default function NewArticlePage() {
         return;
       }
 
+      // 2. Get profile (THIS WAS MISSING)
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", user.id) // assumes profiles.id === auth.users.id
+        .single();
+
+      if (profileError || !profile) {
+        toast.error("Writer profile not found");
+        router.push("/writer/dashboard");
+        return;
+      }
+
+      // 3. Create draft using PROFILE id
       const { data, error } = await supabase
         .from("draft_articles")
         .insert({
-          author_id: user.id,
+          author_id: profile.id,
           title: "Untitled Article",
           body: null,
           status: "draft",
@@ -31,12 +46,14 @@ export default function NewArticlePage() {
         .select("id")
         .single();
 
-      if (error || !data) {
-        toast.error("Failed to create draft");
+      if (error) {
+        console.error("Draft insert error:", error);
+        toast.error(error.message);
         router.push("/writer/dashboard");
         return;
       }
 
+      // 4. Redirect to editor
       router.replace(`/writer/articles/${data.id}/edit`);
     }
 

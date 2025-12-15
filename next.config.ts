@@ -51,7 +51,7 @@ const baseConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline';",
               "font-src 'self' data:;",
               // 👇 THIS IS THE FIX
-              "connect-src 'self' https://*.supabase.co;",
+              "connect-src 'self' https://*.supabase.co https://*.sanity.io;",
 
               // Optional extras (you can remove if not needed)
               "frame-src 'self';",
