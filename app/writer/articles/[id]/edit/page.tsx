@@ -2,7 +2,7 @@
 
 import RichTextEditor from "@/app/writer/_components/RichTextEditor";
 import { createBrowserSupabase } from "@/lib/supabase-browser";
-import { AlertCircle, Eye, Send, X } from "lucide-react";
+import { AlertCircle, Eye, Send, X, Save, Clock } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
@@ -68,7 +68,6 @@ export default function EditArticlePage() {
     let cancelled = false;
 
     async function load() {
-      // 1. Auth check
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -78,10 +77,9 @@ export default function EditArticlePage() {
         return;
       }
 
-      // 2. Fetch draft + categories
       const [{ data: draft, error }, cats] = await Promise.all([
         supabase.from("draft_articles").select("*").eq("id", id).single(),
-        getCategories(), // ✅ SERVER FETCH
+        getCategories(),
       ]);
 
       if (cancelled) return;
@@ -200,82 +198,155 @@ export default function EditArticlePage() {
   /* ------------------------------------------------------------------ */
 
   if (initialLoading) {
-    return <div className="p-10 text-center">Loading…</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Header */}
-      <div className="flex justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Edit Article</h1>
-          <p className="text-gray-600">
-            Status: <strong>{article.status}</strong>
-            {autosaving && " · Saving…"}
-          </p>
+      <div className="mb-8">
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Edit Article
+            </h1>
+            <div className="flex items-center gap-4 text-sm text-gray-600">
+              <div className="flex items-center gap-2">
+                <div
+                  className={`h-2 w-2 rounded-full ${article.status === "draft" ? "bg-yellow-500" : "bg-green-500"}`}
+                ></div>
+                <span className="font-medium capitalize">{article.status}</span>
+              </div>
+              <span className="text-gray-300">•</span>
+              <div className="flex items-center gap-1">
+                <Clock className="h-4 w-4" />
+                <span>~{Math.max(1, Math.ceil(wordCount / 200))} min read</span>
+              </div>
+              {autosaving && (
+                <>
+                  <span className="text-gray-300">•</span>
+                  <div className="flex items-center gap-1 text-blue-600">
+                    <Save className="h-4 w-4 animate-pulse" />
+                    <span>Saving...</span>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => router.back()}
+              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 text-gray-700"
+            >
+              <X className="h-4 w-4" />
+              Close
+            </button>
+            <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 text-gray-700">
+              <Eye className="h-4 w-4" />
+              Preview
+            </button>
+          </div>
         </div>
 
-        <div className="flex gap-2">
-          <button
-            aria-label="close button"
-            onClick={() => router.back()}
-            className="border p-2 rounded"
-          >
-            <X />
-          </button>
-          <button aria-label="button" className="border p-2 rounded">
-            <Eye />
-          </button>
-        </div>
+        {/* Errors */}
+        {errors.length > 0 && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
+              <div>
+                <h3 className="font-semibold text-red-800 mb-1">
+                  Please fix the following:
+                </h3>
+                <ul className="text-red-700 list-disc list-inside space-y-1">
+                  {errors.map((error, index) => (
+                    <li key={index}>{error}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Errors */}
-      {errors.length > 0 && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded">
-          <AlertCircle className="inline mr-2 text-red-600" />
-          {errors.join(", ")}
-        </div>
-      )}
+      {/* Title Input */}
+      <div className="mb-6">
+        <input
+          value={article.title}
+          onChange={(e) => setArticle({ ...article, title: e.target.value })}
+          className="w-full px-6 py-4 border border-gray-300 rounded-xl text-3xl font-bold placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="Your Article Title"
+          disabled={isLocked}
+        />
+      </div>
 
       {/* Editor */}
-      <input
-        value={article.title}
-        onChange={(e) => setArticle({ ...article, title: e.target.value })}
-        className="w-full mb-4 px-4 py-3 border rounded text-xl"
-        placeholder="Title"
-      />
-
-      <RichTextEditor
-        content={article.body}
-        onChange={handleBodyChange}
-        readOnly={isLocked}
-      />
-
-      {/* Footer */}
-      <div className="mt-6 flex justify-between">
-        <select
-          aria-label="category selector"
-          value={article.category}
-          onChange={(e) => setArticle({ ...article, category: e.target.value })}
-          className="border px-3 py-2 rounded"
-        >
-          <option value="">Select category</option>
-          {categories.map((c) => (
-            <option key={c._id} value={c._id}>
-              {c.title}
-            </option>
-          ))}
-        </select>
-
-        <button
-          disabled={loading || isLocked}
-          onClick={handleSubmit}
-          className="bg-red-600 text-white px-6 py-2 rounded"
-        >
-          <Send className="inline mr-2" />
-          Submit
-        </button>
+      <div className="mb-8">
+        <RichTextEditor
+          content={article.body}
+          onChange={handleBodyChange}
+          readOnly={isLocked}
+        />
       </div>
+
+      {/* Footer Controls */}
+      <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Category
+            </label>
+            <select
+              aria-label="category selector"
+              value={article.category}
+              onChange={(e) =>
+                setArticle({ ...article, category: e.target.value })
+              }
+              className="w-full sm:w-64 px-4 py-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              disabled={isLocked}
+            >
+              <option value="">Select a category</option>
+              {categories.map((c) => (
+                <option key={c._id} value={c._id} className="py-2">
+                  {c.title}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="text-sm text-gray-600">
+              <span className="font-semibold text-gray-800">{wordCount}</span>{" "}
+              words written
+            </div>
+            <button
+              disabled={loading || isLocked}
+              onClick={handleSubmit}
+              className={`px-8 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-all ${
+                isLocked
+                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  : "bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-sm hover:shadow-md"
+              }`}
+            >
+              <Send className="h-4 w-4" />
+              {loading ? "Submitting..." : "Submit for Review"}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Status Message for Submitted Articles */}
+      {isLocked && (
+        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl text-center">
+          <p className="text-blue-700">
+            This article has been submitted for review and cannot be edited.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

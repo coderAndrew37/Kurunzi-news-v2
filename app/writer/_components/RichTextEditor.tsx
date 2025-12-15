@@ -25,7 +25,6 @@ import {
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
-
 import { JSONContent } from "@tiptap/react";
 
 interface RichTextEditorProps {
@@ -51,17 +50,34 @@ export default function RichTextEditor({
     immediatelyRender: false,
     editable: !readOnly,
     extensions: [
-      StarterKit.configure({ heading: { levels: [2, 3] } }),
+      StarterKit.configure({
+        heading: { levels: [2, 3] },
+        codeBlock: {
+          HTMLAttributes: {
+            class: "bg-gray-50 rounded-md p-4 font-mono text-sm",
+          },
+        },
+        blockquote: {
+          HTMLAttributes: {
+            class: "border-l-4 border-gray-300 pl-4 italic text-gray-700",
+          },
+        },
+      }),
       Placeholder.configure({ placeholder }),
       Underline,
       Link.configure({
         openOnClick: false,
-        HTMLAttributes: { class: "text-red-600 underline hover:text-red-800" },
+        HTMLAttributes: {
+          class:
+            "text-blue-600 underline hover:text-blue-800 transition-colors",
+        },
       }),
       Image.configure({
         inline: true,
         allowBase64: true,
-        HTMLAttributes: { class: "rounded-lg max-w-full h-auto my-4" },
+        HTMLAttributes: {
+          class: "rounded-lg max-w-full h-auto my-6 shadow-md",
+        },
       }),
       CharacterCount.configure({ limit: wordLimit * 6 }),
     ],
@@ -70,6 +86,11 @@ export default function RichTextEditor({
       if (!readOnly) {
         onChange(editor.getJSON() || null);
       }
+    },
+    editorProps: {
+      attributes: {
+        class: "prose prose-lg max-w-none focus:outline-none min-h-[300px] p-6",
+      },
     },
   });
 
@@ -103,20 +124,17 @@ export default function RichTextEditor({
       const file = event.target.files?.[0];
       if (!file) return;
 
-      // Validate file type
       if (!file.type.startsWith("image/")) {
         toast.error("Please upload an image file");
         return;
       }
 
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         toast.error("Image size must be less than 5MB");
         return;
       }
 
       try {
-        // Convert to base64 for immediate preview
         const reader = new FileReader();
         reader.onload = (e) => {
           const base64 = e.target?.result as string;
@@ -139,29 +157,41 @@ export default function RichTextEditor({
   const progress = (wordCount / wordLimit) * 100;
 
   return (
-    <div className="border border-gray-300 rounded-lg overflow-hidden">
+    <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
       {/* Toolbar */}
-      <div className="bg-gray-50 border-b border-gray-300 p-3">
-        <div className="flex flex-wrap items-center gap-1 mb-2">
+      <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 p-4">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Text Formatting */}
-          <div className="flex items-center border-r border-gray-300 pr-2 mr-2">
+          <div className="flex items-center gap-1 bg-white rounded-lg p-1 shadow-sm">
             <button
               onClick={() => editor.chain().focus().toggleBold().run()}
-              className={`p-2 rounded ${editor.isActive("bold") ? "bg-gray-200" : "hover:bg-gray-100"}`}
+              className={`p-2 rounded-md transition-all ${
+                editor.isActive("bold")
+                  ? "bg-blue-100 text-blue-600"
+                  : "hover:bg-gray-100 text-gray-700"
+              }`}
               title="Bold (Ctrl+B)"
             >
               <Bold className="h-4 w-4" />
             </button>
             <button
               onClick={() => editor.chain().focus().toggleItalic().run()}
-              className={`p-2 rounded ${editor.isActive("italic") ? "bg-gray-200" : "hover:bg-gray-100"}`}
+              className={`p-2 rounded-md transition-all ${
+                editor.isActive("italic")
+                  ? "bg-blue-100 text-blue-600"
+                  : "hover:bg-gray-100 text-gray-700"
+              }`}
               title="Italic (Ctrl+I)"
             >
               <Italic className="h-4 w-4" />
             </button>
             <button
               onClick={() => editor.chain().focus().toggleUnderline().run()}
-              className={`p-2 rounded ${editor.isActive("underline") ? "bg-gray-200" : "hover:bg-gray-100"}`}
+              className={`p-2 rounded-md transition-all ${
+                editor.isActive("underline")
+                  ? "bg-blue-100 text-blue-600"
+                  : "hover:bg-gray-100 text-gray-700"
+              }`}
               title="Underline (Ctrl+U)"
             >
               <UnderlineIcon className="h-4 w-4" />
@@ -169,12 +199,16 @@ export default function RichTextEditor({
           </div>
 
           {/* Headings */}
-          <div className="flex items-center border-r border-gray-300 pr-2 mr-2">
+          <div className="flex items-center gap-1 bg-white rounded-lg p-1 shadow-sm">
             <button
               onClick={() =>
                 editor.chain().focus().toggleHeading({ level: 2 }).run()
               }
-              className={`p-2 rounded ${editor.isActive("heading", { level: 2 }) ? "bg-gray-200" : "hover:bg-gray-100"}`}
+              className={`p-2 rounded-md transition-all ${
+                editor.isActive("heading", { level: 2 })
+                  ? "bg-blue-100 text-blue-600"
+                  : "hover:bg-gray-100 text-gray-700"
+              }`}
               title="Heading 2"
             >
               <Heading2 className="h-4 w-4" />
@@ -183,7 +217,11 @@ export default function RichTextEditor({
               onClick={() =>
                 editor.chain().focus().toggleHeading({ level: 3 }).run()
               }
-              className={`p-2 rounded ${editor.isActive("heading", { level: 3 }) ? "bg-gray-200" : "hover:bg-gray-100"}`}
+              className={`p-2 rounded-md transition-all ${
+                editor.isActive("heading", { level: 3 })
+                  ? "bg-blue-100 text-blue-600"
+                  : "hover:bg-gray-100 text-gray-700"
+              }`}
               title="Heading 3"
             >
               <Heading3 className="h-4 w-4" />
@@ -191,17 +229,25 @@ export default function RichTextEditor({
           </div>
 
           {/* Lists */}
-          <div className="flex items-center border-r border-gray-300 pr-2 mr-2">
+          <div className="flex items-center gap-1 bg-white rounded-lg p-1 shadow-sm">
             <button
               onClick={() => editor.chain().focus().toggleBulletList().run()}
-              className={`p-2 rounded ${editor.isActive("bulletList") ? "bg-gray-200" : "hover:bg-gray-100"}`}
+              className={`p-2 rounded-md transition-all ${
+                editor.isActive("bulletList")
+                  ? "bg-blue-100 text-blue-600"
+                  : "hover:bg-gray-100 text-gray-700"
+              }`}
               title="Bullet List"
             >
               <List className="h-4 w-4" />
             </button>
             <button
               onClick={() => editor.chain().focus().toggleOrderedList().run()}
-              className={`p-2 rounded ${editor.isActive("orderedList") ? "bg-gray-200" : "hover:bg-gray-100"}`}
+              className={`p-2 rounded-md transition-all ${
+                editor.isActive("orderedList")
+                  ? "bg-blue-100 text-blue-600"
+                  : "hover:bg-gray-100 text-gray-700"
+              }`}
               title="Numbered List"
             >
               <ListOrdered className="h-4 w-4" />
@@ -209,17 +255,25 @@ export default function RichTextEditor({
           </div>
 
           {/* Block Elements */}
-          <div className="flex items-center border-r border-gray-300 pr-2 mr-2">
+          <div className="flex items-center gap-1 bg-white rounded-lg p-1 shadow-sm">
             <button
               onClick={() => editor.chain().focus().toggleBlockquote().run()}
-              className={`p-2 rounded ${editor.isActive("blockquote") ? "bg-gray-200" : "hover:bg-gray-100"}`}
+              className={`p-2 rounded-md transition-all ${
+                editor.isActive("blockquote")
+                  ? "bg-blue-100 text-blue-600"
+                  : "hover:bg-gray-100 text-gray-700"
+              }`}
               title="Quote"
             >
               <Quote className="h-4 w-4" />
             </button>
             <button
               onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-              className={`p-2 rounded ${editor.isActive("codeBlock") ? "bg-gray-200" : "hover:bg-gray-100"}`}
+              className={`p-2 rounded-md transition-all ${
+                editor.isActive("codeBlock")
+                  ? "bg-blue-100 text-blue-600"
+                  : "hover:bg-gray-100 text-gray-700"
+              }`}
               title="Code Block"
             >
               <Code className="h-4 w-4" />
@@ -227,16 +281,20 @@ export default function RichTextEditor({
           </div>
 
           {/* Media */}
-          <div className="flex items-center">
+          <div className="flex items-center gap-1 bg-white rounded-lg p-1 shadow-sm">
             <button
               onClick={() => setShowLinkInput(!showLinkInput)}
-              className={`p-2 rounded ${editor.isActive("link") ? "bg-gray-200" : "hover:bg-gray-100"}`}
+              className={`p-2 rounded-md transition-all ${
+                editor.isActive("link")
+                  ? "bg-blue-100 text-blue-600"
+                  : "hover:bg-gray-100 text-gray-700"
+              }`}
               title="Add Link"
             >
               <LinkIcon className="h-4 w-4" />
             </button>
             <label
-              className="p-2 rounded hover:bg-gray-100 cursor-pointer"
+              className="p-2 rounded-md hover:bg-gray-100 cursor-pointer transition-all text-gray-700"
               title="Upload Image"
             >
               <ImageIcon className="h-4 w-4" />
@@ -251,17 +309,17 @@ export default function RichTextEditor({
           </div>
 
           {/* History */}
-          <div className="flex items-center border-l border-gray-300 pl-2 ml-2">
+          <div className="flex items-center gap-1 bg-white rounded-lg p-1 shadow-sm">
             <button
               onClick={() => editor.chain().focus().undo().run()}
-              className="p-2 rounded hover:bg-gray-100"
+              className="p-2 rounded-md hover:bg-gray-100 transition-all text-gray-700"
               title="Undo (Ctrl+Z)"
             >
               <Undo className="h-4 w-4" />
             </button>
             <button
               onClick={() => editor.chain().focus().redo().run()}
-              className="p-2 rounded hover:bg-gray-100"
+              className="p-2 rounded-md hover:bg-gray-100 transition-all text-gray-700"
               title="Redo (Ctrl+Y)"
             >
               <Redo className="h-4 w-4" />
@@ -271,19 +329,20 @@ export default function RichTextEditor({
 
         {/* Link Input */}
         {showLinkInput && (
-          <div className="mt-2 p-2 bg-white border border-gray-300 rounded">
-            <div className="flex items-center space-x-2">
+          <div className="mt-4 p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+            <div className="flex items-center gap-3">
               <input
                 type="url"
                 value={linkUrl}
                 onChange={(e) => setLinkUrl(e.target.value)}
                 placeholder="https://example.com"
-                className="flex-1 px-3 py-1 border border-gray-300 rounded text-sm"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 onKeyPress={(e) => e.key === "Enter" && addLink()}
+                autoFocus
               />
               <button
                 onClick={addLink}
-                className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
                 Apply
               </button>
@@ -292,7 +351,7 @@ export default function RichTextEditor({
                   setShowLinkInput(false);
                   setLinkUrl("");
                 }}
-                className="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300"
+                className="px-4 py-2 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition-colors font-medium"
               >
                 Cancel
               </button>
@@ -307,30 +366,35 @@ export default function RichTextEditor({
       </div>
 
       {/* Stats Bar */}
-      <div className="bg-gray-50 border-t border-gray-300 px-4 py-2">
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600">
-            <span className="font-medium">{wordCount}</span> words
-            <span className="mx-2">•</span>
-            <span className="font-medium">
-              {editor.storage.characterCount.characters()}
-            </span>{" "}
-            characters
+      <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-200 px-6 py-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="text-sm text-gray-600 flex items-center gap-4">
+            <span>
+              <span className="font-semibold text-gray-800">{wordCount}</span>{" "}
+              words
+            </span>
+            <span className="text-gray-300">•</span>
+            <span>
+              <span className="font-semibold text-gray-800">
+                {editor.storage.characterCount.characters()}
+              </span>{" "}
+              characters
+            </span>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <div className="w-32">
-              <div className="flex justify-between text-xs text-gray-600 mb-1">
-                <span>Progress</span>
-                <span>
+          <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+            <div className="w-full sm:w-48">
+              <div className="flex justify-between text-sm text-gray-600 mb-2">
+                <span className="font-medium">Progress</span>
+                <span className="font-semibold text-gray-800">
                   {Math.min(wordCount, wordLimit)}/{wordLimit}
                 </span>
               </div>
-              <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full ${
+                  className={`h-full rounded-full transition-all duration-300 ${
                     progress >= 100
-                      ? "bg-red-600"
+                      ? "bg-red-500"
                       : progress >= 80
                         ? "bg-yellow-500"
                         : "bg-green-500"
@@ -340,13 +404,19 @@ export default function RichTextEditor({
               </div>
             </div>
 
-            <div className="text-sm text-gray-600">
+            <div className="text-sm">
               {wordCount >= wordLimit ? (
-                <span className="text-red-600 font-medium">
+                <span className="text-red-600 font-semibold flex items-center gap-1">
+                  <span className="h-2 w-2 bg-red-500 rounded-full"></span>
                   Word limit reached
                 </span>
               ) : (
-                <span>{wordLimit - wordCount} words remaining</span>
+                <span className="text-gray-600">
+                  <span className="font-semibold text-gray-800">
+                    {wordLimit - wordCount}
+                  </span>{" "}
+                  words remaining
+                </span>
               )}
             </div>
           </div>
