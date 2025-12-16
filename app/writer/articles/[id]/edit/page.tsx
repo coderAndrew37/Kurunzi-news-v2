@@ -186,6 +186,14 @@ export default function EditArticlePage() {
     await supabase
       .from("draft_articles")
       .update({
+        title: article.title,
+        subtitle: article.subtitle || null,
+        body: article.body,
+        excerpt: article.excerpt || null,
+        category_id: article.category,
+        tags: article.tags,
+        word_count: wordCount,
+        read_time: Math.max(1, Math.ceil(wordCount / 200)),
         status: "submitted",
         submitted_at: new Date().toISOString(),
       })
