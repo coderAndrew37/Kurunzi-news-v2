@@ -6,8 +6,10 @@ import { AlertCircle, Eye, Send, X, Save, Clock } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import type { JSONContent } from "@tiptap/react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { getCategories } from "./actions";
+import { useArticleEditorStore } from "@/stores/useArticleEditorStore";
+import type { JSONContent } from "@tiptap/react";
 
 /* ------------------------------------------------------------------ */
 /* Types */
@@ -15,204 +17,463 @@ import { getCategories } from "./actions";
 
 type DraftStatus = "draft" | "submitted";
 
+interface DraftArticle {
+  id: string;
+  author_id: string;
+  title: string;
+  subtitle: string | null;
+  body: JSONContent | null;
+  excerpt: string | null;
+  category_sanity_id: string | null;
+  tags: string[] | null;
+  word_count: number | null;
+  read_time: number | null;
+  status: DraftStatus;
+  created_at: string;
+  updated_at: string | null;
+  submitted_at: string | null;
+}
+
 interface Category {
   _id: string;
   title: string;
 }
 
-interface ArticleState {
+interface ArticleMetaState {
   title: string;
   subtitle: string;
-  body: JSONContent | null;
   excerpt: string;
   category: string;
   tags: string[];
-  readTime: number;
   status: DraftStatus;
 }
+
+interface DraftArticleQueryResult {
+  draft: DraftArticle;
+  categories: Category[];
+}
+
+// Helper function to safely extract error details
+const extractErrorDetails = (error: any) => {
+  if (!error) return { message: "Unknown error", code: "UNKNOWN" };
+
+  if (typeof error === "string") {
+    return { message: error, code: "STRING_ERROR" };
+  }
+
+  if (error.message) {
+    return {
+      message: error.message,
+      code: error.code || "UNKNOWN_CODE",
+      details: error.details || null,
+      hint: error.hint || null,
+    };
+  }
+
+  // Try to stringify the error
+  try {
+    return {
+      message: JSON.stringify(error),
+      code: "SERIALIZED_ERROR",
+      raw: error,
+    };
+  } catch {
+    return {
+      message: "Unserializable error object",
+      code: "UNSERIALIZABLE",
+      raw: error,
+    };
+  }
+};
 
 /* ------------------------------------------------------------------ */
 
 export default function EditArticlePage() {
   const router = useRouter();
-  const { id } = useParams<{ id: string }>();
+  const params = useParams<{ id?: string }>();
+  const id = params.id;
+
+  // First: ALWAYS call hooks unconditionally at the top
   const supabase = createBrowserSupabase();
 
-  const autosaveTimer = useRef<NodeJS.Timeout | null>(null);
+  /* ------------------------------------------------------------------ */
+  /* Zustand editor state */
+  /* ------------------------------------------------------------------ */
+  const body = useArticleEditorStore((s) => s.body);
+  const wordCount = useArticleEditorStore((s) => s.wordCount);
+  const hydrateBody = useArticleEditorStore((s) => s.hydrateBody);
 
-  const [article, setArticle] = useState<ArticleState>({
+  /* ------------------------------------------------------------------ */
+  /* Local state */
+  /* ------------------------------------------------------------------ */
+  const [article, setArticle] = useState<ArticleMetaState>({
     title: "",
     subtitle: "",
-    body: null,
     excerpt: "",
     category: "",
     tags: [],
-    readTime: 0,
     status: "draft",
   });
 
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [wordCount, setWordCount] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [autosaving, setAutosaving] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+  const [autosaving, setAutosaving] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  type SubmitUIState = "idle" | "validating" | "submitting" | "success";
+  const [submitUI, setSubmitUI] = useState<SubmitUIState>("idle");
+
+  const autosaveTimer = useRef<NodeJS.Timeout | null>(null);
+  const isHydratedRef = useRef(false);
 
   const isLocked = article.status !== "draft";
 
   /* ------------------------------------------------------------------ */
-  /* Load draft + categories (ONCE) */
+  /* Load draft + categories */
   /* ------------------------------------------------------------------ */
+  const {
+    data,
+    isLoading,
+    error: queryError,
+  } = useQuery<DraftArticleQueryResult>({
+    queryKey: ["draft-article", id],
+    queryFn: async (): Promise<DraftArticleQueryResult> => {
+      // Handle missing id in the query function
+      if (!id) {
+        throw new Error("Article ID is required");
+      }
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
       if (!user) {
         router.push("/auth/writer/sign-in");
-        return;
+        throw new Error("Unauthenticated");
       }
 
-      const [{ data: draft, error }, cats] = await Promise.all([
-        supabase.from("draft_articles").select("*").eq("id", id).single(),
-        getCategories(),
-      ]);
+      const [{ data: draft, error: draftError }, categories] =
+        await Promise.all([
+          supabase
+            .from("draft_articles")
+            .select("*")
+            .eq("id", id)
+            .single<DraftArticle>(),
+          getCategories(),
+        ]);
 
-      if (cancelled) return;
-
-      if (error || !draft) {
-        toast.error("Unable to load draft");
+      if (draftError || !draft) {
+        const errorDetails = extractErrorDetails(draftError);
+        console.error("Failed to load draft:", errorDetails);
         router.push("/writer/dashboard");
-        return;
+        throw new Error(`Draft not found: ${errorDetails.message}`);
       }
 
-      setArticle({
-        title: draft.title,
-        subtitle: draft.subtitle ?? "",
-        body: draft.body,
-        excerpt: draft.excerpt ?? "",
-        category: draft.category_id ?? "",
-        tags: draft.tags ?? [],
-        readTime: draft.read_time ?? 0,
-        status: draft.status,
-      });
+      if (draft.author_id !== user.id) {
+        router.push("/writer/dashboard");
+        throw new Error("Unauthorized");
+      }
 
-      setWordCount(draft.word_count ?? 0);
-      setCategories(cats ?? []);
-      setInitialLoading(false);
-    }
-
-    load();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [id, router, supabase]);
+      return {
+        draft,
+        categories: categories ?? [],
+      };
+    },
+    enabled: !!id, // Only run query if id exists
+    retry: false,
+  });
 
   /* ------------------------------------------------------------------ */
-  /* Autosave */
+  /* Handle missing ID - do this AFTER hooks */
   /* ------------------------------------------------------------------ */
-
   useEffect(() => {
-    if (initialLoading || isLocked) return;
+    if (!id && !isRedirecting) {
+      setIsRedirecting(true);
+      router.push("/writer/dashboard");
+    }
+  }, [id, router, isRedirecting]);
 
-    if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
+  /* ------------------------------------------------------------------ */
+  /* Hydrate editor once */
+  /* ------------------------------------------------------------------ */
+  useEffect(() => {
+    if (!data || !data.draft) return;
+
+    hydrateBody(data.draft.body);
+
+    setArticle({
+      title: data.draft.title,
+      subtitle: data.draft.subtitle ?? "",
+      excerpt: data.draft.excerpt ?? "",
+      category: data.draft.category_sanity_id ?? "",
+      tags: data.draft.tags ?? [],
+      status: data.draft.status,
+    });
+
+    isHydratedRef.current = true;
+  }, [data, hydrateBody]);
+
+  /* ------------------------------------------------------------------ */
+  /* Autosave (safe + debounced) */
+  /* ------------------------------------------------------------------ */
+  useEffect(() => {
+    if (!data || !data.draft) return;
+    if (isLocked) return;
+    if (!isHydratedRef.current) return;
+    if (!body) return;
+
+    if (autosaveTimer.current) {
+      clearTimeout(autosaveTimer.current);
+    }
 
     autosaveTimer.current = setTimeout(async () => {
       setAutosaving(true);
 
-      await supabase
-        .from("draft_articles")
-        .update({
+      try {
+        // Check if we have all required data
+        if (!id) {
+          console.warn("Autosave skipped: No article ID");
+          return;
+        }
+
+        const updateData = {
           title: article.title,
           subtitle: article.subtitle || null,
-          body: article.body,
+          body,
           excerpt: article.excerpt || null,
-          category_id: article.category || null,
+          category_sanity_id: article.category || null,
           word_count: wordCount,
           read_time: Math.max(1, Math.ceil(wordCount / 200)),
           updated_at: new Date().toISOString(),
-        })
-        .eq("id", id);
+        };
 
-      setAutosaving(false);
+        console.log("Autosave attempt with data:", updateData);
+
+        const { error } = await supabase
+          .from("draft_articles")
+          .update(updateData)
+          .eq("id", id);
+
+        if (error) {
+          const errorDetails = extractErrorDetails(error);
+          console.error("Autosave failed with details:", errorDetails);
+
+          // Check for common Supabase errors
+          if (errorDetails.code === "23505") {
+            toast.error("Duplicate entry detected");
+          } else if (errorDetails.code === "42501") {
+            toast.error("Permission denied. Please check your access.");
+          } else if (errorDetails.message.includes("JWT")) {
+            toast.error("Session expired. Please login again.");
+          } else {
+            toast.error("Autosave failed. Please save manually.");
+          }
+        } else {
+          console.log("Autosave successful");
+        }
+      } catch (err) {
+        const errorDetails = extractErrorDetails(err);
+        console.error("Unexpected autosave error:", errorDetails);
+        toast.error("Unexpected error during autosave");
+      } finally {
+        setAutosaving(false);
+      }
     }, 2000);
 
     return () => {
-      if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
+      if (autosaveTimer.current) {
+        clearTimeout(autosaveTimer.current);
+      }
     };
-  }, [article, wordCount, initialLoading, isLocked, id, supabase]);
+  }, [article, body, wordCount, isLocked, id, supabase, data]);
 
   /* ------------------------------------------------------------------ */
-  /* Helpers */
+  /* Submit */
   /* ------------------------------------------------------------------ */
+  const submitMutation = useMutation<void, Error>({
+    mutationFn: async () => {
+      if (!id) throw new Error("Article ID is required");
 
-  const handleBodyChange = (content: JSONContent | null) => {
-    if (isLocked) return;
+      // Validate again before submission
+      const validationErrors = validateArticle();
+      if (validationErrors.length > 0) {
+        throw new Error(validationErrors.join(", "));
+      }
 
-    setArticle((prev) => ({ ...prev, body: content }));
+      const updateData = {
+        title: article.title,
+        subtitle: article.subtitle || null,
+        body,
+        excerpt: article.excerpt || null,
+        category_sanity_id: article.category,
+        tags: article.tags,
+        word_count: wordCount,
+        read_time: Math.max(1, Math.ceil(wordCount / 200)),
+        status: "submitted" as const,
+        submitted_at: new Date().toISOString(),
+      };
 
-    const text =
-      content?.content
-        ?.flatMap((n) => n.content?.map((c) => c.text ?? "") ?? [])
-        .join(" ") ?? "";
+      console.log("Submitting article with data:", {
+        id,
+        ...updateData,
+        bodyPreview: body ? "Body exists" : "No body",
+      });
 
-    setWordCount(text.trim() ? text.trim().split(/\s+/).length : 0);
-  };
+      const { data: result, error } = await supabase
+        .from("draft_articles")
+        .update(updateData)
+        .eq("id", id)
+        .select()
+        .single();
 
-  const validateArticle = () => {
+      console.log("Submit result:", { result, error });
+
+      if (error) {
+        const errorDetails = extractErrorDetails(error);
+        console.error("Submit error details:", errorDetails);
+        throw new Error(errorDetails.message || "Failed to submit article");
+      }
+
+      if (!result) {
+        throw new Error("No result returned from submission");
+      }
+    },
+    onSuccess: async () => {
+      setSubmitUI("success");
+      toast.success("Article submitted for review");
+
+      await new Promise((r) => setTimeout(r, 900)); // UX pause
+      router.push("/writer/dashboard");
+    },
+    onError: (error) => {
+      setSubmitUI("idle");
+      const errorDetails = extractErrorDetails(error);
+      console.error("Mutation error:", errorDetails);
+
+      // Provide more specific error messages
+      if (error.message.includes("Unauthorized")) {
+        toast.error("You don't have permission to submit this article");
+      } else if (
+        error.message.includes("network") ||
+        error.message.includes("Network")
+      ) {
+        toast.error("Network error. Please check your connection.");
+      } else {
+        toast.error(`Failed to submit: ${error.message}`);
+      }
+    },
+  });
+
+  /* ------------------------------------------------------------------ */
+  /* Validation */
+  /* ------------------------------------------------------------------ */
+  const validateArticle = (): string[] => {
     const errs: string[] = [];
     if (!article.title.trim()) errs.push("Title is required");
-    if (!article.body) errs.push("Article body is required");
+    if (!body || (typeof body === "object" && Object.keys(body).length === 0)) {
+      errs.push("Article body is required");
+    }
     if (!article.category) errs.push("Category is required");
     if (wordCount < 100) errs.push("Minimum 100 words required");
     return errs;
   };
 
   const handleSubmit = async () => {
+    if (!id) {
+      toast.error("Article ID is missing");
+      return;
+    }
+
+    setSubmitUI("validating");
+
     const validationErrors = validateArticle();
     if (validationErrors.length) {
       setErrors(validationErrors);
+      setSubmitUI("idle");
       toast.error("Fix errors before submitting");
       return;
     }
 
-    setLoading(true);
-
-    await supabase
-      .from("draft_articles")
-      .update({
-        title: article.title,
-        subtitle: article.subtitle || null,
-        body: article.body,
-        excerpt: article.excerpt || null,
-        category_id: article.category,
-        tags: article.tags,
-        word_count: wordCount,
-        read_time: Math.max(1, Math.ceil(wordCount / 200)),
-        status: "submitted",
-        submitted_at: new Date().toISOString(),
-      })
-      .eq("id", id);
-
-    toast.success("Article submitted for review");
-    router.push("/writer/dashboard");
+    setSubmitUI("submitting");
+    submitMutation.mutate();
   };
 
   /* ------------------------------------------------------------------ */
-
-  if (initialLoading) {
+  /* Loading and Error States */
+  /* ------------------------------------------------------------------ */
+  if (isRedirecting || !id) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
       </div>
     );
   }
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+      </div>
+    );
+  }
+
+  if (queryError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Error Loading Article
+          </h2>
+          <p className="text-gray-600 mb-4">{queryError.message}</p>
+          <button
+            onClick={() => router.push("/writer/dashboard")}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data?.draft) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Article Not Found
+          </h2>
+          <button
+            onClick={() => router.push("/writer/dashboard")}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const categories = data.categories ?? [];
+
+  /* ------------------------------------------------------------------ */
+  /* Debug button (remove in production) */
+  /* ------------------------------------------------------------------ */
+  const debugSubmit = async () => {
+    console.log("=== DEBUG INFO ===");
+    console.log("Article ID:", id);
+    console.log("Article state:", article);
+    console.log("Body exists:", !!body);
+    console.log("Body type:", typeof body);
+    console.log("Word count:", wordCount);
+    console.log("Is locked:", isLocked);
+    console.log("Submit UI state:", submitUI);
+    console.log("==================");
+  };
+
+  /* ------------------------------------------------------------------ */
+  /* UI */
+  /* ------------------------------------------------------------------ */
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Header */}
@@ -222,24 +483,32 @@ export default function EditArticlePage() {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               Edit Article
             </h1>
+
             <div className="flex items-center gap-4 text-sm text-gray-600">
               <div className="flex items-center gap-2">
                 <div
-                  className={`h-2 w-2 rounded-full ${article.status === "draft" ? "bg-yellow-500" : "bg-green-500"}`}
-                ></div>
+                  className={`h-2 w-2 rounded-full ${
+                    article.status === "draft"
+                      ? "bg-yellow-500"
+                      : "bg-green-500"
+                  }`}
+                />
                 <span className="font-medium capitalize">{article.status}</span>
               </div>
+
               <span className="text-gray-300">•</span>
+
               <div className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
                 <span>~{Math.max(1, Math.ceil(wordCount / 200))} min read</span>
               </div>
+
               {autosaving && (
                 <>
                   <span className="text-gray-300">•</span>
                   <div className="flex items-center gap-1 text-blue-600">
                     <Save className="h-4 w-4 animate-pulse" />
-                    <span>Saving...</span>
+                    <span>Saving…</span>
                   </div>
                 </>
               )}
@@ -247,114 +516,114 @@ export default function EditArticlePage() {
           </div>
 
           <div className="flex gap-3">
+            {/* Debug button - remove in production */}
             <button
+              onClick={debugSubmit}
+              className="px-3 py-2 text-xs border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50"
+              title="Debug info"
+            >
+              Debug
+            </button>
+
+            <button
+              aria-label="back button"
               onClick={() => router.back()}
-              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 text-gray-700"
+              className="px-4 py-2 border rounded-lg text-gray-700"
             >
               <X className="h-4 w-4" />
-              Close
             </button>
-            <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 text-gray-700">
+
+            <button
+              aria-label="preview button"
+              className="px-4 py-2 border rounded-lg text-gray-700"
+            >
               <Eye className="h-4 w-4" />
-              Preview
             </button>
           </div>
         </div>
 
-        {/* Errors */}
         {errors.length > 0 && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
-              <div>
-                <h3 className="font-semibold text-red-800 mb-1">
-                  Please fix the following:
-                </h3>
-                <ul className="text-red-700 list-disc list-inside space-y-1">
-                  {errors.map((error, index) => (
-                    <li key={index}>{error}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+          <div className="mb-6 p-4 bg-red-50 border rounded-xl">
+            <ul className="text-red-700 list-disc list-inside">
+              {errors.map((err) => (
+                <li key={err}>{err}</li>
+              ))}
+            </ul>
           </div>
         )}
       </div>
 
-      {/* Title Input */}
-      <div className="mb-6">
-        <input
-          value={article.title}
-          onChange={(e) => setArticle({ ...article, title: e.target.value })}
-          className="w-full px-6 py-4 border border-gray-300 rounded-xl text-3xl font-bold placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          placeholder="Your Article Title"
-          disabled={isLocked}
-        />
-      </div>
+      {/* Title */}
+      <input
+        aria-label="Article Title"
+        value={article.title}
+        onChange={(e) => setArticle({ ...article, title: e.target.value })}
+        className="w-full mb-6 px-6 py-4 border rounded-xl text-3xl font-bold"
+        disabled={isLocked}
+      />
 
       {/* Editor */}
-      <div className="mb-8">
-        <RichTextEditor
-          content={article.body}
-          onChange={handleBodyChange}
-          readOnly={isLocked}
-        />
-      </div>
+      <RichTextEditor readOnly={isLocked} />
 
-      {/* Footer Controls */}
-      <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Category
-            </label>
-            <select
-              aria-label="category selector"
-              value={article.category}
-              onChange={(e) =>
-                setArticle({ ...article, category: e.target.value })
-              }
-              className="w-full sm:w-64 px-4 py-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-              disabled={isLocked}
-            >
-              <option value="">Select a category</option>
-              {categories.map((c) => (
-                <option key={c._id} value={c._id} className="py-2">
-                  {c.title}
-                </option>
-              ))}
-            </select>
-          </div>
+      {/* Footer */}
+      <div className="mt-8 bg-gray-50 border rounded-xl p-6">
+        <div className="flex justify-between items-center">
+          <select
+            aria-label="Category"
+            value={article.category}
+            onChange={(e) =>
+              setArticle({ ...article, category: e.target.value })
+            }
+            disabled={isLocked}
+            className="px-4 py-2 border rounded-lg"
+          >
+            <option value="">Select category</option>
+            {categories.map((c) => (
+              <option key={c._id} value={c._id}>
+                {c.title}
+              </option>
+            ))}
+          </select>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <div className="text-sm text-gray-600">
-              <span className="font-semibold text-gray-800">{wordCount}</span>{" "}
-              words written
-            </div>
-            <button
-              disabled={loading || isLocked}
-              onClick={handleSubmit}
-              className={`px-8 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-all ${
-                isLocked
-                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                  : "bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-sm hover:shadow-md"
-              }`}
-            >
-              <Send className="h-4 w-4" />
-              {loading ? "Submitting..." : "Submit for Review"}
-            </button>
-          </div>
+          <button
+            aria-label="submit button"
+            disabled={isLocked || submitMutation.isPending}
+            onClick={handleSubmit}
+            className={`
+    relative flex items-center justify-center gap-2
+    px-8 py-3 rounded-lg font-medium text-white
+    transition-all duration-200
+    ${
+      submitUI === "success"
+        ? "bg-green-600"
+        : "bg-blue-600 hover:bg-blue-700 active:scale-[0.98]"
+    }
+    disabled:opacity-60 disabled:cursor-not-allowed
+  `}
+          >
+            {/* Spinner */}
+            {submitUI === "submitting" && (
+              <span className="absolute left-4 h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            )}
+
+            {/* Success */}
+            {submitUI === "success" && (
+              <span className="absolute left-4 text-white">✓</span>
+            )}
+
+            {/* Icon */}
+            {submitUI === "idle" && <Send className="h-4 w-4" />}
+
+            {/* Label */}
+            <span>
+              {submitUI === "idle" && "Submit for Review"}
+              {submitUI === "validating" && "Checking…"}
+              {submitUI === "submitting" && "Submitting…"}
+              {submitUI === "success" && "Submitted"}
+            </span>
+          </button>
         </div>
       </div>
-
-      {/* Status Message for Submitted Articles */}
-      {isLocked && (
-        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl text-center">
-          <p className="text-blue-700">
-            This article has been submitted for review and cannot be edited.
-          </p>
-        </div>
-      )}
     </div>
   );
 }

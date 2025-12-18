@@ -18,9 +18,13 @@ export default function ArticleImage({ article }: ArticleImageProps) {
         <Image
           src={imageUrl || "/placeholder.jpg"}
           alt={altText}
-          className="w-full h-full object-cover"
+          fill
+          sizes="(max-width: 768px) 100vw, 1200px"
+          className="object-cover"
+          priority
         />
       </div>
+
       {article.featuredImage?.caption && (
         <figcaption className="text-center text-gray-600 mt-3 text-sm italic">
           {article.featuredImage.caption}

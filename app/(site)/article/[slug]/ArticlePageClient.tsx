@@ -329,6 +329,8 @@ export default function ArticlePageClient({
                             src={story.img || "/placeholder.jpg"}
                             alt={story.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            fill
+                            sizes="(max-width: 768px) 100vw, 400px"
                           />
                         </div>
                         <h3 className="font-bold text-gray-900 group-hover:text-red-600 mb-2 line-clamp-2">
@@ -378,6 +380,8 @@ export default function ArticlePageClient({
                               src={story.img || "/placeholder.jpg"}
                               alt={story.title}
                               className="w-full h-16 object-cover rounded"
+                              fill
+                              sizes="(max-width: 768px) 100vw, 96px"
                             />
                           </div>
                         </Link>

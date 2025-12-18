@@ -1,4 +1,3 @@
-// app/writer/_components/RichTextEditor.tsx
 "use client";
 
 import CharacterCount from "@tiptap/extension-character-count";
@@ -23,28 +22,27 @@ import {
   Underline as UnderlineIcon,
   Undo,
 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { JSONContent } from "@tiptap/react";
+import { useArticleEditorStore } from "@/stores/useArticleEditorStore";
 
 interface RichTextEditorProps {
-  content: JSONContent | null;
-  onChange: (content: JSONContent | null) => void;
   placeholder?: string;
   wordLimit?: number;
   readOnly?: boolean;
 }
 
 export default function RichTextEditor({
-  content,
-  onChange,
   placeholder = "Start writing your story...",
   wordLimit = 5000,
   readOnly = false,
 }: RichTextEditorProps) {
+  const body = useArticleEditorStore((s) => s.body);
+  const setBody = useArticleEditorStore((s) => s.setBody);
+  const setWordCount = useArticleEditorStore((s) => s.setWordCount);
+
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -81,11 +79,15 @@ export default function RichTextEditor({
       }),
       CharacterCount.configure({ limit: wordLimit * 6 }),
     ],
-    content: content ?? null,
+    content: body ?? null,
     onUpdate: ({ editor }) => {
-      if (!readOnly) {
-        onChange(editor.getJSON() || null);
-      }
+      if (readOnly) return;
+
+      const json = editor.getJSON();
+      const words = Math.ceil(editor.storage.characterCount.characters() / 5);
+
+      setBody(json);
+      setWordCount(words);
     },
     editorProps: {
       attributes: {
@@ -94,35 +96,25 @@ export default function RichTextEditor({
     },
   });
 
+  // Ensure editor updates if Zustand hydrates later
+  useEffect(() => {
+    if (!editor || !body) return;
+    editor.commands.setContent(body);
+  }, [editor, body]);
+
   const addLink = useCallback(() => {
-    if (!editor) return;
+    if (!editor || !linkUrl) return;
 
-    if (linkUrl) {
-      editor.chain().focus().setLink({ href: linkUrl }).run();
-      setLinkUrl("");
-      setShowLinkInput(false);
-      toast.success("Link added");
-    } else {
-      editor.chain().focus().unsetLink().run();
-    }
+    editor.chain().focus().setLink({ href: linkUrl }).run();
+    setLinkUrl("");
+    setShowLinkInput(false);
+    toast.success("Link added");
   }, [editor, linkUrl]);
-
-  const addImage = useCallback(() => {
-    if (!editor || !imageUrl) return;
-
-    if (imageUrl.startsWith("http") || imageUrl.startsWith("data:")) {
-      editor.chain().focus().setImage({ src: imageUrl }).run();
-      setImageUrl("");
-      toast.success("Image added");
-    } else {
-      toast.error("Please enter a valid image URL");
-    }
-  }, [editor, imageUrl]);
 
   const handleImageUpload = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
-      if (!file) return;
+      if (!file || !editor) return;
 
       if (!file.type.startsWith("image/")) {
         toast.error("Please upload an image file");
@@ -134,26 +126,24 @@ export default function RichTextEditor({
         return;
       }
 
-      try {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const base64 = e.target?.result as string;
-          editor?.chain().focus().setImage({ src: base64 }).run();
-          toast.success("Image uploaded successfully");
-        };
-        reader.readAsDataURL(file);
-      } catch (error) {
-        toast.error("Failed to upload image");
-      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        editor
+          .chain()
+          .focus()
+          .setImage({ src: e.target?.result as string })
+          .run();
+        toast.success("Image uploaded");
+      };
+      reader.readAsDataURL(file);
     },
     [editor]
   );
 
-  if (!editor) {
-    return null;
-  }
+  if (!editor) return null;
 
-  const wordCount = Math.ceil(editor.storage.characterCount.characters() / 5);
+  const characters = editor.storage.characterCount.characters();
+  const wordCount = Math.ceil(characters / 5);
   const progress = (wordCount / wordLimit) * 100;
 
   return (

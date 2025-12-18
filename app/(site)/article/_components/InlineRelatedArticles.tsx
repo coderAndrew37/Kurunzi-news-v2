@@ -58,6 +58,8 @@ export default function InlineRelatedArticles({
                   src={article.img || "/placeholder.jpg"}
                   alt={article.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 400px"
                 />
               </div>
               <h4 className="font-bold text-gray-900 group-hover:text-red-600 mb-2 line-clamp-2">
@@ -104,6 +106,8 @@ export default function InlineRelatedArticles({
                     src={article.img || "/placeholder.jpg"}
                     alt={article.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 80px"
                   />
                 </div>
               </div>
