@@ -1,7 +1,7 @@
-import { getSubmittedDrafts } from "./actions";
 import Link from "next/link";
 import { Calendar, FileText, User } from "lucide-react";
 import { format } from "date-fns";
+import { getSubmittedDrafts } from "./actions";
 
 export default async function AdminReviewsPage() {
   const drafts = await getSubmittedDrafts();

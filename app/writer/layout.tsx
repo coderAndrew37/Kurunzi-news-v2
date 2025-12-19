@@ -1,23 +1,15 @@
-import { redirect } from "next/navigation";
-import { getServerUserRoles, hasRequiredRole } from "@/lib/auth-utils";
-import WriterFooter from "./_components/WriterFooter";
 import WriterHeader from "./_components/WriterHeader";
+import WriterFooter from "./_components/WriterFooter";
+import { getServerUserRoles } from "@/lib/auth-utils";
 
 export default async function WriterLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Optional: user context for header/footer only
   if (process.env.NODE_ENV === "production") {
-    const userContext = await getServerUserRoles();
-
-    const isAuthorized =
-      userContext.isAuthenticated &&
-      hasRequiredRole(userContext.roles, "writer");
-
-    if (!isAuthorized) {
-      redirect("/auth/writer/sign-in");
-    }
+    await getServerUserRoles();
   }
 
   return (

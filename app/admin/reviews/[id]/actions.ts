@@ -2,6 +2,7 @@
 
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getServerUserRoles, hasRequiredRole } from "@/lib/auth-utils";
+import { publishDraftToSanity } from "@/lib/sanity/publishDraft";
 
 export async function getDraftForReview(id: string) {
   const caller = await getServerUserRoles();
@@ -39,19 +40,54 @@ export async function updateDraftStatus(
   status: "approved" | "rejected"
 ) {
   const caller = await getServerUserRoles();
+
   if (!caller.isAuthenticated || !hasRequiredRole(caller.roles, "admin")) {
     throw new Error("Unauthorized");
   }
 
   const supabase = await createServerSupabase();
 
-  const { error } = await supabase
+  if (status === "rejected") {
+    const { error } = await supabase
+      .from("draft_articles")
+      .update({
+        status: "rejected",
+        reviewed_at: new Date().toISOString(),
+        approved_by: caller.userId,
+      })
+      .eq("id", id);
+
+    if (error) throw error;
+    return;
+  }
+
+  // 👇 APPROVAL FLOW
+  // 1. Lock draft
+  const { data: draft, error } = await supabase
     .from("draft_articles")
     .update({
-      status,
-      reviewed_at: new Date().toISOString(),
+      status: "approved",
+      approved_at: new Date().toISOString(),
+      approved_by: caller.userId,
+    })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error || !draft) throw error;
+
+  // 2. Publish to Sanity
+  const sanityId = await publishDraftToSanity(draft);
+
+  // 3. Mark published
+  const { error: publishError } = await supabase
+    .from("draft_articles")
+    .update({
+      status: "published",
+      published_at: new Date().toISOString(),
+      sanity_id: sanityId,
     })
     .eq("id", id);
 
-  if (error) throw error;
+  if (publishError) throw publishError;
 }

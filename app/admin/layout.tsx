@@ -1,9 +1,7 @@
-// /app/admin/layout.tsx
 import React from "react";
-import { redirect } from "next/navigation";
 import AdminSidebar from "./_components/AdminSidebar";
 import AdminHeader from "./_components/AdminHeader";
-import { getServerUserRoles, hasRequiredRole } from "@/lib/auth-utils";
+import { getServerUserRoles } from "@/lib/auth-utils";
 import { Toaster } from "react-hot-toast";
 
 export const metadata = {
@@ -19,31 +17,17 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  let admin: {
-    id: string;
-    userId: string;
-    name: string | null;
-    email: string | null;
-  } | null = null;
+  const userContext =
+    process.env.NODE_ENV === "production" ? await getServerUserRoles() : null;
 
-  if (process.env.NODE_ENV === "production") {
-    const userContext = await getServerUserRoles();
-
-    const isAuthorized =
-      userContext.isAuthenticated &&
-      hasRequiredRole(userContext.roles, "admin");
-
-    if (!isAuthorized) {
-      redirect("/auth/admin/sign-in");
-    }
-
-    admin = {
-      id: userContext.userId!,
-      userId: userContext.userId!,
-      name: userContext.user?.user_metadata?.name ?? null,
-      email: userContext.user?.email ?? null,
-    };
-  }
+  const admin = userContext?.user
+    ? {
+        id: userContext.userId!,
+        userId: userContext.userId!,
+        name: userContext.user.user_metadata?.name ?? null,
+        email: userContext.user.email ?? null,
+      }
+    : null;
 
   return (
     <div className="min-h-screen bg-slate-50">
