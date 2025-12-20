@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { DraftArticleRow } from "../_components/types";
 
 interface Article {
   _id: string;
@@ -43,19 +44,21 @@ export default function ArticlesPage() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data, error } = await supabase
+      const { data, error } = (await supabase
         .from("draft_articles")
         .select("*, article_stats(views)")
         .eq("author_id", user.id)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })) as {
+        data: DraftArticleRow[] | null;
+        error: unknown;
+      };
 
       if (error) {
         console.error("Failed to load articles:", error);
         return;
       }
-
       const mappedArticles: Article[] =
-        data?.map((a: any) => ({
+        data?.map((a) => ({
           _id: a.id,
           title: a.title,
           status: a.status,

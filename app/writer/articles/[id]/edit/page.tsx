@@ -53,24 +53,51 @@ interface DraftArticleQueryResult {
   categories: Category[];
 }
 
-// Helper function to safely extract error details
-const extractErrorDetails = (error: any) => {
-  if (!error) return { message: "Unknown error", code: "UNKNOWN" };
+interface ExtractedError {
+  message: string;
+  code: string;
+  details?: string | null;
+  hint?: string | null;
+  raw?: unknown;
+}
+
+interface SupabaseErrorLike {
+  message?: string;
+  code?: string;
+  details?: string | null;
+  hint?: string | null;
+}
+
+const isSupabaseError = (e: unknown): e is SupabaseErrorLike =>
+  typeof e === "object" && e !== null && "message" in e;
+
+export const extractErrorDetails = (error: unknown): ExtractedError => {
+  if (!error) {
+    return { message: "Unknown error", code: "UNKNOWN" };
+  }
 
   if (typeof error === "string") {
     return { message: error, code: "STRING_ERROR" };
   }
 
-  if (error.message) {
+  if (error instanceof Error) {
     return {
       message: error.message,
-      code: error.code || "UNKNOWN_CODE",
-      details: error.details || null,
-      hint: error.hint || null,
+      code: "JS_ERROR",
+      raw: error,
     };
   }
 
-  // Try to stringify the error
+  if (isSupabaseError(error)) {
+    return {
+      message: error.message ?? "Supabase error",
+      code: error.code ?? "SUPABASE_UNKNOWN",
+      details: error.details ?? null,
+      hint: error.hint ?? null,
+      raw: error,
+    };
+  }
+
   try {
     return {
       message: JSON.stringify(error),

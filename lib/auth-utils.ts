@@ -1,9 +1,10 @@
 import { cookies } from "next/headers";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { User } from "@supabase/supabase-js";
 
 interface ServerUserContext {
   isAuthenticated: boolean;
-  user: any | null;
+  user: User | null;
   userId: string | null;
   roles: string[];
 }

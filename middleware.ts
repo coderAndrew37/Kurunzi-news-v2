@@ -2,11 +2,17 @@ import { createMiddlewareSupabase } from "@/lib/supabase-middleware";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(req: NextRequest) {
+  const path = req.nextUrl.pathname;
+
+  // 🔥 DEV redirect: /writer → /writer/dashboard
+  if (process.env.NODE_ENV !== "production" && path === "/writer") {
+    return NextResponse.redirect(new URL("/writer/dashboard", req.url));
+  }
+
+  // 🚫 Skip auth logic in dev
   if (process.env.NODE_ENV !== "production") {
     return NextResponse.next();
   }
-
-  const path = req.nextUrl.pathname;
 
   if (path.startsWith("/auth")) {
     return NextResponse.next();

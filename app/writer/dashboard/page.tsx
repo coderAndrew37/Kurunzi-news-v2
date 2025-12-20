@@ -1,6 +1,7 @@
 "use client";
 
 import { createBrowserSupabase } from "@/lib/supabase-browser";
+import { User } from "@supabase/supabase-js";
 import { format } from "date-fns";
 import {
   BarChart,
@@ -24,7 +25,7 @@ interface Article {
 
 export default function WriterDashboard() {
   const supabase = createBrowserSupabase();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -61,7 +62,7 @@ export default function WriterDashboard() {
       const { data, error } = await supabase
         .from("draft_articles")
         .select("id, title, status, created_at, word_count")
-        .eq("author_id", user.id)
+        .eq("author_id", user?.id)
         .order("created_at", { ascending: false });
 
       if (error) {

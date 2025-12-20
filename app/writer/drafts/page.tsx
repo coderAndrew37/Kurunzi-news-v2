@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { DraftArticleRow } from "../_components/types";
 
 interface Draft {
   _id: string;
@@ -38,12 +39,17 @@ export default function DraftsPage() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data, error } = await supabase
+      const { data, error } = (await supabase
         .from("draft_articles")
-        .select("*")
+        .select(
+          "id, title, excerpt, created_at, updated_at, word_count, category_id"
+        )
         .eq("author_id", user.id)
         .eq("status", "draft")
-        .order("updated_at", { ascending: false });
+        .order("updated_at", { ascending: false })) as {
+        data: DraftArticleRow[] | null;
+        error: unknown;
+      };
 
       if (error) {
         console.error("Failed to load drafts:", error);
@@ -51,15 +57,15 @@ export default function DraftsPage() {
       }
 
       const mappedDrafts: Draft[] =
-        data?.map((d: any) => ({
+        data?.map((d) => ({
           _id: d.id,
-          title: d.title || "Untitled Draft",
-          excerpt: d.excerpt || "No description available",
+          title: d.title ?? "Untitled Draft",
+          excerpt: d.excerpt ?? "No description available",
           createdAt: d.created_at,
           updatedAt: d.updated_at,
-          wordCount: d.word_count || 0,
-          readTime: Math.ceil((d.word_count || 0) / 200),
-          category: d.category_id,
+          wordCount: d.word_count ?? 0,
+          readTime: Math.ceil((d.word_count ?? 0) / 200),
+          category: d.category_id ?? undefined,
         })) ?? [];
 
       setDrafts(mappedDrafts);
