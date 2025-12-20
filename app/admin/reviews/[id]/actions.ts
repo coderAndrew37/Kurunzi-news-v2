@@ -36,6 +36,7 @@ export async function updateDraftStatus(
   status: "approved" | "rejected"
 ) {
   const caller = await getServerUserRoles();
+  console.log("SERVER ROLES:", caller.roles);
 
   if (!caller.isAuthenticated || !hasRequiredRole(caller.roles, "admin")) {
     throw new Error("Unauthorized");

@@ -2,11 +2,13 @@ import { getDraftForReview } from "./actions";
 import ReviewArticleClient from "./ReviewArticleClient";
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function ReviewArticlePage({ params }: Props) {
-  const draft = await getDraftForReview(params.id);
+  const { id } = await params;
+
+  const draft = await getDraftForReview(id);
 
   return <ReviewArticleClient draft={draft} />;
 }

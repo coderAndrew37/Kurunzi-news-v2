@@ -1,11 +1,14 @@
-import type { CookieOptions } from "@supabase/ssr";
-import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 
-// -----------------------------
-//  Secure Server Auth Context
-// -----------------------------
-export async function getServerUserRoles() {
+interface ServerUserContext {
+  isAuthenticated: boolean;
+  user: any | null;
+  userId: string | null;
+  roles: string[];
+}
+
+export async function getServerUserRoles(): Promise<ServerUserContext> {
   const cookieStore = await cookies();
 
   const supabase = createServerClient(
@@ -26,24 +29,37 @@ export async function getServerUserRoles() {
     }
   );
 
+  // 1️⃣ Auth check
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // No user
   if (!user) {
     return {
       isAuthenticated: false,
       user: null,
       userId: null,
-      roles: [] as string[],
+      roles: [],
     };
   }
 
-  // Extract immutable app_metadata roles
-  const roles = Array.isArray(user.app_metadata?.roles)
-    ? (user.app_metadata.roles as string[])
-    : [];
+  // 2️⃣ Fetch roles from DB
+  const { data: roleRows, error } = await supabase
+    .from("profiles")
+    .select("roles")
+    .eq("id", user.id);
+
+  if (error) {
+    console.error("Failed to fetch roles:", error);
+    return {
+      isAuthenticated: true,
+      user,
+      userId: user.id,
+      roles: [],
+    };
+  }
+
+  const roles = roleRows.map((r) => r.roles).flat();
 
   return {
     isAuthenticated: true,
@@ -54,7 +70,7 @@ export async function getServerUserRoles() {
 }
 
 // -----------------------------
-//  Role Checker
+// Role Checker
 // -----------------------------
 export function hasRequiredRole(userRoles: string[], requiredRole: string) {
   return userRoles.includes(requiredRole);
