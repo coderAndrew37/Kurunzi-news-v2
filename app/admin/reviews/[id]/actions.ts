@@ -4,12 +4,8 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { getServerUserRoles, hasRequiredRole } from "@/lib/auth-utils";
 import { publishDraftToSanity } from "@/lib/sanity/publishDraft";
 
+// ❌ REMOVE auth check here
 export async function getDraftForReview(id: string) {
-  const caller = await getServerUserRoles();
-  if (!caller.isAuthenticated || !hasRequiredRole(caller.roles, "admin")) {
-    throw new Error("Unauthorized");
-  }
-
   const supabase = await createServerSupabase();
 
   const { data, error } = await supabase

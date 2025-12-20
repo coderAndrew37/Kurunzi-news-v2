@@ -1,8 +1,10 @@
 import React from "react";
+import { redirect } from "next/navigation";
+import { Toaster } from "react-hot-toast";
+
 import AdminSidebar from "./_components/AdminSidebar";
 import AdminHeader from "./_components/AdminHeader";
 import { getServerUserRoles } from "@/lib/auth-utils";
-import { Toaster } from "react-hot-toast";
 
 export const metadata = {
   title: "Admin - Newsroom",
@@ -17,17 +19,28 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const userContext =
-    process.env.NODE_ENV === "production" ? await getServerUserRoles() : null;
+  const userContext = await getServerUserRoles();
 
-  const admin = userContext?.user
-    ? {
-        id: userContext.userId!,
-        userId: userContext.userId!,
-        name: userContext.user.user_metadata?.name ?? null,
-        email: userContext.user.email ?? null,
-      }
-    : null;
+  /**
+   * 🚨 IMPORTANT
+   * - In production: hard redirect
+   * - In development: allow render, enforce auth elsewhere
+   */
+  if (process.env.NODE_ENV === "production") {
+    if (!userContext.isAuthenticated || !userContext.roles.includes("admin")) {
+      redirect("/auth/admin/sign-in");
+    }
+  }
+
+  const admin =
+    userContext.isAuthenticated && userContext.roles.includes("admin")
+      ? {
+          id: userContext.userId!,
+          userId: userContext.userId!,
+          name: userContext.user?.user_metadata?.name ?? null,
+          email: userContext.user?.email ?? null,
+        }
+      : null;
 
   return (
     <div className="min-h-screen bg-slate-50">
