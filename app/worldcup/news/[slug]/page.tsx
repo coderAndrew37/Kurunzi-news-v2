@@ -7,21 +7,45 @@ import {
 import { notFound } from "next/navigation";
 import NewsDetailClient from "./NewsDetailClient";
 
-interface PageProps {
-  params: Promise<{ slug: string }> | { slug: string };
+type PageParams = Promise<{ slug: string }>;
+
+export const revalidate = 60;
+
+export async function generateMetadata({ params }: { params: PageParams }) {
+  const { slug } = await params;
+
+  const article = await getWorldCupArticle(slug);
+  if (!article) {
+    return {
+      title: "Article Not Found | Kurunzi News",
+      description: "The article you're looking for doesn't exist.",
+    };
+  }
+
+  return {
+    title: `${article.title} | Kurunzi News`,
+    description: article.excerpt || article.subtitle || "",
+  };
 }
 
-export default async function NewsDetailPage(props: PageProps) {
-  const params = await props.params; // ← FIXED
-  console.log("🟦 [Server] Fetching article:", params.slug);
+export default async function NewsDetailPage({
+  params,
+}: {
+  params: PageParams;
+}) {
+  const { slug } = await params;
 
-  const article = await getWorldCupArticle(params.slug);
+  console.log("🟦 [Server] Fetching article:", slug);
+
+  const article = await getWorldCupArticle(slug);
   if (!article) return notFound();
 
   console.log("🟩 [Server] Article fetched:", article.title);
 
-  const latestArticles = await getAllWorldCupArticles();
-  const relatedArticles = await getRelatedWorldCupArticles(article._id);
+  const [latestArticles, relatedArticles] = await Promise.all([
+    getAllWorldCupArticles(),
+    getRelatedWorldCupArticles(article._id),
+  ]);
 
   const htmlContent = ptToHtml(article.content);
 

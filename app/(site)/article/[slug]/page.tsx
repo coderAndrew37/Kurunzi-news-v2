@@ -10,14 +10,17 @@ import ArticlePageClient from "./ArticlePageClient";
 
 export const revalidate = 300;
 
+type ArticleParams = Promise<{ slug: string }>;
+
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: ArticleParams;
 }): Promise<Metadata> {
   const { slug } = await params;
 
   const rawArticle = await serverClient.fetch(articleQuery, { slug });
+
   if (!rawArticle) {
     return {
       title: "Article Not Found | Kurunzi News",
@@ -61,11 +64,10 @@ export async function generateMetadata({
 export default async function ArticlePage({
   params,
 }: {
-  params: { slug: string };
+  params: ArticleParams;
 }) {
   const { slug } = await params;
 
-  // Fetch article by slug
   const rawArticle = await serverClient.fetch(articleQuery, { slug });
 
   if (!rawArticle) {
@@ -87,57 +89,49 @@ export default async function ArticlePage({
     );
   }
 
-  // Transform into Story type
   const article: Story = transformSanityArticleToStory(rawArticle);
 
-  // Fetch latest articles for sidebar
   const rawLatestArticles = await serverClient.fetch(latestArticlesQuery, {
     currentSlug: slug,
-    limit: 10, // Fetch more for various sidebar sections
+    limit: 10,
   });
 
   const latestArticles: Story[] = rawLatestArticles.map(
     transformSanityArticleToStory
   );
 
-  // Fetch trending articles (most viewed)
   const trendingArticles = await getLatestArticles(5);
 
-  // Fetch related articles based on category/tags
   const relatedArticles: Story[] = await getRelatedArticles(
     article.slug,
     article.category?.title ?? "",
     6
   ).then((articles) => articles.map(transformSanityArticleToStory));
 
-  // Fetch more from the same category
   const moreFromCategory = await serverClient
     .fetch(
       `*[
-  _type == "article" &&
-  category->slug.current == $categorySlug &&
-  slug.current != $currentSlug
-]
-{
-  _id,
-  title,
-  subtitle,
-  excerpt,
-  publishedAt,
-  readTime,
-  "slug": slug.current,   // ✅ FIX HERE
-  mainImage,
-  img,
-  author->{name, image},
-  "category": category->{title, "slug": slug.current},
-  categories[]->{title, "slug": slug.current},
-  tags,
-  isFeatured,
-  isVideo,
-  duration
-}
-| order(publishedAt desc)[0...6]
-`,
+        _type == "article" &&
+        category->slug.current == $categorySlug &&
+        slug.current != $currentSlug
+      ]{
+        _id,
+        title,
+        subtitle,
+        excerpt,
+        publishedAt,
+        readTime,
+        "slug": slug.current,
+        mainImage,
+        img,
+        author->{name, image},
+        "category": category->{title, "slug": slug.current},
+        categories[]->{title, "slug": slug.current},
+        tags,
+        isFeatured,
+        isVideo,
+        duration
+      } | order(publishedAt desc)[0...6]`,
       {
         categorySlug: article.category?.slug,
         currentSlug: slug,
@@ -149,7 +143,11 @@ export default async function ArticlePage({
     article.tags && article.tags.length > 0
       ? await serverClient
           .fetch(
-            `*[_type == "article" && slug.current != $currentSlug && count((tags[@ in $tags])) > 0] | order(publishedAt desc)[0...6]`,
+            `*[
+              _type == "article" &&
+              slug.current != $currentSlug &&
+              count((tags[@ in $tags])) > 0
+            ] | order(publishedAt desc)[0...6]`,
             {
               currentSlug: slug,
               tags: article.tags,

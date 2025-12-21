@@ -1,9 +1,8 @@
-// /lib/supabase-server.ts
 import { cookies } from "next/headers";
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { createServerClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-export async function createServerSupabase(): Promise<SupabaseClient> {
+export async function createServerSupabaseReadOnly(): Promise<SupabaseClient> {
   const cookieStore = await cookies();
 
   return createServerClient(
@@ -14,12 +13,7 @@ export async function createServerSupabase(): Promise<SupabaseClient> {
         get(name: string) {
           return cookieStore.get(name)?.value;
         },
-        set(name: string, value: string, options: CookieOptions) {
-          cookieStore.set(name, value, options);
-        },
-        remove(name: string, options: CookieOptions) {
-          cookieStore.set(name, "", options);
-        },
+        // 🚫 NO set/remove in Server Components
       },
     }
   );

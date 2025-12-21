@@ -1,10 +1,11 @@
 "use client";
 
 import { Bell, RefreshCw, Search, Settings, Sparkles } from "lucide-react";
+type TimeRange = "day" | "week" | "month" | "quarter";
 
 interface HeaderProps {
-  timeRange: "day" | "week" | "month" | "quarter";
-  onTimeRangeChange: (range: "day" | "week" | "month" | "quarter") => void;
+  timeRange: TimeRange;
+  onTimeRangeChange: (range: TimeRange) => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
   notifications: number;
@@ -19,7 +20,7 @@ export default function Header({
   notifications,
   onRefresh,
 }: HeaderProps) {
-  const timeRanges = [
+  const timeRanges: { label: string; value: TimeRange }[] = [
     { label: "Today", value: "day" },
     { label: "This Week", value: "week" },
     { label: "This Month", value: "month" },
@@ -54,7 +55,7 @@ export default function Header({
               {timeRanges.map((range) => (
                 <button
                   key={range.value}
-                  onClick={() => onTimeRangeChange(range.value as any)}
+                  onClick={() => onTimeRangeChange(range.value)}
                   className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
                     timeRange === range.value
                       ? "bg-white text-gray-900 shadow-sm"

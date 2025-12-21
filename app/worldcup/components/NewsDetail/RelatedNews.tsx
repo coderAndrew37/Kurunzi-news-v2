@@ -12,8 +12,7 @@ export default function RelatedNews({
 }: RelatedNewsProps) {
   // Filter out the current article and ensure we have valid articles
   const validRelatedArticles = relatedArticles?.filter(
-    (article) =>
-      article && article._id !== currentArticleId && article.slug?.current
+    (article) => article && article._id !== currentArticleId && article.slug
   );
 
   if (!validRelatedArticles || validRelatedArticles.length === 0) return null;
@@ -26,7 +25,7 @@ export default function RelatedNews({
           <NewsCard
             key={article._id}
             id={article._id}
-            slug={article.slug.current}
+            slug={article.slug}
             title={article.title}
             excerpt={article.excerpt}
             category={article.categories[0]?.title || "News"}

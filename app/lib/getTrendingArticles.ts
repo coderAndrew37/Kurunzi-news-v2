@@ -83,7 +83,7 @@ export async function getTrendingArticles(
 
   return articles.map(
     (a): RelatedArticle => ({
-      id: a._id,
+      _id: a._id,
       slug: a.slug,
       title: a.title,
       excerpt: a.excerpt ?? null,

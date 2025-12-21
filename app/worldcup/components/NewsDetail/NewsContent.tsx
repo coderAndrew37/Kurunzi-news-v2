@@ -1,18 +1,20 @@
 "use client";
 
 import { PortableText, PortableTextComponents } from "@portabletext/react";
+import imageUrlBuilder from "@sanity/image-url";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect } from "react";
 
+import { SanityMainImage } from "@/app/components/types";
+import { sanityClient } from "@/app/lib/sanity.client";
+import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import type {
   PTCodeBlock,
   PTImage,
   PTYouTube,
   WorldCupArticle,
 } from "../types";
-import { SanityMainImage } from "@/app/components/types";
-import { urlFor } from "@/app/lib/sanity.image";
 
 interface NewsContentProps {
   article: WorldCupArticle;
@@ -24,15 +26,30 @@ const getImageUrl = (
   width = 1200,
   height = 600
 ): string => {
-  const builder = urlFor(image);
+  if (!image) return "";
 
-  if (!builder) return "";
-
-  if (typeof builder === "string") {
-    return builder;
+  // Legacy image with direct URL
+  if ("url" in image && typeof image.url === "string") {
+    return image.url;
   }
 
-  return builder.width(width).height(height).url();
+  // Portable Text image or Sanity image
+  if ("asset" in image && image.asset?._ref) {
+    return urlFor(image)
+      .width(width)
+      .height(height)
+      .fit("max")
+      .auto("format")
+      .url();
+  }
+
+  return "";
+};
+
+const builder = imageUrlBuilder(sanityClient);
+
+export const urlFor = (src: SanityImageSource) => {
+  return builder.image(src);
 };
 
 /** 🔥 FULLY TYPED Portable Text Components */

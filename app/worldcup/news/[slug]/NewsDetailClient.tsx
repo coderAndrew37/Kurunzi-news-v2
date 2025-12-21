@@ -37,7 +37,7 @@ export default function NewsDetailClient({
     { label: "Home", href: "/" },
     { label: "World Cup", href: "/worldcup" },
     { label: "News", href: "/worldcup/news" },
-    { label: article.title, href: `/worldcup/news/${article.slug.current}` },
+    { label: article.title, href: `/worldcup/news/${article.slug}` },
   ];
 
   return (

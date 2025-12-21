@@ -1,9 +1,9 @@
 "use server";
 
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createActionSupabase } from "@/lib/supabase-actions";
 
 export async function getSubmittedDrafts() {
-  const supabase = await createServerSupabase();
+  const supabase = await createActionSupabase();
 
   const { data, error } = await supabase
     .from("draft_articles")

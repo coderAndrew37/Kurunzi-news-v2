@@ -1,14 +1,14 @@
 "use client";
 
 import {
-  LayoutDashboard,
-  FileText,
-  Users,
   BarChart3,
-  Settings,
-  HelpCircle,
-  LogOut,
   ChevronRight,
+  FileText,
+  HelpCircle,
+  LayoutDashboard,
+  LogOut,
+  Settings,
+  Users,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -20,7 +20,13 @@ interface NavItem {
   isActive?: boolean;
 }
 
-export default function Sidebar() {
+interface SidebarCounts {
+  publishedArticles: number;
+  writers: number;
+  pendingReviews: number;
+}
+
+export default function Sidebar({ counts }: { counts: SidebarCounts }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const navItems: NavItem[] = [
@@ -28,19 +34,18 @@ export default function Sidebar() {
       name: "Dashboard",
       icon: <LayoutDashboard className="h-5 w-5" />,
       href: "/admin",
-      isActive: true,
     },
     {
       name: "Articles",
       icon: <FileText className="h-5 w-5" />,
       href: "/admin/articles",
-      badge: 18,
+      badge: counts.publishedArticles,
     },
     {
       name: "Writers",
       icon: <Users className="h-5 w-5" />,
       href: "/admin/writers",
-      badge: 156,
+      badge: counts.writers,
     },
     {
       name: "Analytics",
@@ -102,7 +107,7 @@ export default function Sidebar() {
               {!isCollapsed && (
                 <>
                   <span className="font-medium flex-1">{item.name}</span>
-                  {item.badge && (
+                  {typeof item.badge === "number" && item.badge > 0 && (
                     <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-600 text-xs font-medium rounded-full">
                       {item.badge}
                     </span>

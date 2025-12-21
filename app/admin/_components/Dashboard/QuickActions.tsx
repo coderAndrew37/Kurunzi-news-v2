@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   Eye,
   UserPlus,
@@ -16,21 +17,27 @@ interface QuickAction {
   color: string;
   bgColor: string;
   count: number | null;
+  href: string;
 }
 
 interface QuickActionsProps {
+  counts: {
+    pendingReviews: number;
+    scheduledArticles: number;
+  };
   onViewAll?: () => void;
 }
 
-export default function QuickActions({ onViewAll }: QuickActionsProps) {
+export default function QuickActions({ counts, onViewAll }: QuickActionsProps) {
   const actions: QuickAction[] = [
     {
       title: "Review Submissions",
-      description: "18 articles awaiting review",
+      description: "Articles awaiting review",
       icon: <Eye className="h-6 w-6" />,
       color: "from-orange-500 to-amber-500",
       bgColor: "bg-gradient-to-br from-orange-50 to-amber-50",
-      count: 18,
+      count: counts.pendingReviews,
+      href: "/admin/reviews",
     },
     {
       title: "Invite Writers",
@@ -39,6 +46,7 @@ export default function QuickActions({ onViewAll }: QuickActionsProps) {
       color: "from-blue-500 to-cyan-500",
       bgColor: "bg-gradient-to-br from-blue-50 to-cyan-50",
       count: null,
+      href: "/admin/writers",
     },
     {
       title: "Content Calendar",
@@ -46,7 +54,8 @@ export default function QuickActions({ onViewAll }: QuickActionsProps) {
       icon: <Calendar className="h-6 w-6" />,
       color: "from-emerald-500 to-green-500",
       bgColor: "bg-gradient-to-br from-emerald-50 to-green-50",
-      count: 42,
+      count: counts.scheduledArticles,
+      href: "/admin/articles",
     },
     {
       title: "Analytics Report",
@@ -55,6 +64,7 @@ export default function QuickActions({ onViewAll }: QuickActionsProps) {
       color: "from-violet-500 to-purple-500",
       bgColor: "bg-gradient-to-br from-violet-50 to-purple-50",
       count: null,
+      href: "/admin/analytics",
     },
   ];
 
@@ -85,9 +95,10 @@ export default function QuickActions({ onViewAll }: QuickActionsProps) {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {actions.map((action, index) => (
-            <button
-              key={index}
+          {actions.map((action) => (
+            <Link
+              key={action.title}
+              href={action.href}
               className="group relative text-left p-5 rounded-xl border border-gray-200 hover:border-transparent transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
             >
               <div
@@ -95,7 +106,7 @@ export default function QuickActions({ onViewAll }: QuickActionsProps) {
                 style={{
                   background: `linear-gradient(135deg, ${action.color})`,
                 }}
-              ></div>
+              />
 
               <div className="flex items-start justify-between mb-4">
                 <div className={`p-3 rounded-lg ${action.bgColor}`}>
@@ -105,7 +116,8 @@ export default function QuickActions({ onViewAll }: QuickActionsProps) {
                     {action.icon}
                   </div>
                 </div>
-                {action.count && (
+
+                {typeof action.count === "number" && action.count > 0 && (
                   <span className="px-2.5 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">
                     {action.count}
                   </span>
@@ -121,7 +133,7 @@ export default function QuickActions({ onViewAll }: QuickActionsProps) {
                 <span>Take action</span>
                 <ChevronRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </div>
-            </button>
+            </Link>
           ))}
         </div>
       </div>

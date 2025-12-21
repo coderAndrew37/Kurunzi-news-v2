@@ -1,7 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
-import { urlFor } from "@/app/lib/sanity.image";
 import { SanityMainImage } from "@/app/components/types";
+
+import { sanityClient } from "@/app/lib/sanity.client";
+import imageUrlBuilder from "@sanity/image-url";
+import type { SanityImageSource } from "@sanity/image-url/lib/types/types";
+
+const builder = imageUrlBuilder(sanityClient);
+
+const urlFor = (src: SanityImageSource) => builder.image(src);
 
 export interface NewsCardProps {
   id: string | number;
@@ -80,11 +87,10 @@ export default function NewsCard({
 
   const config = cardConfig[variant];
 
-  const isValidSanityImage =
-    image && hasSanityAsset(image) && image.asset._ref.startsWith("image-");
+  const sanityImage = hasSanityAsset(image) ? image : null;
 
-  const imageUrl = isValidSanityImage
-    ? urlFor(image)
+  const imageUrl = sanityImage
+    ? urlFor(sanityImage)
         .width(800)
         .height(variant === "featured" ? 450 : 300)
         .url()

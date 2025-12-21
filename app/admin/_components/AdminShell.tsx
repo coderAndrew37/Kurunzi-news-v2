@@ -4,10 +4,18 @@ import { useState } from "react";
 import Header from "./AdminHeader";
 import AdminSidebar from "./AdminSidebar";
 
+interface AdminCounts {
+  publishedArticles: number;
+  writers: number;
+  pendingReviews: number;
+}
+
 export default function AdminShell({
   children,
+  counts,
 }: {
   children: React.ReactNode;
+  counts: AdminCounts;
 }) {
   const [timeRange, setTimeRange] = useState<
     "day" | "week" | "month" | "quarter"
@@ -32,7 +40,7 @@ export default function AdminShell({
       />
 
       <div className="flex">
-        <AdminSidebar />
+        <AdminSidebar counts={counts} />
 
         <main className="flex-1 p-6">
           <div className="max-w-7xl mx-auto">{children}</div>

@@ -1,7 +1,7 @@
 "use server";
 
-import { createServerSupabase } from "@/lib/supabase-server";
 import { getServerUserRoles, hasRequiredRole } from "@/lib/auth-utils";
+import { createActionSupabase } from "@/lib/supabase-actions";
 import { z } from "zod";
 
 const draftSchema = z.object({
@@ -18,7 +18,7 @@ export async function saveDraft(input: z.infer<typeof draftSchema>) {
     throw new Error("Unauthorized");
   }
 
-  const supabase = await createServerSupabase(); // ← FIX
+  const supabase = await createActionSupabase();
 
   const data = draftSchema.parse(input);
 

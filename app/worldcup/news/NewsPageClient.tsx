@@ -100,7 +100,7 @@ export default function NewsPageClient({
                 <NewsCard
                   key={article._id}
                   id={article._id}
-                  slug={article.slug.current}
+                  slug={article.slug}
                   title={article.title}
                   excerpt={article.excerpt}
                   category={article.categories?.[0]?.title || "News"}

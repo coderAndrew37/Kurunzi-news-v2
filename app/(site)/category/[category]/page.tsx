@@ -11,22 +11,24 @@ import EmptyState from "./_components/EmptyState";
 import type { Metadata } from "next";
 import SubcategoriesGrid from "./_components/SUbCategoriesGrid";
 
+export const revalidate = 3600;
+
+type CategoryParams = Promise<{
+  category: string;
+}>;
+
 export async function generateStaticParams() {
   return await generateCategoryStaticParams();
 }
 
-export const revalidate = 3600;
-
-interface PageProps {
-  params: { category: string };
-}
-
 export async function generateMetadata({
   params,
-}: PageProps): Promise<Metadata> {
+}: {
+  params: CategoryParams;
+}): Promise<Metadata> {
   const { category } = await params;
-  const currentCategory = await getCategoryData(category);
 
+  const currentCategory = await getCategoryData(category);
   if (!currentCategory) {
     return {
       title: "Category Not Found | Kurunzi News",
@@ -42,8 +44,13 @@ export async function generateMetadata({
   };
 }
 
-export default async function CategoryPage({ params }: PageProps) {
+export default async function CategoryPage({
+  params,
+}: {
+  params: CategoryParams;
+}) {
   const { category } = await params;
+
   const currentCategory = await getCategoryData(category);
   if (!currentCategory) notFound();
 

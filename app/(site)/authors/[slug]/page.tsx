@@ -12,12 +12,9 @@ import { PortableText } from "@portabletext/react";
 import Link from "next/link";
 import ArticleCard from "../../category/[category]/_components/ArticleCard";
 
-interface AuthorPageProps {
-  params: { slug: string };
-}
-
-// ✅ Enable ISR (regenerate every 60s)
 export const revalidate = 60;
+
+type AuthorParams = Promise<{ slug: string }>;
 
 // ✅ Pre-render all author slugs at build time
 export async function generateStaticParams() {
@@ -28,8 +25,12 @@ export async function generateStaticParams() {
 // ✅ Dynamic metadata
 export async function generateMetadata({
   params,
-}: AuthorPageProps): Promise<Metadata> {
-  const author = await getAuthor(params.slug);
+}: {
+  params: AuthorParams;
+}): Promise<Metadata> {
+  const { slug } = await params;
+
+  const author = await getAuthor(slug);
   if (!author) return {};
 
   const description =
@@ -63,12 +64,13 @@ export async function generateMetadata({
   };
 }
 
-export default async function AuthorPage({ params }: AuthorPageProps) {
-  const author = await getAuthor(params.slug);
+export default async function AuthorPage({ params }: { params: AuthorParams }) {
+  const { slug } = await params;
+
+  const author = await getAuthor(slug);
   if (!author) return notFound();
 
-  // ✅ Articles already transformed to Story objects in getAuthorArticles()
-  const articles: Story[] = await getAuthorArticles(params.slug);
+  const articles: Story[] = await getAuthorArticles(slug);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
@@ -83,18 +85,20 @@ export default async function AuthorPage({ params }: AuthorPageProps) {
             className="rounded-full object-cover border border-gray-200 shadow-sm"
           />
         )}
+
         <div className="text-center sm:text-left">
           <h1 className="text-3xl font-bold text-slate-900">{author.name}</h1>
+
           {author.role && (
             <p className="text-slate-600 text-sm mt-1">{author.role}</p>
           )}
+
           {author.bio && (
             <div className="text-slate-700 text-sm mt-3 max-w-2xl prose mx-auto sm:mx-0">
               <PortableText value={author.bio} />
             </div>
           )}
 
-          {/* === Social Links === */}
           {author.social && (
             <div className="flex flex-wrap justify-center sm:justify-start gap-3 mt-4">
               {author.social.twitter && (
@@ -137,6 +141,7 @@ export default async function AuthorPage({ params }: AuthorPageProps) {
         <h2 className="text-2xl font-semibold mb-6">
           Articles by {author.name}
         </h2>
+
         {articles.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {articles.map((article) => (

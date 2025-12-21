@@ -15,7 +15,7 @@ export default async function TrendingNews() {
       <div className="space-y-4">
         {articles.map((article: RelatedArticle, index: number) => (
           <a
-            key={article.id}
+            key={article._id}
             href={`/article/${article.slug}`}
             className="flex items-center space-x-3 group hover:bg-gray-50 p-3 rounded-lg transition-colors"
           >

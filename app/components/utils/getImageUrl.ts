@@ -8,10 +8,5 @@ export function getImageUrl(image: SanityMainImage, width = 800, height = 600) {
     return urlFor(image).width(width).height(height).url();
   }
 
-  // Legacy string URL
-  if (image && "url" in image && typeof image.url === "string") {
-    return image.url;
-  }
-
   return null;
 }

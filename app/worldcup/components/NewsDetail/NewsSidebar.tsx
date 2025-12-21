@@ -55,7 +55,7 @@ export default function NewsSidebar({
               return (
                 <Link
                   key={article._id}
-                  href={`/worldcup/news/${article.slug.current}`}
+                  href={`/worldcup/news/${article.slug}`}
                   className="block group"
                 >
                   <div className="flex space-x-3">
@@ -105,7 +105,7 @@ export default function NewsSidebar({
             {popularArticles.map((article, index) => (
               <Link
                 key={article._id}
-                href={`/worldcup/news/${article.slug.current}`}
+                href={`/worldcup/news/${article.slug}`}
                 className="block group"
               >
                 <div className="flex items-start space-x-3">

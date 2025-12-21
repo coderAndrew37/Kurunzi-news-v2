@@ -9,28 +9,36 @@ import ArticleCard from "../_components/ArticleCard";
 import EmptyState from "../_components/EmptyState";
 import type { Metadata } from "next";
 
+export const revalidate = 3600;
+
+type SubcategoryParams = Promise<{
+  category: string;
+  subcategory: string;
+}>;
+
 export async function generateStaticParams() {
   return await generateSubcategoryStaticParams();
 }
 
-export const revalidate = 3600;
-
-interface PageProps {
-  params: { category: string; subcategory: string };
-}
-
 export async function generateMetadata({
   params,
-}: PageProps): Promise<Metadata> {
-  const { category, subcategory } = params;
+}: {
+  params: SubcategoryParams;
+}): Promise<Metadata> {
+  const { category, subcategory } = await params;
+
   return {
     title: `${subcategory} News | ${category} - Kurunzi News`,
     description: `Latest stories and updates in ${subcategory} under ${category}.`,
   };
 }
 
-export default async function SubcategoryPage({ params }: PageProps) {
-  const { category, subcategory } = params;
+export default async function SubcategoryPage({
+  params,
+}: {
+  params: SubcategoryParams;
+}) {
+  const { category, subcategory } = await params;
 
   const { articles, trendingStories, latestStories } =
     await fetchCategoryContent({

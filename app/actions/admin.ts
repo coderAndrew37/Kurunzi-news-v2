@@ -1,7 +1,7 @@
 "use server";
 
 import { getServerUserRoles, hasRequiredRole } from "@/lib/auth-utils";
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createActionSupabase } from "@/lib/supabase-actions";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 
 // High-privilege client using the Service Role Key
@@ -45,7 +45,7 @@ export async function inviteWriter(
     const newUserId = inviteData.user.id;
     const initialRoles = ["authenticated", "writer"];
 
-    const supabaseRLS = await createServerSupabase();
+    const supabaseRLS = await createActionSupabase();
 
     const { error: roleUpdateError } = await supabaseRLS
       .from("profiles")
