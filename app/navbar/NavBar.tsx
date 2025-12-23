@@ -13,9 +13,14 @@ import Image from "next/image";
 interface HeaderProps {
   menuItems: NavItem[];
   popularTags: string[];
+  worldCupUrl: string;
 }
 
-export default function Header({ menuItems, popularTags }: HeaderProps) {
+export default function Header({
+  menuItems,
+  popularTags,
+  worldCupUrl,
+}: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -64,7 +69,7 @@ export default function Header({ menuItems, popularTags }: HeaderProps) {
           {/* Quick Links */}
           <div className="hidden lg:flex items-center space-x-6">
             <Link
-              href={getWorldCupURL()}
+              href={worldCupUrl}
               target="_blank"
               className="flex items-center text-sm font-medium text-orange-600 hover:text-orange-700 transition-colors"
             >
@@ -130,20 +135,3 @@ function groupCategories(categories: NavItem[]): Record<string, NavItem[]> {
     news: categories.filter((cat) => !cat.featured).slice(0, 8),
   };
 }
-
-const getWorldCupURL = () => {
-  if (typeof window === "undefined")
-    return "https://worldcup.kurunzinews.co.ke";
-
-  const hostname = window.location.hostname; // e.g., kurunzinews.co.ke, staging.kurunzinews.co.ke, localhost
-  const protocol = window.location.protocol; // http/https
-
-  // Localhost handling
-  if (hostname === "localhost" || hostname.startsWith("127.")) {
-    return `${protocol}//worldcup.localhost:3000`;
-  }
-
-  // Replace main domain with worldcup subdomain
-  const rootDomain = hostname.split(".").slice(-2).join("."); // kurunzinews.co.ke
-  return `${protocol}//worldcup.${rootDomain}`;
-};

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { headers } from "next/headers";
 
 import BreakingNewsTicker from "../components/BreakingNewsTicker";
 import EnhancedPageTransition from "../components/EnhancedPageTransition";
@@ -14,6 +15,19 @@ export const metadata: Metadata = {
   title: "Kurunzi News",
   description: "Independent Kenyan news, politics, sports and more",
 };
+
+async function getWorldCupUrl() {
+  const h = await headers();
+  const host = h.get("host")!;
+  const protocol = host.includes("localhost") ? "http" : "https";
+
+  if (host.startsWith("localhost")) {
+    return `${protocol}://worldcup.localhost:3000`;
+  }
+
+  const rootDomain = host.split(".").slice(-2).join(".");
+  return `${protocol}://worldcup.${rootDomain}`;
+}
 
 export default async function SiteLayout({
   children,
@@ -35,6 +49,8 @@ export default async function SiteLayout({
     console.warn("⚠️ Failed to fetch tags:", err);
   }
 
+  const worldCupUrl = await getWorldCupUrl();
+
   return (
     <div className="antialiased">
       <Suspense fallback={null}>
@@ -42,7 +58,11 @@ export default async function SiteLayout({
       </Suspense>
 
       <TopAdBanner />
-      <Header menuItems={menuItems} popularTags={popularTags} />
+      <Header
+        menuItems={menuItems}
+        popularTags={popularTags}
+        worldCupUrl={worldCupUrl}
+      />
       <BreakingNewsTicker />
 
       <main className="container mx-auto mt-10 px-4">{children}</main>
