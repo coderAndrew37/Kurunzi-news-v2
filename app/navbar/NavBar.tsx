@@ -31,9 +31,6 @@ export default function Header({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Group categories for better organization
-  const groupedCategories = groupCategories(menuItems);
-
   return (
     <header
       className={cn(
@@ -111,27 +108,14 @@ export default function Header({
           isMobileMenuOpen={isMobileMenuOpen}
           toggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           menuItems={menuItems}
-          groupedCategories={groupedCategories}
         />
 
         {/* Search Bar */}
         <SearchBar isSearchOpen={isSearchOpen} popularTags={popularTags} />
 
         {/* Mobile Navigation */}
-        <MobileNav
-          isMobileMenuOpen={isMobileMenuOpen}
-          menuItems={menuItems}
-          groupedCategories={groupedCategories}
-        />
+        <MobileNav isMobileMenuOpen={isMobileMenuOpen} menuItems={menuItems} />
       </div>
     </header>
   );
-}
-
-// Helper function to group categories
-function groupCategories(categories: NavItem[]): Record<string, NavItem[]> {
-  return {
-    featured: categories.filter((cat) => cat.featured).slice(0, 6),
-    news: categories.filter((cat) => !cat.featured).slice(0, 8),
-  };
 }
