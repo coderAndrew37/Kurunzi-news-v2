@@ -84,21 +84,20 @@ export default function ArticlePageClient({
       />
 
       <div className="min-h-screen bg-white">
-        {/* Top Ad Banner - Similar to People's Daily */}
+        {/* Top Ad Banner */}
         <div className="border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4">
             <TopAdBanner />
           </div>
         </div>
 
-        <div className="lg:col-span-1">
-          <div className="sticky top-4">
-            <Breadcrumbs article={article} />
-          </div>
-        </div>
-
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-4 py-6">
+          {/* Breadcrumbs - Fixed positioning */}
+          <div className="mb-6">
+            <Breadcrumbs article={article} />
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Center Column - Article Content */}
             <div className="lg:col-span-2">
@@ -133,12 +132,16 @@ export default function ArticlePageClient({
                     {article.author && (
                       <div className="flex items-center">
                         {article.author.image && (
-                          <Image
-                            src={urlFor(article.author.image)}
-                            alt={article.author.name}
-                            className="w-10 h-10 rounded-full mr-3"
-                            fill
-                          />
+                          <div className="relative w-10 h-10 mr-3">
+                            <Image
+                              src={urlFor(article.author.image)}
+                              alt={article.author.name}
+                              className="rounded-full"
+                              fill
+                              style={{ objectFit: "cover" }}
+                              sizes="40px"
+                            />
+                          </div>
                         )}
                         <div>
                           <p className="font-semibold text-gray-900">
@@ -223,8 +226,8 @@ export default function ArticlePageClient({
                 </div>
               </div>
 
-              {/* Featured Image - People's Daily Style */}
-              <div className="mb-10">
+              {/* Featured Image - Simple container to prevent overlap */}
+              <div className="mb-10 relative overflow-hidden">
                 <ArticleImage article={article} />
               </div>
 
@@ -328,9 +331,9 @@ export default function ArticlePageClient({
                           <Image
                             src={story.img || "/placeholder.jpg"}
                             alt={story.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
                             fill
-                            sizes="(max-width: 768px) 100vw, 400px"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           />
                         </div>
                         <h3 className="font-bold text-gray-900 group-hover:text-red-600 mb-2 line-clamp-2">
@@ -375,13 +378,13 @@ export default function ArticlePageClient({
                               <span>{story.readTime} min read</span>
                             </div>
                           </div>
-                          <div className="ml-4 w-24 flex-shrink-0">
+                          <div className="ml-4 w-24 h-16 relative flex-shrink-0">
                             <Image
                               src={story.img || "/placeholder.jpg"}
                               alt={story.title}
-                              className="w-full h-16 object-cover rounded"
+                              className="object-cover rounded"
                               fill
-                              sizes="(max-width: 768px) 100vw, 96px"
+                              sizes="96px"
                             />
                           </div>
                         </Link>
