@@ -48,7 +48,7 @@ export default function CategoryLayout({
                     key={article.id}
                     article={article}
                     categoryLabel={title}
-                    href={`/article/${article.slug}`}
+                    href={`/${article.category?.slug}/${article.slug}`}
                     variant={index === 0 ? "featured" : "default"}
                   />
                 ))}

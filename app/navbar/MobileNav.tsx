@@ -23,7 +23,7 @@ export default function MobileNav({
         {menuItems.map((category) => (
           <Link
             key={category._id}
-            href={`/category/${category.slug}`}
+            href={`/${category.slug}`}
             className="flex items-center justify-between py-3 px-2 rounded-lg text-base font-semibold text-slate-800 hover:text-blue-700 hover:bg-blue-50 transition-colors"
           >
             <span>{category.title}</span>

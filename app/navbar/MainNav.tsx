@@ -35,7 +35,7 @@ export default function MainNav({
             {menuItems.map((category) => (
               <NavigationMenuItem key={category._id}>
                 <Link
-                  href={`/category/${category.slug}`}
+                  href={`/${category.slug}`}
                   className={`${navigationMenuTriggerStyle()} font-semibold text-slate-800 hover:text-blue-700 hover:bg-blue-50 text-[15px] px-4 py-2`}
                 >
                   {category.title}

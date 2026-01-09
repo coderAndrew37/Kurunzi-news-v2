@@ -1,34 +1,45 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+
 import {
   getCategoryData,
   getCategoryArticles,
   generateCategoryStaticParams,
 } from "@/app/lib/categoryUtils";
 import { fetchCategoryContent } from "@/app/lib/fetchCategoryContent";
-import CategoryLayout from "./_components/CategoryLayout";
 import ArticleCard from "./_components/ArticleCard";
+import CategoryLayout from "./_components/CategoryLayout";
 import EmptyState from "./_components/EmptyState";
-import type { Metadata } from "next";
 import SubcategoriesGrid from "./_components/SUbCategoriesGrid";
 
 export const revalidate = 3600;
 
-type CategoryParams = Promise<{
+/* ----------------------------------------
+   TYPES
+----------------------------------------- */
+type CategoryParams = {
   category: string;
-}>;
+};
 
+/* ----------------------------------------
+   STATIC PARAMS
+----------------------------------------- */
 export async function generateStaticParams() {
   return await generateCategoryStaticParams();
 }
 
+/* ----------------------------------------
+   METADATA
+----------------------------------------- */
 export async function generateMetadata({
   params,
 }: {
   params: CategoryParams;
 }): Promise<Metadata> {
-  const { category } = await params;
+  const { category } = params;
 
   const currentCategory = await getCategoryData(category);
+
   if (!currentCategory) {
     return {
       title: "Category Not Found | Kurunzi News",
@@ -41,15 +52,21 @@ export async function generateMetadata({
     description:
       currentCategory.description ??
       `Latest stories and updates in ${currentCategory.title}.`,
+    alternates: {
+      canonical: `https://kurunzinews.com/${category}`,
+    },
   };
 }
 
+/* ----------------------------------------
+   PAGE
+----------------------------------------- */
 export default async function CategoryPage({
   params,
 }: {
   params: CategoryParams;
 }) {
-  const { category } = await params;
+  const { category } = params;
 
   const currentCategory = await getCategoryData(category);
   if (!currentCategory) notFound();
@@ -67,22 +84,26 @@ export default async function CategoryPage({
       description={currentCategory.description}
       breadcrumbs={[
         { href: "/", label: "Home" },
-        { href: `/category/${category}`, label: currentCategory.title },
+        { href: `/${category}`, label: currentCategory.title },
       ]}
       articles={articles}
       trendingArticles={trendingStories}
       latestArticles={latestStories}
-      showSubcategories={<SubcategoriesGrid category={currentCategory} />}
+      showSubcategories={
+        currentCategory.subcategories?.length ? (
+          <SubcategoriesGrid category={currentCategory} />
+        ) : null
+      }
     >
       {articles.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {articles.map((a, i) => (
+          {articles.map((article, index) => (
             <ArticleCard
-              key={a.id}
-              article={a}
+              key={article.id}
+              article={article}
               categoryLabel={currentCategory.title}
-              href={`/article/${a.slug}`}
-              variant={i === 0 ? "featured" : "default"}
+              href={`/${category}/${article.slug}`}
+              variant={index === 0 ? "featured" : "default"}
             />
           ))}
         </div>

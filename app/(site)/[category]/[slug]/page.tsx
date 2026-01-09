@@ -21,9 +21,9 @@ type ArticleParams = {
 export async function generateMetadata({
   params,
 }: {
-  params: ArticleParams;
+  params: Promise<ArticleParams>;
 }): Promise<Metadata> {
-  const { slug, category } = params;
+  const { slug, category } = await params;
 
   const rawArticle = await serverClient.fetch(articleQuery, { slug });
 
@@ -82,9 +82,9 @@ export async function generateMetadata({
 export default async function ArticlePage({
   params,
 }: {
-  params: ArticleParams;
+  params: Promise<ArticleParams>;
 }) {
-  const { slug, category } = params;
+  const { slug, category } = await params;
 
   const rawArticle = await serverClient.fetch(articleQuery, { slug });
 
