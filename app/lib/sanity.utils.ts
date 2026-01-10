@@ -51,41 +51,53 @@ export function estimateReadTimeFromBlocks(
   return Math.max(1, Math.ceil(words / wpm));
 }
 
+function extractSlug(slug: string | { current: string } | undefined): string {
+  if (!slug) return "";
+  if (typeof slug === "string") return slug;
+  return slug.current;
+}
+
+function extractCurrentSlug(slug?: { current: string } | string): string {
+  if (!slug) return "";
+  return typeof slug === "string" ? slug : slug.current;
+}
+
 // Transform raw Sanity article → our Story type
-export function transformSanityArticleToStory(raw: RawSanityArticle): Story {
+export function transformSanityArticleToStory(
+  raw: RawSanityArticle | (RawSanityArticle & { slug: string })
+): Story {
   const imageUrl = raw.mainImage
     ? urlFor(raw.mainImage)
     : "/placeholder-hero.jpeg";
 
   return {
     id: raw._id,
-    slug: raw.slug,
+    slug: extractSlug(raw.slug), // ✅ FIX
     title: raw.title,
     subtitle: raw.subtitle ?? null,
-    img: imageUrl, // still used by existing components
+    img: imageUrl,
+
     featuredImage: raw.mainImage
       ? {
           url: imageUrl,
-          alt: raw.mainImage.alt ?? null,
-          caption: raw.mainImage.caption ?? null,
+          alt: "alt" in raw.mainImage ? (raw.mainImage.alt ?? null) : null,
+          caption:
+            "caption" in raw.mainImage ? (raw.mainImage.caption ?? null) : null,
         }
       : null,
-    category:
-      raw.categories && raw.categories.length
-        ? {
-            title: raw.categories[0]?.title ?? "General",
-            slug:
-              typeof raw.categories[0]?.slug === "string"
-                ? raw.categories[0]?.slug
-                : (raw.categories[0]?.slug?.current ?? "general"),
-          }
-        : null,
+
+    category: raw.categories?.length
+      ? {
+          title: raw.categories[0]?.title ?? "General",
+          slug: extractCurrentSlug(raw.categories[0]?.slug) || "general",
+        }
+      : null,
 
     publishedAt: raw.publishedAt ?? null,
     author: raw.author ?? null,
     content: raw.body ?? null,
     tags: raw.tags ?? [],
-    readTime: raw.readTime ?? estimateReadTimeFromBlocks(raw.body),
+    readTime: raw.readTime ?? null,
     excerpt: raw.excerpt ?? null,
     isFeatured: !!raw.isFeatured,
     isVideo: !!raw.isVideo,

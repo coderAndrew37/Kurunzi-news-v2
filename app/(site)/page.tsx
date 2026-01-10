@@ -36,8 +36,6 @@ function sortCategories(categories: AppCategory[]): AppCategory[] {
   });
 }
 
-console.log("Project ID:", process.env.SANITY_PROJECT_ID);
-
 export default async function Home() {
   const heroStories = await getHeroStories();
   const allCategories = await fetchAllCategories(); // AppCategory[]

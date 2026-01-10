@@ -147,14 +147,18 @@ export type SanityMainImage =
 
 export interface RawSanityArticle {
   _id: string;
-  slug: string;
+  slug: {
+    current: string;
+  };
   title: string;
   subtitle?: string | null;
   mainImage?: SanityMainImage | null;
-  img?: string; // legacy field
+  img?: string;
   categories?: {
     title?: string;
-    slug?: { current: string };
+    slug?: {
+      current: string;
+    };
   }[];
   publishedAt?: string | null;
   author?: Author | null;

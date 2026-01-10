@@ -39,8 +39,21 @@ interface HeroQueryResponse {
 
 const builder = imageUrlBuilder(serverClient);
 
-export const urlFor = (src: SanityImageSource) =>
-  builder.image(src).width(1200).height(800).url();
+export const urlFor = (src: SanityImageSource | string | null | undefined) => {
+  if (!src) return "/placeholder-hero.jpeg";
+
+  // ✅ If already a URL, return as-is
+  if (typeof src === "string") {
+    return src;
+  }
+
+  // ✅ If Sanity image object
+  if ("asset" in src) {
+    return builder.image(src).width(1200).height(800).url();
+  }
+
+  return "/placeholder-hero.jpeg";
+};
 
 export async function getHeroStories(): Promise<Story[]> {
   const data = await serverClient.fetch<HeroQueryResponse>(`
@@ -84,6 +97,7 @@ export async function getHeroStories(): Promise<Story[]> {
       : item.article.mainImage
         ? urlFor(item.article.mainImage)
         : "/placeholder-hero.jpeg",
+
     category: item.article.category ?? null,
     publishedAt: item.article.publishedAt ?? null,
     createdAt: item.article._createdAt,

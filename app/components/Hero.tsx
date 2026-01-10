@@ -5,12 +5,6 @@ import Link from "next/link";
 import { Story } from "./types";
 import { Play, Clock, Calendar } from "lucide-react";
 import { formatTimeAgo } from "./utils/formatDate";
-// Generate slug from title
-const generateSlug = (title: string) =>
-  title
-    .toLowerCase()
-    .replace(/[^\w ]+/g, "")
-    .replace(/ +/g, "-");
 
 interface HeroProps {
   stories: Story[];
@@ -71,7 +65,7 @@ export default function Hero({ stories }: HeroProps) {
               <div className="space-y-3">
                 <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 leading-tight hover:text-blue-600 transition-colors">
                   <Link
-                    href={`/article/${featuredStory.slug || generateSlug(featuredStory.title)}`}
+                    href={`/${featuredStory.category?.slug}/${featuredStory.slug}`}
                   >
                     {featuredStory.title}
                   </Link>
@@ -122,7 +116,7 @@ export default function Hero({ stories }: HeroProps) {
                 {topStories.map((story, index) => (
                   <div key={story.id} className="group">
                     <Link
-                      href={`/article/${story.slug || generateSlug(story.title)}`}
+                      href={`/${featuredStory.category?.slug}/${featuredStory.slug}`}
                       className="flex items-start space-x-3"
                     >
                       {/* Number Badge */}
@@ -180,7 +174,7 @@ export default function Hero({ stories }: HeroProps) {
                     <div className="flex-1 min-w-0">
                       <h4 className="font-medium text-gray-900 group-hover:text-blue-600 line-clamp-2 text-sm leading-snug transition-colors">
                         <Link
-                          href={`/article/${story.slug || generateSlug(story.title)}`}
+                          href={`/${featuredStory.category?.slug}/${featuredStory.slug}`}
                         >
                           {story.title}
                         </Link>
@@ -214,7 +208,7 @@ export default function Hero({ stories }: HeroProps) {
                   {stories.slice(8, 12).map((story) => (
                     <Link
                       key={story.id}
-                      href={`/article/${story.slug || generateSlug(story.title)}`}
+                      href={`/${featuredStory.category?.slug}/${featuredStory.slug}`}
                       className="flex items-center space-x-2 text-sm text-gray-700 hover:text-blue-600 whitespace-nowrap transition-colors"
                     >
                       <span className="w-2 h-2 bg-blue-600 rounded-full"></span>

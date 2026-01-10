@@ -1,7 +1,7 @@
 "use client";
 import TopAdBanner from "@/app/TopAdBanner";
 import NewsletterSignup from "@/app/components/NewsletterSignup";
-import { Story as Article } from "@/app/components/types";
+import { Story as Article, ArticleCard } from "@/app/components/types";
 import { useIncrementArticleView } from "@/app/hooks/useIncrementArticleView";
 import {
   Calendar,
@@ -27,8 +27,8 @@ import { urlFor } from "@/app/lib/getHeroStories";
 
 interface ArticlePageClientProps {
   article: Article;
-  latestArticles: Article[];
-  trendingArticles: Article[];
+  latestArticles: ArticleCard[];
+  trendingArticles: ArticleCard[];
   relatedArticles: Article[];
   moreFromCategory: Article[];
   tagArticles?: Article[];
@@ -64,7 +64,7 @@ export default function ArticlePageClient({
   const shareUrl =
     typeof window !== "undefined"
       ? window.location.href
-      : `https://kurunzinews.com/article/${article.slug}`;
+      : `https://kurunzinews.com/${article.category?.slug}/${article.slug}`;
 
   const shareText = `${article.title} - Kurunzi News`;
 
@@ -324,7 +324,7 @@ export default function ArticlePageClient({
                     {moreFromCategory.slice(0, 3).map((story) => (
                       <Link
                         key={story.id}
-                        href={`/article/${story.slug}`}
+                        href={`/${story.category?.slug}/${story.slug}`}
                         className="group"
                       >
                         <div className="relative h-48 overflow-hidden rounded-lg mb-3">
@@ -362,7 +362,7 @@ export default function ArticlePageClient({
                         className="border-b pb-6 last:border-0"
                       >
                         <Link
-                          href={`/article/${story.slug}`}
+                          href={`/${story.category?.slug}/${story.slug}`}
                           className="group flex items-start"
                         >
                           <div className="flex-1">
@@ -403,9 +403,10 @@ export default function ArticlePageClient({
             {/* Right Column - Sidebar */}
             <div className="lg:col-span-1">
               <ArticleSidebar
-                latestArticles={latestArticles}
-                trendingArticles={trendingArticles}
+                latestArticles={latestArticles} // ArticleCard[]
+                trendingArticles={trendingArticles} // ArticleCard[]
                 category={article.category}
+                categoryArticles={moreFromCategory} // Story[]
               />
             </div>
           </div>

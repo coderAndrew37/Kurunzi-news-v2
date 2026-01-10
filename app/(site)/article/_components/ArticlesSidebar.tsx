@@ -1,98 +1,34 @@
-// app/article/_components/ArticleSidebar.tsx
 "use client";
 
-import { Story } from "@/app/components/types";
-import { formatDate } from "@/app/lib/sanity.utils";
+import type { ArticleCard, Story } from "@/app/components/types";
+import TrendingNews from "@/app/components/TrendingNews";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { formatDate } from "@/app/lib/sanity.utils";
+import { urlFor } from "@/app/lib/getHeroStories";
+import LatestArticlesSidebar from "@/app/components/LatestArticles";
 
 interface ArticleSidebarProps {
-  latestArticles: Story[];
-  trendingArticles: Story[];
+  latestArticles: ArticleCard[];
+  trendingArticles: ArticleCard[];
   category?: { title: string; slug: string } | null;
+  categoryArticles?: Story[];
 }
 
 export default function ArticleSidebar({
   latestArticles,
   trendingArticles,
   category,
+  categoryArticles = [],
 }: ArticleSidebarProps) {
   return (
     <div className="space-y-8">
-      {/* Latest News */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="flex justify-between items-center mb-4 pb-3 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900">Latest News</h2>
-          <Link
-            href="/latest"
-            className="flex items-center text-red-600 hover:text-red-800 text-sm font-medium"
-          >
-            More <ChevronRight className="ml-1 h-4 w-4" />
-          </Link>
-        </div>
-        <div className="space-y-4">
-          {latestArticles.slice(0, 5).map((article, index) => (
-            <Link
-              key={article.id}
-              href={`/article/${article.slug}`}
-              className="group flex items-start space-x-3 pb-4 border-b border-gray-100 last:border-0"
-            >
-              <span className="flex-shrink-0 text-gray-400 font-medium text-sm w-6">
-                {index + 1}
-              </span>
-              <div>
-                <h3 className="font-medium text-gray-900 group-hover:text-red-600 text-sm leading-relaxed line-clamp-2">
-                  {article.title}
-                </h3>
-                <div className="flex items-center text-gray-500 text-xs mt-1">
-                  <span>{formatDate(article.publishedAt)}</span>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
+      {/* Latest Articles */}
+      <LatestArticlesSidebar latestArticles={latestArticles} />
 
-      {/* Trending Now */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="flex justify-between items-center mb-4 pb-3 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900">Trending Now</h2>
-          <Link
-            href="/trending"
-            className="flex items-center text-red-600 hover:text-red-800 text-sm font-medium"
-          >
-            More <ChevronRight className="ml-1 h-4 w-4" />
-          </Link>
-        </div>
-        <div className="space-y-4">
-          {trendingArticles.slice(0, 5).map((article, index) => (
-            <Link
-              key={article.id}
-              href={`/article/${article.slug}`}
-              className="group flex items-start space-x-3 pb-4 border-b border-gray-100 last:border-0"
-            >
-              <span
-                className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                  index === 0
-                    ? "bg-red-600 text-white"
-                    : "bg-gray-200 text-gray-700"
-                }`}
-              >
-                {index + 1}
-              </span>
-              <div>
-                <h3 className="font-medium text-gray-900 group-hover:text-red-600 text-sm leading-relaxed line-clamp-2">
-                  {article.title}
-                </h3>
-                <div className="flex items-center text-gray-500 text-xs mt-1">
-                  <span>{article.views?.toLocaleString()} views</span>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
+      {/* Trending Articles */}
+      <TrendingNews trendingArticles={trendingArticles} />
 
       {/* Sidebar Ad */}
       <div className="bg-white rounded-lg border border-gray-200 p-4">
@@ -104,8 +40,8 @@ export default function ArticleSidebar({
         </div>
       </div>
 
-      {/* Category Highlights */}
-      {category && (
+      {/* Category Highlights (full Story needed) */}
+      {category && categoryArticles.length > 0 && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex justify-between items-center mb-4 pb-3 border-b border-gray-200">
             <h2 className="text-xl font-bold text-gray-900">
@@ -118,61 +54,40 @@ export default function ArticleSidebar({
               More <ChevronRight className="ml-1 h-4 w-4" />
             </Link>
           </div>
+
           <div className="space-y-4">
-            {latestArticles
-              .filter((article) => article.category?.slug === category.slug)
-              .slice(0, 3)
-              .map((article) => (
-                <Link
-                  key={article.id}
-                  href={`/article/${article.slug}`}
-                  className="group block pb-4 border-b border-gray-100 last:border-0"
-                >
-                  <div className="flex items-start space-x-3">
-                    <div className="flex-shrink-0 w-20">
-                      <div className="aspect-square overflow-hidden rounded">
-                        <Image
-                          src={article.img || "/placeholder.jpg"}
-                          alt={article.title}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-gray-900 group-hover:text-red-600 text-sm leading-relaxed line-clamp-2">
-                        {article.title}
-                      </h3>
-                      <div className="flex items-center text-gray-500 text-xs mt-1">
-                        <span>{formatDate(article.publishedAt)}</span>
-                      </div>
-                    </div>
+            {categoryArticles.slice(0, 3).map((article) => (
+              <Link
+                key={article.id}
+                href={`/${article.category?.slug}/${article.slug}`}
+                className="group block pb-4 border-b border-gray-100 last:border-0"
+              >
+                <div className="flex items-start space-x-3">
+                  <div className="w-20 aspect-square overflow-hidden rounded">
+                    <Image
+                      src={
+                        article.img ? urlFor(article.img) : "/placeholder.jpg"
+                      }
+                      alt={article.title}
+                      fill
+                      className="object-cover group-hover:scale-110 transition-transform"
+                    />
                   </div>
-                </Link>
-              ))}
+
+                  <div>
+                    <h3 className="text-sm font-medium group-hover:text-red-600 line-clamp-2">
+                      {article.title}
+                    </h3>
+                    <span className="text-xs text-gray-500">
+                      {formatDate(article.publishedAt)}
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       )}
-
-      {/* Newsletter Signup (Compact) */}
-      <div className="bg-red-50 rounded-lg border border-red-200 p-6">
-        <h3 className="font-bold text-gray-900 mb-2">Stay Updated</h3>
-        <p className="text-gray-600 text-sm mb-4">
-          Get the latest news delivered directly to your inbox.
-        </p>
-        <form className="space-y-3">
-          <input
-            type="email"
-            placeholder="Your email address"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-          />
-          <button
-            type="submit"
-            className="w-full bg-red-600 text-white py-2 rounded-lg font-medium hover:bg-red-700 transition-colors"
-          >
-            Subscribe
-          </button>
-        </form>
-      </div>
     </div>
   );
 }

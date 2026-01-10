@@ -182,7 +182,6 @@ export const topicStoriesQuery = groq`
   }
 `;
 
-// Add this to your api.ts or create a new one
 export const fetchAllCategories = async (): Promise<AppCategory[]> => {
   const query = groq`
     *[_type == "category"] {
