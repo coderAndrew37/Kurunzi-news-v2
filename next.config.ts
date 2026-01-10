@@ -66,6 +66,16 @@ const baseConfig: NextConfig = {
       },
     ];
   },
+
+  async redirects() {
+    return [
+      {
+        source: "/category/:category/page/1",
+        destination: "/category/:category",
+        permanent: true, // 308 permanent redirect
+      },
+    ];
+  },
 };
 
 // ✅ Add PWA support (only in production)

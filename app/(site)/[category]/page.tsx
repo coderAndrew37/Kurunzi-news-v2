@@ -1,43 +1,31 @@
+// app/[category]/page.tsx
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { getCategoryData, getCategoryArticles } from "@/app/lib/categoryUtils";
+import SectionWithLead from "@/app/components/SectionWithLead";
+import { transformSanityArticleToStory } from "@/app/lib/sanity.utils";
+import { serverClient } from "@/app/lib/sanity.server";
+import { groq } from "next-sanity";
 
-import {
-  getCategoryData,
-  getCategoryArticles,
-  generateCategoryStaticParams,
-} from "@/app/lib/categoryUtils";
-import { fetchCategoryContent } from "@/app/lib/fetchCategoryContent";
-import ArticleCard from "./_components/ArticleCard";
-import CategoryLayout from "./_components/CategoryLayout";
-import EmptyState from "./_components/EmptyState";
-import SubcategoriesGrid from "./_components/SUbCategoriesGrid";
-
-export const revalidate = 3600;
-
-/* ----------------------------------------
-   TYPES
------------------------------------------ */
-type CategoryParams = {
-  category: string;
-};
-
-/* ----------------------------------------
-   STATIC PARAMS
------------------------------------------ */
-export async function generateStaticParams() {
-  return await generateCategoryStaticParams();
+interface CategoryPageProps {
+  params: Promise<{ category: string }>;
 }
 
-/* ----------------------------------------
-   METADATA
------------------------------------------ */
+export async function generateStaticParams() {
+  const query = groq`*[_type == "category"]{ "slug": slug.current }`;
+  const categories: { slug?: string }[] = await serverClient.fetch(query);
+
+  return categories
+    .filter((c) => c.slug)
+    .map((c) => ({
+      category: String(c.slug),
+    }));
+}
+
 export async function generateMetadata({
   params,
-}: {
-  params: { category: string };
-}): Promise<Metadata> {
-  const { category } = params;
-
+}: CategoryPageProps): Promise<Metadata> {
+  const { category } = await params;
   const currentCategory = await getCategoryData(category);
 
   if (!currentCategory) {
@@ -48,71 +36,92 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${currentCategory.title} News | Kurunzi News`,
+    title: `${currentCategory.title} | Kurunzi News`,
     description:
       currentCategory.description ??
-      `Latest stories and updates in ${currentCategory.title}.`,
+      `Latest ${currentCategory.title} news and updates.`,
     alternates: {
       canonical: `https://kurunzinews.com/${category}`,
     },
   };
 }
 
-/* ----------------------------------------
-   PAGE
------------------------------------------ */
-export default async function CategoryPage({
+export default async function SimpleCategoryPage({
   params,
-}: {
-  params: CategoryParams;
-}) {
-  const { category } = params;
-
+}: CategoryPageProps) {
+  const { category } = await params;
   const currentCategory = await getCategoryData(category);
   if (!currentCategory) notFound();
 
-  const { articles, trendingStories, latestStories } =
-    await fetchCategoryContent({
-      identifier: category,
-      category,
-      fetchFn: getCategoryArticles,
-    });
+  // Get articles for this category (similar to homepage)
+  const articles = await getCategoryArticles(category);
+  const stories = articles.map(transformSanityArticleToStory);
+
+  if (stories.length === 0) {
+    return (
+      <div className="min-h-screen bg-white">
+        <div className="container mx-auto px-4 py-16 text-center">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+            {currentCategory.title}
+          </h1>
+          <p className="text-gray-600">
+            No articles found in this category yet.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <CategoryLayout
-      title={currentCategory.title}
-      description={currentCategory.description}
-      breadcrumbs={[
-        { href: "/", label: "Home" },
-        { href: `/${category}`, label: currentCategory.title },
-      ]}
-      articles={articles}
-      trendingArticles={trendingStories}
-      latestArticles={latestStories}
-      showSubcategories={
-        currentCategory.subcategories?.length ? (
-          <SubcategoriesGrid category={currentCategory} />
-        ) : null
-      }
-    >
-      {articles.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {articles.map((article, index) => (
-            <ArticleCard
-              key={article.id}
-              article={article}
-              categoryLabel={currentCategory.title}
-              href={`/${category}/${article.slug}`}
-              variant={index === 0 ? "featured" : "default"}
-            />
-          ))}
+    <div className="min-h-screen bg-white">
+      {/* Simple Header */}
+      <div className="border-b border-gray-200">
+        <div className="container mx-auto px-4 py-6">
+          <h1 className="text-3xl font-bold text-gray-900">
+            {currentCategory.title}
+          </h1>
+          {currentCategory.description && (
+            <p className="text-gray-600 mt-2">{currentCategory.description}</p>
+          )}
         </div>
-      ) : (
-        <EmptyState
-          title="No articles yet"
-          message={`We haven't published any articles in ${currentCategory.title} yet.`}
+      </div>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8">
+        <SectionWithLead
+          sectionTitle={currentCategory.title}
+          stories={stories}
+          sectionSlug={category}
+          layoutType="featured"
         />
-      )}
-    </CategoryLayout>
+
+        {/* Link to full archive */}
+        <div className="mt-12 text-center border-t pt-8">
+          <a
+            href={`/category/${category}`}
+            className="inline-flex items-center text-red-600 hover:text-red-800 font-medium"
+          >
+            View Full Archive
+            <svg
+              className="ml-2 h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17 8l4 4m0 0l-4 4m4-4H3"
+              />
+            </svg>
+          </a>
+          <p className="text-gray-500 text-sm mt-2">
+            Browse all articles in {currentCategory.title} with advanced
+            filtering
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }

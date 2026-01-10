@@ -1,19 +1,24 @@
-import { getTrendingArticles } from "@/app/lib/getTrendingArticles";
 import type { ArticleCard } from "@/app/components/types";
 import Image from "next/image";
 import Link from "next/link";
 
-export default async function TrendingNews() {
-  const articles: ArticleCard[] = await getTrendingArticles();
+interface TrendingNewsProps {
+  trendingArticles: ArticleCard[];
+  title?: string;
+}
 
-  if (!articles.length) return null;
+export default function TrendingNews({
+  trendingArticles,
+  title = "Trending Now",
+}: TrendingNewsProps) {
+  if (!trendingArticles.length) return null;
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h2 className="text-xl font-bold mb-4 pb-3 border-b">Trending Now</h2>
+      <h2 className="text-xl font-bold mb-4 pb-3 border-b">{title}</h2>
 
       <div className="space-y-4">
-        {articles.map((article: ArticleCard, index: number) => {
+        {trendingArticles.map((article, index) => {
           const href =
             article.subcategory?.category?.slug && article.subcategory?.slug
               ? `/${article.subcategory.category.slug}/${article.subcategory.slug}/${article.slug}`
@@ -57,5 +62,3 @@ export default async function TrendingNews() {
     </div>
   );
 }
-
-export const revalidate = 300;

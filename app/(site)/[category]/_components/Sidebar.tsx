@@ -5,15 +5,31 @@ import Image from "next/image";
 
 interface CategorySidebarProps {
   latestArticles: ArticleCard[];
+  trendingArticles: ArticleCard[];
+  categoryTitle: string;
+  showTags?: boolean;
 }
 
 export default function CategorySidebar({
   latestArticles,
+  trendingArticles,
+  categoryTitle,
+  showTags = false,
 }: CategorySidebarProps) {
   return (
     <div className="space-y-6">
-      <TrendingNews />
+      <TrendingNews trendingArticles={trendingArticles} title="Trending" />
+
       <LatestArticlesSidebar latestArticles={latestArticles} title="Latest" />
+
+      {showTags && (
+        <div className="bg-white rounded-xl border p-4">
+          <h4 className="font-semibold text-gray-900 mb-3">
+            {categoryTitle} Tags
+          </h4>
+          {/* tags component here */}
+        </div>
+      )}
 
       <Image
         src="https://via.placeholder.com/300x250"
