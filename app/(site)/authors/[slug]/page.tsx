@@ -10,7 +10,7 @@ import type { Metadata } from "next";
 import { Story } from "@/app/components/types";
 import { PortableText } from "@portabletext/react";
 import Link from "next/link";
-import ArticleCard from "../../category/[category]/_components/ArticleCard";
+import ArticleCard from "../../[category]/_components/ArticleCard";
 
 export const revalidate = 60;
 

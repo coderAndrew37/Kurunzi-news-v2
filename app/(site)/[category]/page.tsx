@@ -34,7 +34,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: CategoryParams;
+  params: { category: string };
 }): Promise<Metadata> {
   const { category } = params;
 

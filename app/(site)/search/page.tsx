@@ -12,7 +12,7 @@ import {
 import { transformSanityArticleToStory } from "@/app/lib/sanity.utils";
 import { Author, Category, Story, Subcategory } from "@/app/components/types";
 import { urlFor } from "@/app/lib/sanity.image";
-import ArticleCard from "../category/[category]/_components/ArticleCard";
+import ArticleCard from "../[category]/_components/ArticleCard";
 
 const PAGE_SIZE = 10;
 

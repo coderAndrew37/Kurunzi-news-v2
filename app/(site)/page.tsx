@@ -5,19 +5,16 @@ import NewsSections from "../components/NewsSection";
 import WeatherWidget from "../components/WeatherWidget";
 import { AppCategory } from "../lib/api";
 import { fetchAllCategories } from "../lib/getCategoryStories";
+import BreakingNewsTicker from "../components/BreakingNewsTicker";
 
 export const revalidate = 60;
 
 // Priority order for sections (similar to People's Daily)
 const SECTION_ORDER = [
-  "politics",
-  "business",
-  "sports",
+  "news",
   "entertainment",
-  "technology",
-  "health",
-  "lifestyle",
-  "opinion",
+  "kurunzi-exclusive",
+  "lifestyle-and-celeb-watch",
 ];
 
 // Sort categories based on priority order
@@ -62,6 +59,9 @@ export default async function Home() {
           </div>
         </div>
       </div>
+
+      {/* Breaking News Ticker */}
+      <BreakingNewsTicker />
 
       {/* Hero Section - Similar to People's Daily */}
       {heroStories.length > 0 && (

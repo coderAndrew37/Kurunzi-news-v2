@@ -1,6 +1,54 @@
 import type { PortableTextBlock } from "@portabletext/types";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 
+export interface ArticleCard {
+  _id: string;
+  title: string;
+  slug: string;
+  publishedAt?: string | null;
+
+  mainImage?: {
+    asset?: {
+      url?: string;
+    };
+    alt?: string | null;
+  } | null;
+
+  category?: {
+    title: string;
+    slug: string;
+  } | null;
+
+  subcategory?: {
+    title: string;
+    slug: string;
+    category?: {
+      title: string;
+      slug: string;
+    };
+  } | null;
+}
+
+export interface BreakingNewsItem {
+  _id: string;
+  title: string;
+  slug: string;
+
+  category?: {
+    title: string;
+    slug: string;
+  } | null;
+
+  subcategory?: {
+    title: string;
+    slug: string;
+    category?: {
+      title: string;
+      slug: string;
+    };
+  } | null;
+}
+
 export interface Story {
   id: string;
   slug: string;

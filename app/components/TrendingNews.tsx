@@ -1,42 +1,61 @@
 import { getTrendingArticles } from "@/app/lib/getTrendingArticles";
-import { RelatedArticle } from "@/app/components/types";
+import type { ArticleCard } from "@/app/components/types";
+import Image from "next/image";
+import Link from "next/link";
 
 export default async function TrendingNews() {
-  const articles = await getTrendingArticles();
+  const articles: ArticleCard[] = await getTrendingArticles();
 
   if (!articles.length) return null;
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h2 className="text-xl font-bold text-gray-900 mb-4 pb-3 border-b border-gray-200">
-        Trending Now
-      </h2>
+      <h2 className="text-xl font-bold mb-4 pb-3 border-b">Trending Now</h2>
 
       <div className="space-y-4">
-        {articles.map((article: RelatedArticle, index: number) => (
-          <a
-            key={article._id}
-            href={`/article/${article.slug}`}
-            className="flex items-center space-x-3 group hover:bg-gray-50 p-3 rounded-lg transition-colors"
-          >
-            <span className="flex-shrink-0 w-6 h-6 bg-red-600 text-white rounded-full text-sm font-bold flex items-center justify-center">
-              {index + 1}
-            </span>
-            <div className="flex-1">
-              <h3 className="font-medium text-gray-900 group-hover:text-red-600 line-clamp-2 text-sm leading-snug">
-                {article.title}
-              </h3>
-              {article.category?.title && (
-                <span className="text-xs text-gray-500">
-                  {article.category.title}
-                </span>
+        {articles.map((article: ArticleCard, index: number) => {
+          const href =
+            article.subcategory?.category?.slug && article.subcategory?.slug
+              ? `/${article.subcategory.category.slug}/${article.subcategory.slug}/${article.slug}`
+              : `/${article.slug}`;
+
+          return (
+            <Link
+              key={article._id}
+              href={href}
+              className="flex items-center gap-3 group hover:bg-gray-50 p-3 rounded-lg"
+            >
+              <span className="w-6 h-6 bg-red-600 text-white rounded-full text-sm font-bold flex items-center justify-center">
+                {index + 1}
+              </span>
+
+              {article.mainImage?.asset?.url && (
+                <Image
+                  src={article.mainImage.asset.url}
+                  alt={article.mainImage.alt ?? article.title}
+                  width={48}
+                  height={48}
+                  className="rounded object-cover"
+                />
               )}
-            </div>
-          </a>
-        ))}
+
+              <div>
+                <h3 className="text-sm font-medium group-hover:text-red-600 line-clamp-2">
+                  {article.title}
+                </h3>
+
+                {article.subcategory?.title && (
+                  <span className="text-xs text-gray-500">
+                    {article.subcategory.title}
+                  </span>
+                )}
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-export const revalidate = 300; // Revalidate every 5 minutes
+export const revalidate = 300;

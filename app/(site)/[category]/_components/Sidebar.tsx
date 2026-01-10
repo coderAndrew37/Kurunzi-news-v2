@@ -1,12 +1,10 @@
-// app/news/_components/Sidebar.tsx
-import LatestArticlesSidebar from "@/app/(site)/article/_components/LatestArticlesSidebar";
+import LatestArticlesSidebar from "@/app/components/LatestArticles";
 import TrendingNews from "@/app/components/TrendingNews";
-import { Story } from "@/app/components/types";
+import type { ArticleCard } from "@/app/components/types";
 import Image from "next/image";
 
 interface CategorySidebarProps {
-  trendingArticles: Story[];
-  latestArticles: Story[];
+  latestArticles: ArticleCard[];
 }
 
 export default function CategorySidebar({
@@ -14,16 +12,12 @@ export default function CategorySidebar({
 }: CategorySidebarProps) {
   return (
     <div className="space-y-6">
-      {/* keep the existing Trending component (wire later if needed) */}
       <TrendingNews />
-
-      {/* New: Latest articles for this category */}
       <LatestArticlesSidebar latestArticles={latestArticles} title="Latest" />
 
-      {/* Ad Banner */}
       <Image
         src="https://via.placeholder.com/300x250"
-        alt="Ad Banner"
+        alt="Advertisement"
         width={300}
         height={250}
         className="w-full rounded-lg"
