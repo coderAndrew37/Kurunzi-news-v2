@@ -125,7 +125,7 @@ export async function getCategoryArticlesWithFilters(
 
   const [field, order] = sortBy.split("_");
 
-  let filterConditions = [
+  const filterConditions = [
     '_type == "article"',
     `$category in categories[]->slug.current`,
     '!(_id in path("drafts.**"))',

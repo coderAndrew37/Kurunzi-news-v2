@@ -17,71 +17,41 @@ import { Clock, Search } from "lucide-react";
 import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import PaginationControls from "./_components/PaginationControls";
 import SearchFilters from "./_components/SearchFilters";
 import SearchSidebar from "./_components/SearchSidebar";
-import PaginationControls from "./_components/PaginationControls";
 
 const ARTICLES_PER_PAGE = 12;
 
-type SearchParams = {
-  q?: string | string[];
-  page?: string | string[];
-  type?: string | string[];
-  date?: string | string[];
-  sort?: string | string[];
-};
+type SearchParams = Record<string, string | string[] | undefined>;
 
-function toStringParam(p: string | string[] | undefined): string | undefined {
-  return Array.isArray(p) ? p[0] : p;
+function toStringParam(
+  value: string | string[] | undefined
+): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
 }
 
 export async function generateMetadata({
   searchParams,
 }: {
-  searchParams: SearchParams;
+  searchParams?: Promise<SearchParams>;
 }): Promise<Metadata> {
-  const params = await searchParams;
+  const params = (await searchParams) ?? {};
   const query = toStringParam(params.q);
-
-  const title = query
-    ? `"${query}" - Search Results | Kurunzi News`
-    : "Search | Kurunzi News";
-
-  const description = query
-    ? `Search results for "${query}" on Kurunzi News. Find articles, authors, and categories.`
-    : "Search our comprehensive database of news articles, authors, and categories on Kurunzi News.";
 
   const canonical = query
     ? `https://kurunzinews.com/search?q=${encodeURIComponent(query)}`
     : "https://kurunzinews.com/search";
 
   return {
-    title,
-    description,
-    alternates: { canonical },
-    openGraph: {
-      title,
-      description,
-      url: canonical,
-      siteName: "Kurunzi News",
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-    },
-    robots: {
-      index: true,
-      follow: true,
-      nocache: false,
-      googleBot: {
-        index: true,
-        follow: true,
-        "max-video-preview": -1,
-        "max-image-preview": "large",
-        "max-snippet": -1,
-      },
+    title: query
+      ? `"${query}" - Search Results | Kurunzi News`
+      : "Search | Kurunzi News",
+    description: query
+      ? `Search results for "${query}" on Kurunzi News.`
+      : "Search Kurunzi News.",
+    alternates: {
+      canonical,
     },
   };
 }
@@ -89,9 +59,9 @@ export async function generateMetadata({
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: SearchParams;
+  searchParams?: Promise<SearchParams>;
 }) {
-  const params = await searchParams;
+  const params = (await searchParams) ?? {};
 
   const query = (toStringParam(params.q) || "").trim();
   const pageParam = toStringParam(params.page);
@@ -175,7 +145,8 @@ export default async function SearchPage({
                         Use specific keywords
                       </h4>
                       <p className="text-sm text-gray-600">
-                        Try "climate change policy" instead of "weather"
+                        Try &apos;climate change policy&apos; instead of
+                        &apos;weather&apos;
                       </p>
                     </div>
                   </div>
@@ -203,7 +174,7 @@ export default async function SearchPage({
                         Use quotes
                       </h4>
                       <p className="text-sm text-gray-600">
-                        "exact phrase" for precise matches
+                        &apos;exact phrase&apos; for precise matches
                       </p>
                     </div>
                   </div>
@@ -326,9 +297,9 @@ export default async function SearchPage({
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "SearchResultsPage",
-    name: `Search results for "${query}"`,
+    name: `Search results for &apos;${query}&apos;`,
     url: canonical,
-    description: `Search results for "${query}" on Kurunzi News`,
+    description: `Search results for &apos;${query}&apos; on Kurunzi News`,
     mainEntity: {
       "@type": "ItemList",
       numberOfItems: totalArticles,
@@ -363,7 +334,7 @@ export default async function SearchPage({
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-8">
               <div className="flex-1">
                 <h1 className="text-3xl md:text-4xl font-bold mb-2">
-                  Search Results for "{query}"
+                  Search Results for &apos;{query}&apos;
                 </h1>
                 <p className="text-white/90 text-lg">
                   Found {totalArticles.toLocaleString()} result
@@ -407,7 +378,9 @@ export default async function SearchPage({
               <span className="mx-2 text-gray-400">/</span>
               <span className="text-red-600 font-semibold">Search</span>
               <span className="mx-2 text-gray-400">/</span>
-              <span className="text-gray-700 truncate max-w-xs">"{query}"</span>
+              <span className="text-gray-700 truncate max-w-xs">
+                &apos;{query}&apos;
+              </span>
               {currentPage > 1 && (
                 <>
                   <span className="mx-2 text-gray-400">/</span>
@@ -591,8 +564,8 @@ export default async function SearchPage({
                       No results found
                     </h2>
                     <p className="text-gray-600 mb-8">
-                      We couldn't find any articles matching "{query}". Try
-                      different keywords or check your spelling.
+                      We couldn&rdquo;t find any articles matching &apos;{query}
+                      &apos; . Try different keywords or check your spelling.
                     </p>
 
                     <div className="space-y-6">

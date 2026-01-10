@@ -192,7 +192,8 @@ export default function SearchSidebar({
           Save This Search
         </h3>
         <p className="text-sm text-gray-700 mb-4">
-          Get notified when new articles match your search for "{query}"
+          Get notified when new articles match your search for &quot;{query}
+          &quot;.
         </p>
         <button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium py-2.5 rounded-lg hover:opacity-90 transition-opacity">
           Save Search

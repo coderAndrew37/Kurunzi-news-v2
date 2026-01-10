@@ -1,4 +1,4 @@
-import { Story } from "@/app/components/types";
+import { ArticleCard, Story } from "@/app/components/types";
 import { articleQuery, latestArticlesQuery } from "@/app/lib/getArticle";
 import { getLatestArticles } from "@/app/lib/getLatestArticles";
 import { getRelatedArticles } from "@/app/lib/getRelatedArticles";
@@ -7,6 +7,7 @@ import { transformSanityArticleToStory } from "@/app/lib/sanity.utils";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ArticlePageClient from "../../article/[slug]/ArticlePageClient";
+import { storyToArticleCard } from "@/app/lib/mappers/storyToArticleCard";
 
 export const revalidate = 300;
 
@@ -105,9 +106,9 @@ export default async function ArticlePage({
     limit: 10,
   });
 
-  const latestArticles: Story[] = rawLatestArticles.map(
-    transformSanityArticleToStory
-  );
+  const latestArticles: ArticleCard[] = rawLatestArticles
+    .map(transformSanityArticleToStory)
+    .map(storyToArticleCard);
 
   const trendingArticles = await getLatestArticles(5);
 
