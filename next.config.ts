@@ -1,17 +1,13 @@
 import type { NextConfig } from "next";
 import withPWA from "next-pwa";
 
-// ✅ Create the base config
 const baseConfig: NextConfig = {
   reactStrictMode: true,
 
+  turbopack: {},
+
   experimental: {
     optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
-
-    // 🔥 Fix warning: "Webpack is configured while Turbopack is not"
-    turbo: {
-      rules: {},
-    },
   },
 
   images: {
@@ -50,10 +46,7 @@ const baseConfig: NextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://plausible.io *.vercel-insights.com *.googletagmanager.com;",
               "style-src 'self' 'unsafe-inline';",
               "font-src 'self' data:;",
-              // 👇 THIS IS THE FIX
               "connect-src 'self' https://*.supabase.co https://*.sanity.io;",
-
-              // Optional extras (you can remove if not needed)
               "frame-src 'self';",
               "object-src 'none';",
             ].join(" "),
@@ -72,13 +65,12 @@ const baseConfig: NextConfig = {
       {
         source: "/category/:category/page/1",
         destination: "/category/:category",
-        permanent: true, // 308 permanent redirect
+        permanent: true,
       },
     ];
   },
 };
 
-// ✅ Add PWA support (only in production)
 const withPWASupport = withPWA({
   dest: "public",
   disable: process.env.NODE_ENV === "development",
