@@ -17,6 +17,8 @@ export default function Hero({ stories }: HeroProps) {
   const topStories = stories.slice(1, 5);
   const sideStories = stories.slice(5, 8);
 
+  if (!featuredStory) return null;
+
   return (
     <section className="bg-white border-b border-gray-200">
       <div className="container mx-auto px-4 py-8">
@@ -116,7 +118,7 @@ export default function Hero({ stories }: HeroProps) {
                 {topStories.map((story, index) => (
                   <div key={story.id} className="group">
                     <Link
-                      href={`/${featuredStory.category?.slug}/${featuredStory.slug}`}
+                      href={`/${story.category?.slug}/${story.slug}`}
                       className="flex items-start space-x-3"
                     >
                       {/* Number Badge */}
@@ -173,9 +175,7 @@ export default function Hero({ stories }: HeroProps) {
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <h4 className="font-medium text-gray-900 group-hover:text-blue-600 line-clamp-2 text-sm leading-snug transition-colors">
-                        <Link
-                          href={`/${featuredStory.category?.slug}/${featuredStory.slug}`}
-                        >
+                        <Link href={`/${story.category?.slug}/${story.slug}`}>
                           {story.title}
                         </Link>
                       </h4>
@@ -208,7 +208,7 @@ export default function Hero({ stories }: HeroProps) {
                   {stories.slice(8, 12).map((story) => (
                     <Link
                       key={story.id}
-                      href={`/${featuredStory.category?.slug}/${featuredStory.slug}`}
+                      href={`/${story.category?.slug}/${story.slug}`}
                       className="flex items-center space-x-2 text-sm text-gray-700 hover:text-blue-600 whitespace-nowrap transition-colors"
                     >
                       <span className="w-2 h-2 bg-blue-600 rounded-full"></span>

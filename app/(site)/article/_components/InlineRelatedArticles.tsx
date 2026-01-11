@@ -50,7 +50,7 @@ export default function InlineRelatedArticles({
           {displayArticles.map((article) => (
             <Link
               key={article.id}
-              href={`/article/${article.slug}`}
+              href={`/${article.category?.slug}/${article.slug}`}
               className="group block"
             >
               <div className="relative h-48 overflow-hidden rounded-lg mb-3">
@@ -84,7 +84,7 @@ export default function InlineRelatedArticles({
           {displayArticles.map((article) => (
             <Link
               key={article.id}
-              href={`/article/${article.slug}`}
+              href={`/${article.category?.slug}/${article.slug}`}
               className="group flex items-start pb-4 border-b border-gray-200 last:border-0"
             >
               <div className="flex-1">
@@ -126,7 +126,7 @@ export default function InlineRelatedArticles({
           {displayArticles.map((article) => (
             <Link
               key={article.id}
-              href={`/article/${article.slug}`}
+              href={`/${article.category?.slug}/${article.slug}`}
               className="group block"
             >
               <p className="text-gray-700 group-hover:text-red-600 text-sm leading-relaxed">
